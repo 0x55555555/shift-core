@@ -166,19 +166,18 @@ template <typename T, typename TYPE> void createTypedPointerArray(SPropertyInfor
     auto api = info->apiInterface();
 
 
-    XInterfaceBase::Function fn;
-    fn = XScript::MethodToInCa<TypedPointerArray<TYPE>, void (), &T::clear>::Call;
-    api->addFunction("clear", fn);
 
-    fn;
-    fn = XScript::MethodToInCa<TypedPointerArray<TYPE>, TYPE *(const PtrType *), &T::addPointer>::Call;
-    api->addFunction("addPointer", fn);
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (), &T::clear> Fn1;
+    api->addFunction("clear", 1, Fn1::Arity, Fn1::Call, Fn1::CallDart);
 
-    fn = XScript::MethodToInCa<TypedPointerArray<TYPE>, bool (const PtrType *), &T::hasPointer>::Call;
-    api->addFunction("hasPointer", fn);
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, TYPE *(const PtrType *), &T::addPointer> Fn2;
+    api->addFunction("addPointer", 1, Fn2::Arity, Fn2::Call, Fn2::CallDart);
 
-    fn = XScript::MethodToInCa<TypedPointerArray<TYPE>, void (const PtrType *), &T::removePointer>::Call;
-    api->addFunction("removePointer", fn);
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, bool (const PtrType *), &T::hasPointer> Fn3;
+    api->addFunction("hasPointer", 1, Fn3::Arity, Fn3::Call, Fn3::CallDart);
+
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (const PtrType *), &T::removePointer> Fn4;
+    api->addFunction("removePointer", 1, Fn4::Arity, Fn4::Call, Fn4::CallDart);
     }
   }
 

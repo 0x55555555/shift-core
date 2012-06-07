@@ -8,6 +8,7 @@
 #include "Serialisation/sjsonio.h"
 #include "xqtwrappers.h"
 #include "spropertyinformationhelpers.h"
+#include "XConvertScriptSTL.h"
 
 #ifdef X_DEBUG
 # include "XMemoryTracker"
