@@ -12,8 +12,8 @@ void SPropertyContainer::createTypeInformation(SPropertyInformationTyped<SProper
     {
     auto *api = info->apiInterface();
 
-    XInterfaceBase::IndexedGetter indexedGetter = XScript::XMethodToIndexedGetter<SPropertyContainer, SProperty *(xsize i), &SPropertyContainer::at>::Get;
-    api->XInterfaceBase::setIndexAccessor(indexedGetter);
+    typedef XScript::XMethodToIndexedGetter<SPropertyContainer, SProperty *(xsize i), &SPropertyContainer::at> Getter;
+    api->XInterfaceBase::setIndexAccessor(Getter::Get, Getter::GetDart);
 
     XInterfaceBase::NamedGetter namedGetter = XScript::XMethodToNamedGetter<SPropertyContainer, SProperty *(const QString &n), &SPropertyContainer::findChild>::Get;
     api->XInterfaceBase::setNamedAccessor(namedGetter);
