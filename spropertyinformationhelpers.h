@@ -205,7 +205,7 @@ public:
     {
     const SPropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
 
-    SPropertyInstanceInformation *inst = add(newChildType, name);
+    SPropertyInstanceInformation *inst = SPropertyInformation::add(newChildType, name);
 
     return static_cast<SPropertyInstanceInformationTyped<PropType, typename T::InstanceInformation> *>(inst);
     }
