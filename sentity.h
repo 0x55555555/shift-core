@@ -36,7 +36,7 @@ public:
 
   SProperty *addChild(const SPropertyInformation *info, const QString& name="");
 
-  template <typename T>T *addProperty(const QString& name="", typename SPropertyInstanceInformationInitialiser *init=0)
+  template <typename T>T *addProperty(const QString& name="", SPropertyInstanceInformationInitialiser *init=0)
     {
     SProperty *p = addProperty(T::staticTypeInformation(), name, init);
     xAssert(p);

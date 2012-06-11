@@ -73,7 +73,8 @@ HEADERS += \
     shandler.h \
     sinterfaces.h \
     spropertyinformationhelpers.h \
-    spropertygroup.h
+    spropertygroup.h \
+    shandlerimpl.h
 
 
 

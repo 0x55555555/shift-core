@@ -25,8 +25,8 @@ template <typename PropType> struct ApiHelper
 public:
   static void create(SPropertyInformation *info)
     {
-    const XInterface<PropType::ParentType> *parentTempl =
-        static_cast<XInterface<PropType::ParentType>*>(PropType::ParentType::staticTypeInformation()->apiInterface());
+    const XInterface<typename PropType::ParentType> *parentTempl =
+        static_cast<XInterface<typename PropType::ParentType>*>(PropType::ParentType::staticTypeInformation()->apiInterface());
     const XInterface<SProperty> *baseTempl =
         static_cast<XInterface<SProperty>*>(SProperty::staticTypeInformation()->apiInterface());
 
@@ -85,7 +85,7 @@ template <typename T> struct InstanceInformationHelper
   {
   static SPropertyInstanceInformation *create(void *allocation)
     {
-    return new(allocation) T::InstanceInformation;
+    return new(allocation) typename T::InstanceInformation;
     }
   static void destroy(SPropertyInstanceInformation *allocation)
     {
@@ -112,7 +112,7 @@ public:
   template <void FUNC( const SPropertyInstanceInformation *, PropType * )>
       void setCompute()
     {
-    ComputeFunction t = (ComputeFunction)ComputeHelper<PropType, FUNC>::compute;
+    typename InstanceType::ComputeFunction t = (typename InstanceType::ComputeFunction)ComputeHelper<PropType, FUNC>::compute;
 
     setCompute(t);
     }
@@ -131,24 +131,22 @@ public:
       }
     }
 
-  using SPropertyInformation::child;
-
-  template <typename U>
-  SPropertyInstanceInformationTyped<PropType, typename U::InstanceInformation> *child(U PropType::* ptr)
+  template <typename U, typename PropTypeAncestor>
+  SPropertyInstanceInformationTyped<PropType, typename U::InstanceInformation> *child(U PropTypeAncestor::* ptr)
     {
     xsize location = findLocation(ptr);
 
     return static_cast<SPropertyInstanceInformationTyped<PropType,
-                                                         typename U::InstanceInformation>*>(child(location));
-  }
+                                                         typename U::InstanceInformation>*>(SPropertyInformation::child(location));
+    }
 
-  template <typename U>
-  const SPropertyInstanceInformationTyped<PropType, typename U::InstanceInformation> *child(U PropType::* ptr) const
+  template <typename U, typename PropTypeAncestor>
+  const SPropertyInstanceInformationTyped<PropType, typename U::InstanceInformation> *child(U PropTypeAncestor::* ptr) const
     {
     xsize location = findLocation(ptr);
 
     return static_cast<const SPropertyInstanceInformationTyped<PropType,
-                                                               typename U::InstanceInformation>*>(child(location));
+                                                               typename U::InstanceInformation>*>(SPropertyInformation::child(location));
     }
 
   XInterface<PropType> *apiInterface()
@@ -171,7 +169,7 @@ public:
     return createTypeInformationInternal(name, parentType, fn);
     }
 
-  template <typename U> xsize findLocation(U PropType::* ptr)
+  template <typename U, typename AncestorPropType> xsize findLocation(U AncestorPropType::* ptr)
     {
     PropType *u = reinterpret_cast<PropType*>(1); // avoid special casing for zero static cast
     SPropertyContainer *container = static_cast<SPropertyContainer *>(u);
@@ -237,9 +235,9 @@ public:
     addInterfaceFactory(new InheritedInterface);
     }
 
-  template <typename PropType, typename InstanceType>
+  template <typename PropTypeIn, typename InstanceTypeIn>
       SPropertyInformationTyped<PropType> *
-          extendContainedProperty(SPropertyInstanceInformationTyped<PropType, InstanceType> *inst)
+          extendContainedProperty(SPropertyInstanceInformationTyped<PropTypeIn, InstanceTypeIn> *inst)
     {
     SPropertyInformation *info = SPropertyInformation::extendContainedProperty(inst);
 

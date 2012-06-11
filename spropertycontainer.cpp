@@ -2,6 +2,7 @@
 #include "styperegistry.h"
 #include "sdatabase.h"
 #include "spropertyinformationhelpers.h"
+#include "shandlerimpl.h"
 
 S_IMPLEMENT_PROPERTY(SPropertyContainer, Shift)
 

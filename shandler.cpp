@@ -1,7 +1,7 @@
 #include "shandler.h"
 #include "sdatabase.h"
 
-SHandler::SHandler() : _blockLevel(0), _database(0)
+SHandler::SHandler() : _database(0), _blockLevel(0)
   {
   }
 

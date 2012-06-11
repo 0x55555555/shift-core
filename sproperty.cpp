@@ -10,6 +10,7 @@
 #include "styperegistry.h"
 #include "spropertyinformationhelpers.h"
 #include "XConvertScriptSTL.h"
+#include "shandlerimpl.h"
 
 static SPropertyGroup::Information _sPropertyTypeInformation =
   Shift::propertyGroup().registerPropertyInformation(&_sPropertyTypeInformation,

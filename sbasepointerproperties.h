@@ -136,7 +136,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(SPropertyInfor
   {
   if(data.registerInterfaces)
     {
-    typedef TYPE::PtrType PtrType;
+    typedef typename TYPE::PtrType PtrType;
 
     class PointerArrayConnectionInterface : public SPropertyConnectionInterface
       {

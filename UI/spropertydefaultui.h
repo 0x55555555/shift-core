@@ -57,7 +57,7 @@ private:
   virtual void actOnChanges()
     {
     SProfileFunction
-    if(_dirty && !_isAlreadySetting && isVisible())
+    if(_dirty && !_isAlreadySetting && WIDG::isVisible())
       {
       _isAlreadySetting = true;
       syncGUI();

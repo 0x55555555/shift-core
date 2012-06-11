@@ -14,6 +14,7 @@
 #include "sobserver.h"
 #include "sinterface.h"
 #include "sinterfaces.h"
+#include "shandler.h"
 #include "QByteArray"
 
 typedef QVector<QString> SStringVector;
@@ -60,47 +61,6 @@ template <typename T, typename DERIVED> class SPODPropertyBase : public SPropert
 protected:
   XPropertyMember(T, value);
 
-public:
-  class ComputeLock
-    {
-  public:
-    ComputeLock(SPODPropertyBase<T, DERIVED> *ptr) : _ptr(ptr)
-      {
-      xAssert(ptr);
-      _data = &_ptr->_value;
-      }
-    ~ComputeLock()
-      {
-      _ptr->handler()->doChange<ComputeChange>(_ptr);
-      }
-
-    T* data()
-      {
-      return _data;
-      }
-
-  private:
-    SPODPropertyBase<T, DERIVED> *_ptr;
-    T* _data;
-    };
-
-  const T &operator()() const
-    {
-    preGet();
-    return _value;
-    }
-
-  const T &value() const
-    {
-    preGet();
-    return _value;
-    }
-
-  static bool shouldSavePropertyValue(const SProperty *)
-    {
-    return false;
-    }
-
 protected:
   class ComputeChange : public SProperty::DataChange
     {
@@ -134,6 +94,51 @@ protected:
       }
     };
 
+public:
+  class ComputeLock
+    {
+  public:
+    typedef SPODPropertyBase<T, DERIVED>::ComputeChange Change;
+
+    ComputeLock(SPODPropertyBase<T, DERIVED> *ptr) : _ptr(ptr)
+      {
+      xAssert(ptr);
+      _data = &_ptr->_value;
+      }
+    ~ComputeLock()
+      {
+      SHandler* han = _ptr->handler();
+      han->doChange<Change>(_ptr);
+      }
+
+    T* data()
+      {
+      return _data;
+      }
+
+  private:
+    SPODPropertyBase<T, DERIVED> *_ptr;
+    T* _data;
+    };
+
+  const T &operator()() const
+    {
+    preGet();
+    return _value;
+    }
+
+  const T &value() const
+    {
+    preGet();
+    return _value;
+    }
+
+  static bool shouldSavePropertyValue(const SProperty *)
+    {
+    return false;
+    }
+
+protected:
   friend class ComputeLock;
   };
 
@@ -175,7 +180,8 @@ public:
       }
     ~Lock()
       {
-      _ptr->handler()->doChange<Change>(_oldData, *_data, _ptr);
+      SHandler* han = _ptr->handler();
+      han->doChange<Change>(_oldData, *_data, _ptr);
       _data = 0;
       }
 
@@ -270,23 +276,27 @@ private:
   private:
     bool apply()
       {
-      property()->uncheckedCastTo<DERIVED>()->_value = after();
-      property()->postSet();
+      SProperty *prop = ComputeChange::property();
+      DERIVED* d = prop->uncheckedCastTo<DERIVED>();
+      d->_value = after();
+      ComputeChange::property()->postSet();
       return true;
       }
 
     bool unApply()
       {
-      property()->uncheckedCastTo<DERIVED>()->_value = before();
-      property()->postSet();
+      SProperty *prop = ComputeChange::property();
+      DERIVED* d = prop->uncheckedCastTo<DERIVED>();
+      d->_value = before();
+      ComputeChange::property()->postSet();
       return true;
       }
 
     bool inform(bool)
       {
-      if(property()->entity())
+      if(ComputeChange::property()->entity())
         {
-        property()->entity()->informDirtyObservers(property());
+        ComputeChange::property()->entity()->informDirtyObservers(ComputeChange::property());
         }
       return true;
       }
@@ -400,7 +410,7 @@ public:
 
 template <typename T, typename DERIVED> void SPODProperty<T, DERIVED>::assign(const T &in)
   {
-  handler()->doChange<Change>(_value, in, this);
+  SProperty::handler()->doChange<Change>(SPODPropertyBase<T, DERIVED>::_value, in, this);
   }
 
 #endif // SBASEPROPERTIES_H

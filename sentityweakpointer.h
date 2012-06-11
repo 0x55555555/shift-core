@@ -65,7 +65,7 @@ public:
     }
   };
 
-#define S_ENTITY_TYPED_WEAK_POINTER_CHECK xAssert(SEntityWeakPointer::entity() && SEntityWeakPointer::entity()->castTo<T>(), (xsize)SEntityWeakPointer::entity());
+#define S_ENTITY_TYPED_WEAK_POINTER_CHECK xAssert(SEntityWeakPointer::entity() && ((SEntity*)SEntityWeakPointer::entity())->castTo<T>(), (xsize)SEntityWeakPointer::entity());
 
 template <typename T> class SEntityTypedWeakPointer : public SEntityWeakPointer
   {
@@ -100,13 +100,15 @@ public:
   const T *entity() const
     {
     S_ENTITY_TYPED_WEAK_POINTER_CHECK
-    return SEntityWeakPointer::entity()->uncheckedCastTo<T>();
+    SEntity *ent = SEntityWeakPointer::entity();
+    return ent->uncheckedCastTo<T>();
     }
 
   T *entity()
     {
     S_ENTITY_TYPED_WEAK_POINTER_CHECK
-    return SEntityWeakPointer::entity()->uncheckedCastTo<T>();
+    SEntity *ent = SEntityWeakPointer::entity();
+    return ent->uncheckedCastTo<T>();
     }
 
   operator T*()
