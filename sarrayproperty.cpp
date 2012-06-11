@@ -1,6 +1,7 @@
 #include "sarrayproperty.h"
 #include "styperegistry.h"
 #include "spropertyinformationhelpers.h"
+#include "shandlerimpl.h"
 
 S_IMPLEMENT_PROPERTY(SFloatArrayProperty, Shift)
 

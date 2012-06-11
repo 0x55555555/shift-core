@@ -98,7 +98,7 @@ public:
   class ComputeLock
     {
   public:
-    typedef SPODPropertyBase<T, DERIVED>::ComputeChange Change;
+    typedef typename SPODPropertyBase<T, DERIVED>::ComputeChange Change;
 
     ComputeLock(SPODPropertyBase<T, DERIVED> *ptr) : _ptr(ptr)
       {
