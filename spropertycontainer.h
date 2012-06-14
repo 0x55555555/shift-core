@@ -154,19 +154,24 @@ public:
     Iterator<T> end() { return Iterator<T>(nullptr); }
     };
 
-  Iterator<SProperty> begin() { return Iterator<SProperty>(this->firstChild()); }
-  Iterator<SProperty> end() { return Iterator<SProperty>(0); }
-  Iterator<const SProperty> begin() const { return Iterator<const SProperty>(this->firstChild()); }
-  Iterator<const SProperty> end() const { return Iterator<const SProperty>(0); }
-
-  template <typename T> TypedIteratorWrapper<T, SPropertyContainer> typed()
+  template <typename T> TypedIteratorWrapper<T, SPropertyContainer> walker()
     {
     return TypedIteratorWrapper<T, SPropertyContainer>(this);
     }
 
-  template <typename T> TypedIteratorWrapper<const T, const SPropertyContainer> typed() const
+  template <typename T> TypedIteratorWrapper<const T, const SPropertyContainer> walker() const
     {
     return TypedIteratorWrapper<const T, const SPropertyContainer>(this);
+    }
+
+  TypedIteratorWrapper<SProperty, SPropertyContainer> walker()
+    {
+    return TypedIteratorWrapper<SProperty, SPropertyContainer>(this);
+    }
+
+  TypedIteratorWrapper<const SProperty, const SPropertyContainer> walker() const
+    {
+    return TypedIteratorWrapper<const SProperty, const SPropertyContainer>(this);
     }
 
 protected:
