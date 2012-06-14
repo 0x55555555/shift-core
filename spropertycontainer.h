@@ -135,6 +135,40 @@ public:
 
   X_ALIGNED_OPERATOR_NEW
 
+  template <typename T> class Iterator
+    {
+    T *_p;
+  public:
+    Iterator(T *p) : _p(p) { }
+    T *operator*() const { return _p; }
+    void operator++() { _p = _p->nextSibling<T>(); }
+    bool operator!=(const Iterator<T> &it) { return _p != it._p; }
+    };
+
+  template <typename T, typename Cont> class TypedIteratorWrapper
+    {
+    Cont *_cont;
+  public:
+    TypedIteratorWrapper(Cont *cont) : _cont(cont) { }
+    Iterator<T> begin() { return Iterator<T>(_cont->firstChild<T>()); }
+    Iterator<T> end() { return Iterator<T>(nullptr); }
+    };
+
+  Iterator<SProperty> begin() { return Iterator<SProperty>(this->firstChild()); }
+  Iterator<SProperty> end() { return Iterator<SProperty>(0); }
+  Iterator<const SProperty> begin() const { return Iterator<const SProperty>(this->firstChild()); }
+  Iterator<const SProperty> end() const { return Iterator<const SProperty>(0); }
+
+  template <typename T> TypedIteratorWrapper<T, SPropertyContainer> typed()
+    {
+    return TypedIteratorWrapper<T, SPropertyContainer>(this);
+    }
+
+  template <typename T> TypedIteratorWrapper<const T, const SPropertyContainer> typed() const
+    {
+    return TypedIteratorWrapper<const T, const SPropertyContainer>(this);
+    }
+
 protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
   // you cannot add another contained property once dynamic properties have been added, this bool

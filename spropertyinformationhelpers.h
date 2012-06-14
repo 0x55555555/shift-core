@@ -102,6 +102,16 @@ template <typename T, void FUNC( const SPropertyInstanceInformation *, T * )> st
     FUNC(c, t);
     }
   };
+
+template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelper
+  {
+  static void compute( const SPropertyInstanceInformation *, SProperty *prop)
+    {
+    T* t = prop->castTo<T>();
+    xAssert(t);
+    FUNC(t);
+    }
+  };
 }
 
 template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType
@@ -109,8 +119,16 @@ template <typename PropType, typename InstanceType> class SPropertyInstanceInfor
 public:
   using InstanceType::setCompute;
 
-  template <void FUNC( const SPropertyInstanceInformation *, PropType * )>
+  template <void FUNC(PropType * )>
       void setCompute()
+    {
+    typename InstanceType::ComputeFunction t = (typename InstanceType::ComputeFunction)ComputeNoInstanceInformationHelper<PropType, FUNC>::compute;
+
+    setCompute(t);
+    }
+
+  template <void FUNC( const SPropertyInstanceInformation *, PropType * )>
+      void setComputeWithInstanceInformation()
     {
     typename InstanceType::ComputeFunction t = (typename InstanceType::ComputeFunction)ComputeHelper<PropType, FUNC>::compute;
 
