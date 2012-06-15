@@ -57,8 +57,15 @@ private:
 class SHIFT_EXPORT SBlock
   {
 public:
-  SBlock(SHandler *db);
-  ~SBlock();
+  SBlock(SHandler *db) : _db(db)
+    {
+    _db->beginBlock();
+    }
+
+  ~SBlock()
+    {
+    _db->endBlock();
+    }
 
 private:
   SHandler *_db;

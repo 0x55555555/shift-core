@@ -86,14 +86,3 @@ void SHandler::inform()
     }
   _blockObservers.clear();
   }
-
-
-SBlock::SBlock(SHandler *db) : _db(db)
-  {
-  _db->beginBlock();
-  }
-
-SBlock::~SBlock()
-  {
-  _db->endBlock();
-  }

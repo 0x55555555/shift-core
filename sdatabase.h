@@ -60,6 +60,25 @@ private:
   friend class SPropertyContainer::TreeChange;
   };
 
+
+class SHIFT_EXPORT SStateStorageBlock
+  {
+public:
+  SStateStorageBlock(bool enable, SDatabase *h) : _db(h), _oldValue(h->stateStorageEnabled())
+    {
+    _db->setStateStorageEnabled(enable);
+    }
+
+  ~SStateStorageBlock()
+    {
+    _db->setStateStorageEnabled(_oldValue);
+    }
+
+private:
+  SDatabase *_db;
+  bool _oldValue;
+  };
+
 S_PROPERTY_INTERFACE(SDatabase)
 
 #endif // SDATABASE_H
