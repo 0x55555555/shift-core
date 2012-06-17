@@ -1,245 +1,304 @@
 #ifndef SITERATOR_H
 #define SITERATOR_H
 
-#include "spropertycontainer.h"
+#include "sentity.h"
 
-#define S_ITERATOR_STACK_SIZE 8
-
-class SHIFT_EXPORT SIterator
+namespace SIterator
+{
+template <typename IteratorType, typename ReturnTypeIn, typename DerivedExtraData> class Base
   {
 public:
-  class DataCache
+  typedef DerivedExtraData ExtraData;
+  typedef ReturnTypeIn ReturnType;
+
+  inline Base() : _prop(0)
+    {
+    }
+
+  inline void reset(SProperty *prop)
+    {
+    _prop = prop;
+    }
+
+  inline SProperty *property() const
+    {
+    return _prop;
+    }
+
+  class IteratorBase
     {
   public:
-    DataCache(SProperty *input)
+    inline IteratorBase()
       {
-      reset(input);
       }
 
-    inline void setOutput(xsize index, SProperty *in)
+    inline IteratorBase(ReturnType *p) : _property(p)
       {
-      xAssert(index < S_ITERATOR_STACK_SIZE);
-      ptr[index] = in;
       }
 
-    inline SProperty *output(xsize index)
+    inline ReturnType *operator*() const
       {
-      xAssert(index < S_ITERATOR_STACK_SIZE);
-      return ptr[index];
+      return _property;
       }
 
-    inline void reset(SProperty *prop)
+    inline ReturnType *operator->() const
       {
-      ptr[0] = prop;
-      for(xsize i=1; i<S_ITERATOR_STACK_SIZE; ++i)
-        {
-        ptr[i] = 0;
-        }
+      return _property;
+      }
+
+    inline void setProperty(ReturnType *prop)
+      {
+      _property = prop;
+      }
+
+    inline bool operator!=(const IteratorBase& it) const
+      {
+      return _property != it._property;
       }
 
   private:
-    SProperty *ptr[S_ITERATOR_STACK_SIZE];
+    ReturnType *_property;
     };
 
-  typedef SProperty *(*FilterFunction)(DataCache &previous);
-
-XProperties:
-  XProperty(FilterFunction, filter, setFilter);
-  XProperty(SProperty *, property, setProperty);
-
-public:
-  template<template<SIterator::FilterFunction Z, xsize INDEX1> class A>
-      static SIterator::FilterFunction createFilter()
+  class Iterator : public IteratorBase
     {
-    return A<Terminate<0>, 1>::filter;
-    }
-
-  template<template<SIterator::FilterFunction Z, xsize INDEX1> class A,
-      template<SIterator::FilterFunction Y, xsize INDEX2> class B>
-      static SIterator::FilterFunction createFilter()
-    {
-    return B<A<Terminate<0>, 1>::filter, 2>::filter;
-    }
-
-  // lambda support
-  template <typename T> void each(T t)
-    {
-    xAssert(filter());
-
-    DataCache cache(property());
-    while(SProperty *prop = filter()(cache))
+  public:
+    inline Iterator()
       {
-      t(prop);
+      }
+
+    inline Iterator(ReturnType *p) : IteratorBase(p)
+      {
+      }
+
+    inline Iterator(ReturnType *p, const ExtraData& d)
+        : IteratorBase(p),
+          _extra(d)
+      {
+      }
+
+    inline void operator++()
+      {
+      IteratorType::next(*this);
+      }
+
+    inline void operator++(int)
+      {
+      IteratorType::next(*this);
+      }
+
+    inline ExtraData& data()
+      {
+      return _extra;
+      }
+
+  private:
+    ExtraData _extra;
+    };
+
+  inline Iterator begin()
+    {
+    Iterator i;
+    static_cast<IteratorType*>(this)->first(i);
+    return i;
+    }
+
+  inline Iterator end()
+    {
+    return Iterator(0);
+    }
+
+private:
+  SProperty *_prop;
+  };
+
+namespace
+{
+struct NilExtraData
+  {
+  };
+
+template <typename ToForward, typename ParentType> struct ForwarderExtraData
+  {
+  inline ForwarderExtraData()
+    {
+    }
+
+  inline ForwarderExtraData(const typename ParentType::Iterator& i) : _parent(i)
+    {
+    }
+
+  ToForward _fwd;
+  typename ToForward::ExtraData _fwdData;
+  typename ParentType::Iterator _parent;
+  };
+}
+
+template <typename ToForward, typename ParentType>
+class Forwarder : public Base<Forwarder<ToForward, ParentType>, typename ToForward::ReturnType, ForwarderExtraData<ToForward, ParentType> >
+  {
+public:
+  Forwarder(ParentType *p)
+      : _parent(p)
+    {
+    }
+
+  inline void first(Iterator& i) const
+    {
+    first(_parent->begin(), i);
+    }
+
+  static void next(Iterator &i)
+    {
+    ToForward::Iterator fwd(*i, i.data()._fwdData);
+    ToForward::next(fwd);
+
+    if(!*fwd)
+      {
+      ++(i.data()._parent);
+      first(i.data()._parent, i);
       }
     }
 
 private:
-  template <xsize INDEX> static inline SProperty *Terminate(SIterator::DataCache &cache)
+  static void first(typename ParentType::Iterator &i, Iterator& ret)
     {
-    SProperty *input = cache.output(INDEX);
-    cache.setOutput(INDEX, 0);
-    return input;
-    }
-  };
-
-template <SIterator::FilterFunction CHILD, xsize INDEX>
-class ChildTree
-  {
-public:
-    static inline SProperty *filter(SIterator::DataCache &cache)
-    {
-    SProperty *previous = (SProperty *)cache.output(INDEX);
-    SProperty *ret = 0;
-    if(!previous)
+    if(*i)
       {
-      ret = CHILD(cache);
+      ForwarderExtraData<ToForward, ParentType>& d = ret.data();
+      d._parent = i;
+      d._fwd.reset(*d._parent);
+
+      ToForward::Iterator fwdIt;
+      d._fwd.first(fwdIt);
+
+      while(!*fwdIt)
+        {
+        ++(d._parent);
+        d._fwd.reset(*d._parent);
+
+        d._fwd.first(fwdIt);
+        }
+
+      d._fwdData = fwdIt.data();
+
+      ret.setProperty(*fwdIt);
       }
     else
       {
-      SPropertyContainer *cont = previous->castTo<SPropertyContainer>();
-      if(cont && cont->firstChild())
-        {
-        ret = cont->firstChild();
-        }
-      else if(previous != cache.output(INDEX-1) && previous->nextSibling())
-        {
-        ret = previous->nextSibling();
-        }
-      else
-        {
-        // iterate up until we reach the start point or an unvisited sibling.
-        SProperty *parent = previous->parent();
-        while(parent && !ret && parent != cache.output(INDEX-1))
-          {
-          ret = parent->nextSibling();
-          parent = parent->parent();
-          }
+      ret.setProperty(0);
+      }
+    }
 
-        if(!ret)
-          {
-          ret = CHILD(cache);
-          }
+  ParentType *_parent;
+  };
+
+template <typename A, typename B> class Compound : public Forwarder<B, A>
+  {
+public:
+  Compound(SProperty *root) : Forwarder<B, A>(&_a)
+    {
+    _a.reset(root);
+    }
+
+  A _a;
+  };
+
+namespace
+{
+struct ChildTreeExtraData
+  {
+  SProperty *_root;
+  };
+}
+
+class ChildTree : public Base<ChildTree, SProperty, ChildTreeExtraData>
+  {
+public:
+  inline void first(Iterator& it) const
+    {
+    it.data()._root = property();
+    it.setProperty(property());
+    }
+
+  static void next(Iterator &i)
+    {
+    SProperty *current = *i;
+    SPropertyContainer *cont = current->castTo<SPropertyContainer>();
+    if(cont)
+      {
+      SProperty *child = cont->firstChild();
+      if(child)
+        {
+        i.setProperty(child);
+        return;
         }
       }
 
-    cache.setOutput(INDEX, ret);
-    return ret;
+    SProperty *n = current->nextSibling();
+
+    SProperty *currentParent = current->parent();
+    while(!n && currentParent != i.data()._root)
+      {
+      n = currentParent->nextSibling();
+      currentParent = currentParent->parent();
+      }
+
+    i.setProperty(n);
     }
   };
 
-template <SIterator::FilterFunction CHILD, xsize INDEX>
-class DirectChildren
+class ChildEntityTree : public Base<ChildEntityTree, SEntity, ChildTreeExtraData>
   {
 public:
-    static inline SProperty *filter(SIterator::DataCache &cache)
+  inline void first(Iterator& i) const
     {
-    SProperty *previous = (SProperty *)cache.output(INDEX);
-    SProperty *ret = 0;
+    i.data()._root = property();
+    i.setProperty(property()->entity());
+    }
 
-    if(!previous || !previous->nextSibling())
+  inline static void next(Iterator &i)
+    {
+    SProperty *current = *i;
+    SEntity *cont = current->castTo<SEntity>();
+    // there is a non-entity in children?
+    xAssert(cont);
+    if(cont)
       {
-      SProperty *prop = CHILD(cache);
-      if(prop)
+      SEntity *child = cont->children.firstChild<SEntity>();
+      if(child)
         {
-        SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
-        if(cont)
-          {
-          ret = cont->firstChild();
-          }
+        i.setProperty(child);
+        return;
         }
       }
-    else
+
+    SEntity *n = current->nextSibling<SEntity>();
+
+    SProperty *currentParent = current->parent()->parent();
+    while(!n && currentParent != i.data()._root)
       {
-      ret = previous->nextSibling();
+      n = currentParent->nextSibling<SEntity>();
+      currentParent = currentParent->parent()->parent();
       }
 
-    cache.setOutput(INDEX, ret);
-    return ret;
+    i.setProperty(n);
     }
   };
 
-template <SIterator::FilterFunction CHILD, xsize INDEX>
-class DirectEntityChildren
+template <typename T> class OfType : public Base<OfType<T>, T, NilExtraData>
   {
 public:
-    static inline SProperty *filter(SIterator::DataCache &cache)
+  inline void first(Iterator &i) const
     {
-    SProperty *previous = (SProperty *)cache.output(INDEX);
-    SProperty *ret = 0;
+    i.setProperty(property()->castTo<T>());
+    }
 
-    if(!previous || !previous->nextSibling())
-      {
-      SProperty *prop = CHILD(cache);
-      if(prop)
-        {
-        SEntity *ent = prop->castTo<SEntity>();
-        if(ent)
-          {
-          ret = ent->children.firstChild();
-          }
-        }
-      }
-    else
-      {
-      ret = previous->nextSibling();
-      }
-
-    cache.setOutput(INDEX, ret);
-    return ret;
+  inline static void next(Iterator &i)
+    {
+    i.setProperty(0);
     }
   };
-
-template <typename TYPE> class Typed
-  {
-public:
-  template <SIterator::FilterFunction CHILD, xsize INDEX> class Is
-    {
-  public:
-    static inline SProperty *filter(SIterator::DataCache &cache)
-      {
-      SProperty *child = CHILD(cache);
-
-      while(child && !child->castTo<TYPE>())
-        {
-        child = CHILD(cache);
-        }
-
-      cache.setOutput(INDEX, child);
-      return child;
-      }
-    };
-  template <SIterator::FilterFunction CHILD, xsize INDEX> class IsNot
-    {
-  public:
-    static inline SProperty *filter(SIterator::DataCache &cache)
-      {
-      SProperty *child = CHILD(cache);
-
-      while(child && child->castTo<TYPE>())
-        {
-        child = CHILD(cache);
-        }
-
-      cache.setOutput(INDEX, child);
-      return child;
-      }
-    };
-  };
-
-template <SIterator::FilterFunction CHILD, xsize INDEX> class Parent
-  {
-public:
-  static inline SProperty *filter(SIterator::DataCache &cache)
-    {
-    SProperty *ret = CHILD(cache);
-    if(ret)
-      {
-      ret = ret->parent();
-      }
-
-    cache.setOutput(INDEX, ret);
-    return ret;
-    }
-  };
+}
 
 #endif // SITERATOR_H
