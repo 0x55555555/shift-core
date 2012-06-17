@@ -27,7 +27,7 @@ public:
 
   void reparent(SEntity *);
 
-  template <typename T>T *addChild(const QString& name)
+  template <typename T>T *addChild(const QString& name="")
     {
     SProperty *p = addChild(T::staticTypeInformation(), name);
     xAssert(p);
