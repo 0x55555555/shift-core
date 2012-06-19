@@ -69,7 +69,7 @@ const QVector <const SPropertyInformation *> &STypeRegistry::types()
 void STypeRegistry::addType(const SPropertyInformation *t)
   {
   internalAddType(t);
-  foreach(Observer *o, _internalTypes->observers)
+  Q_FOREACH(Observer *o, _internalTypes->observers)
     {
     o->typeAdded(t);
     }
@@ -98,7 +98,7 @@ void STypeRegistry::internalAddType(const SPropertyInformation *t)
 const SPropertyInformation *STypeRegistry::findType(const QString &in)
   {
   SProfileFunction
-  foreach(const SPropertyInformation *info, _internalTypes->types)
+  Q_FOREACH(const SPropertyInformation *info, _internalTypes->types)
     {
     if(info->typeName() == in)
       {

@@ -250,7 +250,7 @@ public:
     setReadOnly(readOnly);
     }
 
-private slots:
+private Q_SLOTS:
   void guiChanged( XVector2D val ) { propertyValue()->assign(val); }
 
 private:
@@ -269,7 +269,7 @@ public:
     syncGUI();
     }
 
-private slots:
+private Q_SLOTS:
   void guiChanged( XVector3D val ) { propertyValue()->assign(val); }
 
 private:
@@ -286,7 +286,7 @@ public:
     // setReadOnly(readOnly); <- implement this...
     syncGUI();
     }
-private slots:
+private Q_SLOTS:
   virtual void guiChanged( const XColour &col ) { propertyValue()->assign(col); }
 
 private:
@@ -313,7 +313,7 @@ public:
     connect( _button, SIGNAL(clicked()), this, SLOT(guiChanged()) );
     syncGUI();
     }
-private slots:
+private Q_SLOTS:
   virtual void guiChanged( )
     {
     //QSettings settings;
@@ -379,7 +379,7 @@ private:
           {
           return QSize( QWidget::sizeHint().width(), maximumHeight() );
           }
-  private slots:
+  private Q_SLOTS:
       void toggleMode( bool b )
           {
           _button->setChecked( b );
@@ -457,7 +457,7 @@ private:
           {
           return QSize( QWidget::sizeHint().width(), maximumHeight() );
           }
-  private slots:
+  private Q_SLOTS:
       void toggleMode( bool b )
           {
           _button->setChecked( b );
@@ -505,7 +505,7 @@ private:
           connect( data, SIGNAL(onPropertyChange(AProperty*)), this, SLOT(propertyChanged(AProperty*)) );
           connect( this, SIGNAL(colourChanged(XColour)), this, SLOT(guiChanged(XColour)));
           }
-  private slots:
+  private Q_SLOTS:
       virtual void guiChanged( XColour col )
           { *data = col; }
       virtual void propertyChanged( AProperty *in )
@@ -539,7 +539,7 @@ private:
           connect( _button, SIGNAL(clicked()), this, SLOT(guiChanged()) );
           propertyChanged( d );
           }
-  private slots:
+  private Q_SLOTS:
       virtual void guiChanged( )
           {
           QSettings settings;
@@ -584,7 +584,7 @@ private:
           connect( _button, SIGNAL(clicked()), this, SLOT(guiChanged()) );
           propertyChanged( d );
           }
-  private slots:
+  private Q_SLOTS:
       virtual void guiChanged( )
           {
           QSettings settings;
@@ -629,7 +629,7 @@ private:
           propertyChanged( d );
           }
 
-  private slots:
+  private Q_SLOTS:
       void guiForceChanged()
           {
           *data = XFileSequence( _label->text(), XFileSequence::Parsed );

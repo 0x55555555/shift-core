@@ -112,8 +112,6 @@ private:
   SProperty *_prop;
   };
 
-namespace
-{
 struct NilExtraData
   {
   };
@@ -132,12 +130,13 @@ template <typename ToForward, typename ParentType> struct ForwarderExtraData
   typename ToForward::ExtraData _fwdData;
   typename ParentType::Iterator _parent;
   };
-}
 
 template <typename ToForward, typename ParentType>
 class Forwarder : public Base<Forwarder<ToForward, ParentType>, typename ToForward::ReturnType, ForwarderExtraData<ToForward, ParentType> >
   {
 public:
+  typedef typename Base<Forwarder<ToForward, ParentType>, typename ToForward::ReturnType, ForwarderExtraData<ToForward, ParentType> >::Iterator Iterator;
+
   Forwarder(ParentType *p)
       : _parent(p)
     {
@@ -150,7 +149,7 @@ public:
 
   static void next(Iterator &i)
     {
-    ToForward::Iterator fwd(*i, i.data()._fwdData);
+    typename ToForward::Iterator fwd(*i, i.data()._fwdData);
     ToForward::next(fwd);
 
     if(!*fwd)
@@ -169,7 +168,7 @@ private:
       d._parent = i;
       d._fwd.reset(*d._parent);
 
-      ToForward::Iterator fwdIt;
+      typename ToForward::Iterator fwdIt;
       d._fwd.first(fwdIt);
 
       while(!*fwdIt)
@@ -204,17 +203,16 @@ public:
   A _a;
   };
 
-namespace
-{
 struct ChildTreeExtraData
   {
   SProperty *_root;
   };
-}
 
 class ChildTree : public Base<ChildTree, SProperty, ChildTreeExtraData>
   {
 public:
+  typedef Base<ChildTree, SProperty, ChildTreeExtraData>::Iterator Iterator;
+
   inline void first(Iterator& it) const
     {
     it.data()._root = property();
@@ -251,6 +249,8 @@ public:
 class ChildEntityTree : public Base<ChildEntityTree, SEntity, ChildTreeExtraData>
   {
 public:
+  typedef Base<ChildEntityTree, SEntity, ChildTreeExtraData>::Iterator Iterator;
+
   inline void first(Iterator& i) const
     {
     i.data()._root = property();
@@ -289,9 +289,12 @@ public:
 template <typename T> class OfType : public Base<OfType<T>, T, NilExtraData>
   {
 public:
+  typedef typename Base<OfType<T>, T, NilExtraData>::Iterator Iterator;
+
   inline void first(Iterator &i) const
     {
-    i.setProperty(property()->castTo<T>());
+    SProperty *prop = Base<OfType<T>, T, NilExtraData>::property();
+    i.setProperty(prop->castTo<T>());
     }
 
   inline static void next(Iterator &i)

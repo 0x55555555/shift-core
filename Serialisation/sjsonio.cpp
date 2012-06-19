@@ -346,7 +346,7 @@ void SJSONLoader::readFromDevice(QIODevice *device, SPropertyContainer *parent)
 
   xAssert(_current == End);
 
-  foreach(SProperty *prop, _resolveAfterLoad.keys())
+  Q_FOREACH(SProperty *prop, _resolveAfterLoad.keys())
     {
     SProperty* input = prop->resolvePath(_resolveAfterLoad.value(prop));
 

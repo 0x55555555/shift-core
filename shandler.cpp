@@ -12,7 +12,7 @@ SHandler::~SHandler()
 
 void SHandler::clearChanges()
   {
-  foreach(SChange *ch, _done)
+  Q_FOREACH(SChange *ch, _done)
     {
     xDestroyAndFree(changeAllocator(), SChange, ch);
     }
@@ -80,7 +80,7 @@ void SHandler::undoTo(xsize p)
 void SHandler::inform()
   {
   SProfileFunction
-  foreach(SObserver *obs, _blockObservers)
+  Q_FOREACH(SObserver *obs, _blockObservers)
     {
     obs->actOnChanges();
     }

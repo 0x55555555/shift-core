@@ -161,7 +161,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(SPropertyInfor
         }
       };
 
-    info->addStaticInterface(new PointerArrayConnectionInterface);
+    info->addInterfaceFactoryInternal(PointerArrayConnectionInterface::InterfaceType::InterfaceTypeId, new PointerArrayConnectionInterface);
 
     auto api = info->apiInterface();
 

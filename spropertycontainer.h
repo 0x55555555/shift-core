@@ -151,7 +151,7 @@ public:
   public:
     TypedIteratorWrapper(Cont *cont) : _cont(cont) { }
     Iterator<T> begin() { return Iterator<T>(_cont->firstChild<T>()); }
-    Iterator<T> end() { return Iterator<T>(nullptr); }
+    Iterator<T> end() { return Iterator<T>(0); }
     };
 
   template <typename T> TypedIteratorWrapper<T, SPropertyContainer> walker()

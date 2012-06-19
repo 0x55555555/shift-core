@@ -64,7 +64,7 @@ void STreeChange::inform(Mode mode)
   xAssert(changed);
   if(mode == Forward)
     {
-    foreach(SEntity *ent, changed->parentTree())
+    Q_FOREACH(SEntity *ent, changed->parentTree())
       {
       ent->treeChanged(_event);
       }
@@ -80,7 +80,7 @@ void STreeChange::inform(Mode mode)
       {
       ev = STreeEvent(STreeEvent::Create, _event.entity(), _event.newParent(), _event.oldParent());
       }
-    foreach(SEntity *ent, changed->parentTree())
+    Q_FOREACH(SEntity *ent, changed->parentTree())
       {
       ent->treeChanged(ev);
       }
@@ -135,7 +135,7 @@ void SDataChange::inform(Mode mode)
   {
   if(mode == Forward)
     {
-    foreach(SEntity *ent, _event.entity()->parentTree())
+    Q_FOREACH(SEntity *ent, _event.entity()->parentTree())
       {
       ent->dataChanged(_event);
       }
@@ -143,7 +143,7 @@ void SDataChange::inform(Mode mode)
   else
     {
     SDataEvent ev(_event.entity(), _event.property(), _event.attribute(), _event.newValue(), _event.oldValue());
-    foreach(SEntity *ent, _event.entity()->parentTree())
+    Q_FOREACH(SEntity *ent, _event.entity()->parentTree())
       {
       ent->dataChanged(ev);
       }

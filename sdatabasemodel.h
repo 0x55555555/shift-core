@@ -23,7 +23,7 @@ public:
   virtual void setModelData( QWidget *editor, QAbstractItemModel *model, const QModelIndex &index ) const;
   QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const;
 
-private slots:
+private Q_SLOTS:
   void currentItemDestroyed();
 
 private:

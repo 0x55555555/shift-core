@@ -212,7 +212,7 @@ void SEntity::removeObserver(SObserver *in)
 void SEntity::informDirtyObservers(SProperty *prop)
   {
   SProfileFunction
-  foreach(const ObserverStruct &obs, _observers)
+  Q_FOREACH(const ObserverStruct &obs, _observers)
     {
     if(obs.mode == ObserverStruct::Dirty)
       {
@@ -226,7 +226,7 @@ void SEntity::informDirtyObservers(SProperty *prop)
 void SEntity::informTreeObservers(const SChange *event, bool backwards)
   {
   SProfileFunction
-  foreach(const ObserverStruct &obs, _observers)
+  Q_FOREACH(const ObserverStruct &obs, _observers)
     {
     if(obs.mode == ObserverStruct::Tree)
       {
@@ -246,7 +246,7 @@ void SEntity::informTreeObservers(const SChange *event, bool backwards)
 void SEntity::informConnectionObservers(const SChange *event, bool backwards)
   {
   SProfileFunction
-  foreach(const ObserverStruct &obs, _observers)
+  Q_FOREACH(const ObserverStruct &obs, _observers)
     {
     if(obs.mode == ObserverStruct::Connection)
       {

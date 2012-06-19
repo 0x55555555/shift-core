@@ -130,7 +130,7 @@ void SXMLLoader::readFromDevice(QIODevice *device, SEntity *parent)
     xAssertFail();
     }
 
-  foreach(SProperty *prop, _resolveAfterLoad.keys())
+  Q_FOREACH(SProperty *prop, _resolveAfterLoad.keys())
     {
     SProperty* input = prop->resolvePath(_resolveAfterLoad.value(prop));
 

@@ -2,6 +2,7 @@
 #include "styperegistry.h"
 #include "sdatabase.h"
 #include "spropertyinformationhelpers.h"
+#include "shandlerimpl.h"
 
 QTextStream &operator<<(QTextStream &s, xuint8 v)
   {

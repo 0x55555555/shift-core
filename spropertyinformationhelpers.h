@@ -250,7 +250,7 @@ public:
         }
       };
 
-    addInterfaceFactory(new InheritedInterface);
+    SPropertyInformation::addInterfaceFactoryInternal(InheritedInterface::InterfaceType::InterfaceTypeId, new InheritedInterface);
     }
 
   template <typename PropTypeIn, typename InstanceTypeIn>

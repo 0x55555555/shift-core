@@ -23,7 +23,7 @@ QWidget *SDatabaseDelegate::createEditor(QWidget *parent, const QStyleOptionView
       {
       _currentIndex = index;
       connect(_currentWidget, SIGNAL(destroyed(QObject *)), this, SLOT(currentItemDestroyed()));
-      emit ((SDatabaseDelegate*)this)->sizeHintChanged(_currentIndex);
+      Q_EMIT ((SDatabaseDelegate*)this)->sizeHintChanged(_currentIndex);
       }
     else
       {
@@ -58,7 +58,7 @@ QSize SDatabaseDelegate::sizeHint(const QStyleOptionViewItem &option, const QMod
 
 void SDatabaseDelegate::currentItemDestroyed()
   {
-  emit ((SDatabaseDelegate*)this)->sizeHintChanged(_currentIndex);
+  Q_EMIT ((SDatabaseDelegate*)this)->sizeHintChanged(_currentIndex);
   _currentIndex = QModelIndex();
   _currentWidget = 0;
   }
@@ -559,7 +559,7 @@ void SDatabaseModel::onTreeChange(const SChange *c, bool back)
       _root = 0;
       }
 
-    emit layoutAboutToBeChanged();
+    Q_EMIT layoutAboutToBeChanged();
 
     if(tC->after(back) == 0)
       {
@@ -569,9 +569,9 @@ void SDatabaseModel::onTreeChange(const SChange *c, bool back)
       xAssert(parent);
 
       xsize i = tC->index();
-      emit beginRemoveRows(createIndex(parent->index(), 0, (SProperty*)parent), i, i);
+      Q_EMIT beginRemoveRows(createIndex(parent->index(), 0, (SProperty*)parent), i, i);
       _currentTreeChange = 0;
-      emit endRemoveRows();
+      Q_EMIT endRemoveRows();
       }
     else
       {
@@ -579,12 +579,12 @@ void SDatabaseModel::onTreeChange(const SChange *c, bool back)
       xAssert(parent);
 
       xsize i = xMin(parent->size()-1, tC->index());
-      emit beginInsertRows(createIndex(parent->index(), 0, (SProperty*)parent), i, i);
+      Q_EMIT beginInsertRows(createIndex(parent->index(), 0, (SProperty*)parent), i, i);
       _currentTreeChange = 0;
-      emit endInsertRows();
+      Q_EMIT endInsertRows();
       }
 
-    emit layoutChanged();
+    Q_EMIT layoutChanged();
     }
 
   const SProperty::NameChange *nameChange = c->castTo<SProperty::NameChange>();
@@ -592,7 +592,7 @@ void SDatabaseModel::onTreeChange(const SChange *c, bool back)
     {
     const SProperty *prop = nameChange->property();
     QModelIndex ind = createIndex(prop->index(), 0, (SProperty*)prop);
-    emit dataChanged(ind, ind);
+    Q_EMIT dataChanged(ind, ind);
     }
   }
 
@@ -602,9 +602,9 @@ void SDatabaseModel::actOnChanges()
 
 void SDatabaseModel::setOptions(Options options)
   {
-  emit layoutAboutToBeChanged();
+  Q_EMIT layoutAboutToBeChanged();
   _options = options;
-  emit layoutChanged();
+  Q_EMIT layoutChanged();
   }
 
 SDatabaseModel::Options SDatabaseModel::options() const
@@ -627,7 +627,7 @@ void SDatabaseModel::setRoot(SEntity *ent)
     }
   endResetModel();
 
-  emit dataChanged(index(0, 0), index(_root->children.size(), 0));
+  Q_EMIT dataChanged(index(0, 0), index(_root->children.size(), 0));
   }
 
 void SDatabaseModel::setDatabase(SDatabase *db, SEntity *root)

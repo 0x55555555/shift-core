@@ -3,7 +3,7 @@
 
 SObserver::~SObserver()
   {
-  foreach(SEntity *ent, _entities)
+  Q_FOREACH(SEntity *ent, _entities)
     {
     ent->removeObserver(this);
     }

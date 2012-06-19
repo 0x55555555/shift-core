@@ -60,7 +60,7 @@ SPropertyInformation *SPropertyInformation::allocate()
 
 void SPropertyInformation::destroy(SPropertyInformation *d)
   {
-  foreach(SInterfaceBaseFactory *f, d->_interfaceFactories)
+  Q_FOREACH(SInterfaceBaseFactory *f, d->_interfaceFactories)
     {
     xAssert(f->referenceCount() > 0);
     f->setReferenceCount(f->referenceCount() - 1);
@@ -241,7 +241,7 @@ SPropertyInformation *SPropertyInformation::createTypeInformationInternal(const 
 
 SPropertyInstanceInformation *SPropertyInformation::child(xsize location)
   {
-  foreach(SPropertyInstanceInformation *i, _children)
+  Q_FOREACH(SPropertyInstanceInformation *i, _children)
     {
     if(i->location() == location)
       {
@@ -253,7 +253,7 @@ SPropertyInstanceInformation *SPropertyInformation::child(xsize location)
 
 const SPropertyInstanceInformation *SPropertyInformation::child(xsize location) const
   {
-  foreach(const SPropertyInstanceInformation *i, _children)
+  Q_FOREACH(const SPropertyInstanceInformation *i, _children)
     {
     if(i->location() == location)
       {
@@ -277,7 +277,7 @@ SPropertyInstanceInformation *SPropertyInformation::childFromIndex(xsize index)
 
 const SPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in) const
   {
-  foreach(SPropertyInstanceInformation *i, _children)
+  Q_FOREACH(SPropertyInstanceInformation *i, _children)
     {
     if(i->name() == in)
       {
@@ -289,7 +289,7 @@ const SPropertyInstanceInformation *SPropertyInformation::childFromName(const QS
 
 SPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in)
   {
-  foreach(SPropertyInstanceInformation *i, _children)
+  Q_FOREACH(SPropertyInstanceInformation *i, _children)
     {
     if(i->name() == in)
       {

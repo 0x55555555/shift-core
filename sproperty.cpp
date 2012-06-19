@@ -620,7 +620,7 @@ void SProperty::connect(const QVector<SProperty*> &l) const
   if(l.size())
     {
     SBlock b(l.front()->handler());
-    foreach(SProperty *p, l)
+    Q_FOREACH(SProperty *p, l)
       {
       connect(p);
       }
