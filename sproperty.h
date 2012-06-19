@@ -117,23 +117,6 @@ public:
   bool hasOutputs() const { return _output; }
   QVector<SProperty *> affects() const;
 
-  template <typename T> T *nextSibling() const
-    {
-    SProperty *prop = nextSibling();
-    while(prop)
-      {
-      T *t = prop->castTo<T>();
-      if(t)
-        {
-        return t;
-        }
-      prop = prop->nextSibling();
-      }
-    return 0;
-    }
-
-  SProperty *nextSibling() const;
-
   SHandler *handler() { return _handler; }
   const SHandler *handler() const { return _handler; }
   SDatabase *database();

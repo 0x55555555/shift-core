@@ -60,8 +60,6 @@ public:
   using SPropertyContainer::at;
 
   SEntity *parentEntity() const;
-  SEntity *firstChildEntity() const;
-  SEntity *nextSiblingEntity() const;
 
   void addDirtyObserver(SDirtyObserver *);
   void addTreeObserver(STreeObserver *);

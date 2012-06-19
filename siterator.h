@@ -205,6 +205,7 @@ public:
 
 struct ChildTreeExtraData
   {
+  SPropertyContainer *_currentParent;
   SProperty *_root;
   };
 
@@ -215,7 +216,9 @@ public:
 
   inline void first(Iterator& it) const
     {
-    it.data()._root = property();
+    ChildTreeExtraData &d = it.data();
+    d._root = property();
+    d._currentParent = d._root->parent();
     it.setProperty(property());
     }
 
@@ -228,18 +231,21 @@ public:
       SProperty *child = cont->firstChild();
       if(child)
         {
+        ChildTreeExtraData &d = i.data();
+        d._currentParent = cont;
+
         i.setProperty(child);
         return;
         }
       }
 
-    SProperty *n = current->nextSibling();
+    ChildTreeExtraData &d = i.data();
+    SProperty *n = d._currentParent->nextSibling(current);
 
-    SProperty *currentParent = current->parent();
-    while(!n && currentParent != i.data()._root)
+    while(!n && d._currentParent != i.data()._root)
       {
-      n = currentParent->nextSibling();
-      currentParent = currentParent->parent();
+      n = d._currentParent->parent()->nextSibling(d._currentParent);
+      d._currentParent = d._currentParent->parent();
       }
 
     i.setProperty(n);
@@ -253,7 +259,9 @@ public:
 
   inline void first(Iterator& i) const
     {
-    i.data()._root = property();
+    ChildTreeExtraData &d = i.data();
+    d._root = property();
+    d._currentParent = d._root->parent();
     i.setProperty(property()->entity());
     }
 
@@ -268,21 +276,24 @@ public:
       SEntity *child = cont->children.firstChild<SEntity>();
       if(child)
         {
+        ChildTreeExtraData &d = i.data();
+        d._currentParent = cont;
+
         i.setProperty(child);
         return;
         }
+
+      ChildTreeExtraData &d = i.data();
+      SEntity *n = d._currentParent->nextSibling<SEntity>(cont);
+
+      while(!n && d._currentParent != i.data()._root)
+        {
+        n = d._currentParent->parent()->nextSibling<SEntity>(d._currentParent);
+        d._currentParent = d._currentParent->parent()->parent();
+        }
+
+      i.setProperty(n);
       }
-
-    SEntity *n = current->nextSibling<SEntity>();
-
-    SProperty *currentParent = current->parent()->parent();
-    while(!n && currentParent != i.data()._root)
-      {
-      n = currentParent->nextSibling<SEntity>();
-      currentParent = currentParent->parent()->parent();
-      }
-
-    i.setProperty(n);
     }
   };
 

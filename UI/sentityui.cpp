@@ -45,8 +45,7 @@ QWidget *SEntityUI::createControlWidget(SEntity *ent, QWidget *parent, bool *add
   QWidget *canvas(new QWidget(parent));
   QFormLayout *layout(new QFormLayout(canvas));
 
-  SProperty *child = ent->firstChild();
-  while(child)
+  xForeach(auto child, ent->walker())
     {
     // this was too restricting, is it really what we want?
     //if(child->instanceInformation()->mode() == SPropertyInstanceInformation::UserSettable)
@@ -61,7 +60,6 @@ QWidget *SEntityUI::createControlWidget(SEntity *ent, QWidget *parent, bool *add
           }
         }
       }
-    child = child->nextSibling();
     }
   return canvas;
   }

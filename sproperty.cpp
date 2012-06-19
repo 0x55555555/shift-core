@@ -236,15 +236,6 @@ void SProperty::setName(const QString &in)
   handler()->doChange<NameChange>(name(), realName, this);
   }
 
-SProperty *SProperty::nextSibling() const
-  {
-  if(parent())
-    {
-    parent()->preGet();
-    }
-  return _nextSibling;
-  }
-
 void SProperty::assignProperty(const SProperty *, SProperty *)
   {
   }
@@ -741,15 +732,13 @@ void SProperty::ConnectionChange::setParentHasInputConnection(SProperty *prop)
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    SProperty *child = cont->firstChild();
-    while(child)
+    xForeach(auto child, cont->walker())
       {
       if(!child->_flags.hasFlag(SProperty::ParentHasInput))
         {
         child->_flags.setFlag(SProperty::ParentHasInput);
         setParentHasInputConnection(child);
         }
-      child = child->nextSibling();
       }
     }
   }
@@ -779,8 +768,7 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    SProperty *child = cont->firstChild();
-    while(child)
+    xForeach(auto child, cont->walker())
       {
       if(child->_flags.hasFlag(SProperty::ParentHasInput) &&
          (!prop->parent()->input() &&
@@ -790,7 +778,6 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
         child->_flags.clearFlag(SProperty::ParentHasInput);
         clearParentHasInputConnection(child);
         }
-      child = child->nextSibling();
       }
     }
   }
@@ -801,8 +788,7 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    SProperty *child = cont->firstChild();
-    while(child)
+    xForeach(auto child, cont->walker())
       {
       if(child->_flags.hasFlag(SProperty::ParentHasOutput) &&
          (!prop->parent()->output() &&
@@ -812,7 +798,6 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
         child->_flags.clearFlag(SProperty::ParentHasOutput);
         clearParentHasOutputConnection(child);
         }
-      child = child->nextSibling();
       }
     }
   }
@@ -961,15 +946,13 @@ SProperty *SProperty::resolvePath(const QString &path)
             return 0;
             }
 
-          SProperty *child = container->firstChild();
-          while(child)
+          xForeach(auto child, container->walker())
             {
             if(child->name() == name)
               {
               cur = child;
               break;
               }
-            child = child->nextSibling();
             }
           }
 

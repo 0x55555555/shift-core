@@ -85,12 +85,35 @@ public:
         {
         return t;
         }
-      prop = prop->nextSibling();
+      prop = nextSibling(prop);
       }
     return 0;
     }
 
   SProperty *firstChild() const { preGet(); return _child; }
+  SProperty *lastChild();
+
+  template <typename T> T *nextSibling(const T *old) const
+    {
+    return nextSibling<T>((SProperty*)old);
+    }
+
+  template <typename T> T *nextSibling(const SProperty *old) const
+    {
+    SProperty *prop = nextSibling(old);
+    while(prop)
+      {
+      T *t = prop->castTo<T>();
+      if(t)
+        {
+        return t;
+        }
+      prop = nextSibling(prop);
+      }
+    return 0;
+    }
+
+  SProperty *nextSibling(const SProperty *p) const;
 
   template <typename T> const T *findChild(const QString &name) const
     {
@@ -115,6 +138,8 @@ public:
   const SProperty *findChild(const QString &name) const;
   SProperty *findChild(const QString &name);
 
+  bool isEmpty() const { return _containedProperties != 0; }
+
   xsize size() const;
   xsize containedProperties() const { return _containedProperties; }
 
@@ -137,11 +162,12 @@ public:
 
   template <typename T> class Iterator
     {
+    const SPropertyContainer *_c;
     T *_p;
   public:
-    Iterator(T *p) : _p(p) { }
+    Iterator(const SPropertyContainer *c, T *p) : _c(c), _p(p) { }
     T *operator*() const { return _p; }
-    void operator++() { _p = _p->nextSibling<T>(); }
+    void operator++() { _p = _c->nextSibling<T>(_p); }
     bool operator!=(const Iterator<T> &it) { return _p != it._p; }
     };
 
@@ -150,8 +176,18 @@ public:
     Cont *_cont;
   public:
     TypedIteratorWrapper(Cont *cont) : _cont(cont) { }
-    Iterator<T> begin() { return Iterator<T>(_cont->firstChild<T>()); }
-    Iterator<T> end() { return Iterator<T>(0); }
+    Iterator<T> begin() { return Iterator<T>(_cont, _cont->firstChild<T>()); }
+    Iterator<T> end() { return Iterator<T>(0, 0); }
+    };
+
+  template <typename T, typename Cont> class TypedIteratorWrapperFrom
+    {
+    Cont *_cont;
+    T *_from;
+  public:
+    TypedIteratorWrapperFrom(Cont *cont, T* from) : _cont(cont), _from(from) { }
+    Iterator<T> begin() { return Iterator<T>(_cont, _from); }
+    Iterator<T> end() { return Iterator<T>(0, 0); }
     };
 
   template <typename T> TypedIteratorWrapper<T, SPropertyContainer> walker()
@@ -172,6 +208,11 @@ public:
   TypedIteratorWrapper<const SProperty, const SPropertyContainer> walker() const
     {
     return TypedIteratorWrapper<const SProperty, const SPropertyContainer>(this);
+    }
+
+  TypedIteratorWrapperFrom<SProperty, SPropertyContainer> walkerFrom(SProperty *prop)
+    {
+    return TypedIteratorWrapperFrom<SProperty, SPropertyContainer>(this, prop);
     }
 
 protected:

@@ -113,7 +113,7 @@ xsize SPropertyContainer::size() const
   while(c)
     {
     s++;
-    c = c->nextSibling();
+    c = nextSibling(c);
     }
 
   return s;
@@ -310,8 +310,8 @@ void SPropertyContainer::assignProperty(const SProperty *f, SProperty *t)
 
       tChild->assign(fChild);
 
-      fChild = fChild->nextSibling();
-      tChild = tChild->_nextSibling;
+      fChild = from->nextSibling(fChild);
+      tChild = to->nextSibling(tChild);
       index++;
       }
     }
@@ -355,7 +355,7 @@ bool SPropertyContainer::shouldSavePropertyValue(const SProperty *p)
     return true;
     }
 
-  for(SProperty *p=ptr->firstChild(); p; p=p->nextSibling())
+  xForeach(auto p, ptr->walker())
     {
     const SPropertyInformation *info = p->typeInformation();
     if(info->functions().shouldSave(p))
@@ -488,24 +488,47 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
 
 const SProperty *SPropertyContainer::at(xsize i) const
   {
-  const SProperty *c = firstChild();
-  while(c && i)
+  xForeach(auto x, walker())
     {
+    if(!i)
+      {
+      return x;
+      }
     --i;
-    c = c->nextSibling();
     }
 
-  return c;
+  return 0;
   }
 
 SProperty *SPropertyContainer::at(xsize i)
   {
-  SProperty *c = firstChild();
-  while(c && i)
+  xForeach(auto x, walker())
     {
+    if(!i)
+      {
+      return x;
+      }
     --i;
-    c = c->nextSibling();
     }
 
-  return c;
+  return 0;
+  }
+
+
+SProperty *SPropertyContainer::nextSibling(const SProperty *p) const
+  {
+  preGet();
+  return p->_nextSibling;
+  }
+
+SProperty *SPropertyContainer::lastChild()
+  {
+  xForeach(auto child, walker())
+    {
+    if(!nextSibling(child))
+      {
+      return child;
+      }
+    }
+  return 0;
   }

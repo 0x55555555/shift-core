@@ -229,15 +229,14 @@ QModelIndex SDatabaseModel::index( int row, int column, const QModelIndex &paren
           }
         }
       }
-    SProperty *child = container->firstChild();
-    while(child)
+
+    xForeach(auto child, container->walker())
       {
       if(size == row)
         {
-        return createIndex(row, column, child);
+        return createIndex(row, column, (void*)child);
         }
       size++;
-      child = child->nextSibling();
       }
     xAssertFail();
     }
@@ -292,18 +291,15 @@ int SDatabaseModel::columnCount( const QModelIndex &parent ) const
     const SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
     if(cont)
       {
-      SProperty *child = cont->firstChild();
-      while(child)
+      xForeach(auto child, cont->walker())
         {
         // this could maybe be improved, but we dont want to show the values for complex widgets...
-        SPropertyVariantInterface *interface = child->interface<SPropertyVariantInterface>();
+        const SPropertyVariantInterface *interface = child->interface<SPropertyVariantInterface>();
         if(interface)
           {
           columns = 2;
           break;
           }
-
-        child = child->nextSibling();
         }
       }
     return columns;

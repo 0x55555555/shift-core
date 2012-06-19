@@ -70,8 +70,7 @@ public:
 
   void removePointer(const typename PTR::PtrType *ptr)
     {
-    SProperty *c = SPropertyContainer::firstChild();
-    while(c)
+    xForeach(auto c, walker())
       {
       Pointer *cT = c->castTo<Pointer>();
       if(cT)
@@ -82,20 +81,17 @@ public:
           return;
           }
         }
-      c = c->nextSibling();
       }
     }
 
   bool hasPointer(const typename PTR::PtrType *ptr)
     {
-    SProperty *child = SPropertyContainer::firstChild();
-    while(child)
+    xForeach(auto child, walker())
       {
       if(ptr == child->input())
         {
         return true;
         }
-      child = child->nextSibling();
       }
     return false;
     }

@@ -73,14 +73,16 @@ public:
   ElementType *operator[](xsize i) { return at(i); }
   ElementType *at(xsize i)
     {
-    ElementType *c = firstChild<ElementType>();
-    while(c && i)
+    xForeach(auto child, walker<ElementType>())
       {
+      if(i == 0)
+        {
+        return child;
+        }
       --i;
-      c = c->nextSibling<ElementType>();
       }
 
-    return c;
+    return 0;
     }
   };
 

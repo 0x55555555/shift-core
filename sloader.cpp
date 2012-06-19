@@ -42,7 +42,7 @@ void SSaver::saveChildren(const SPropertyContainer *c)
   {
   bool shouldSaveAnyChildren = false;
 
-  for(const SProperty *child=c->firstChild(); child; child=child->nextSibling())
+  xForeach(auto child, c->walker())
     {
     const SPropertyInformation *info = child->typeInformation();
 
@@ -56,7 +56,7 @@ void SSaver::saveChildren(const SPropertyContainer *c)
   if(shouldSaveAnyChildren)
     {
     beginChildren();
-    for(const SProperty *child=c->firstChild(); child; child=child->nextSibling())
+    xForeach(auto child, c->walker())
       {
       const SPropertyInformation *info = child->typeInformation();
 

@@ -107,24 +107,6 @@ const SEntity *SEntity::findChildEntity(const QString &n) const
   return prop->castTo<SEntity>();
   }
 
-SEntity *SEntity::firstChildEntity() const
-  {
-  if(children.firstChild())
-    {
-    return children.firstChild()->entity();
-    }
-  return 0;
-  }
-
-SEntity *SEntity::nextSiblingEntity() const
-  {
-  if(nextSibling())
-    {
-    return nextSibling()->entity();
-    }
-  return 0;
-  }
-
 void SEntity::saveProperty(const SProperty *p, SSaver &l)
   {
   SPropertyContainer::saveProperty(p, l);

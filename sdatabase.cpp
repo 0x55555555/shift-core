@@ -83,11 +83,7 @@ QVector<SProperty *> SDatabase::load(const QString &type, QIODevice *device, SPr
 
   SJSONLoader s;
 
-  SProperty *p = loadRoot->firstChild();
-  while(p && p->nextSibling())
-    {
-    p = p->nextSibling();
-    }
+  SProperty *p = loadRoot->lastChild();
 
   s.readFromDevice(device, loadRoot);
 
@@ -97,11 +93,9 @@ QVector<SProperty *> SDatabase::load(const QString &type, QIODevice *device, SPr
     }
 
   QVector<SProperty *> ret;
-  SProperty *c = p;
-  while(c)
+  xForeach(auto c, loadRoot->walkerFrom(p))
     {
     ret << c;
-    c = c->nextSibling();
     }
 
   return ret;

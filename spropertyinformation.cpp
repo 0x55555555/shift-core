@@ -640,10 +640,12 @@ const SPropertyInstanceInformation *SPropertyInstanceInformation::resolvePath(co
   return cur;
   }
 
-void SPropertyInstanceInformation::defaultQueue(const SPropertyInstanceInformation *info, const SPropertyContainer *cont, SProperty **jobs, xsize &numJobs)
+void SPropertyInstanceInformation::defaultQueue(const SPropertyInstanceInformation *, const SPropertyContainer *, SProperty **, xsize &)
   {
   SProfileFunction
-  for(SProperty *prop=cont->firstChild(); prop; prop=prop->nextSibling())
+  xAssertFail();
+#if 0
+  xForeach(auto prop, cont->walker())
     {
     const SPropertyInstanceInformation *siblingInfo = prop->instanceInformation();
     if(siblingInfo->affects() && !siblingInfo->computeLockedToMainThread())
@@ -663,6 +665,7 @@ void SPropertyInstanceInformation::defaultQueue(const SPropertyInstanceInformati
         }
       }
     }
+#endif
   }
 
 bool SPropertyInformation::inheritsFromType(const SPropertyInformation *match) const
