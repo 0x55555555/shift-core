@@ -147,7 +147,7 @@ const SProperty *SPropertyContainer::internalFindChild(const QString &name) cons
   return const_cast<SPropertyContainer*>(this)->internalFindChild(name);
   }
 
-bool SPropertyContainer::contains(SProperty *child) const
+bool SPropertyContainer::contains(const SProperty *child) const
   {
   preGet();
   SProperty *prop = _child;
@@ -177,7 +177,7 @@ void SPropertyContainer::clear()
     {
     xAssert(prop->parent() == this);
     SProperty *next = prop->_nextSibling;
-    if(prop->index() >= _containedProperties)
+    if(index(prop) >= _containedProperties)
       {
       removeProperty(prop);
       }
@@ -281,7 +281,7 @@ void SPropertyContainer::removeProperty(SProperty *oldProp)
   SBlock b(db);
 
   oldProp->disconnect();
-  handler()->doChange<TreeChange>(this, (SPropertyContainer*)0, oldProp, oldProp->index());
+  handler()->doChange<TreeChange>(this, (SPropertyContainer*)0, oldProp, index(oldProp));
   }
 
 void SPropertyContainer::assignProperty(const SProperty *f, SProperty *t)
@@ -531,4 +531,13 @@ SProperty *SPropertyContainer::lastChild()
       }
     }
   return 0;
+  }
+
+
+xsize SPropertyContainer::index(const SProperty* prop) const
+  {
+  SProfileFunction
+  preGet();
+
+  return prop->instanceInformation()->index();
   }

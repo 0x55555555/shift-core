@@ -77,7 +77,7 @@ public:
       {
       if(i == 0)
         {
-        return *child;
+        return child;
         }
       --i;
       }

@@ -197,17 +197,6 @@ bool SProperty::isDynamic() const
   return instanceInformation()->dynamic();
   }
 
-xsize SProperty::index() const
-  {
-  SProfileFunction
-  if(parent())
-    {
-    parent()->preGet();
-    }
-
-  return _instanceInfo->index();
-  }
-
 void SProperty::setName(const QString &in)
   {
   SProfileFunction

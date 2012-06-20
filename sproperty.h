@@ -150,7 +150,6 @@ public:
   void updateParent() const;
 
   bool isDynamic() const;
-  xsize index() const;
 
   // find a path from this to that
   QString pathTo(const SProperty *that) const

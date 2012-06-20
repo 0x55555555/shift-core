@@ -149,7 +149,9 @@ public:
   // move a property from this to newParent
   void moveProperty(SPropertyContainer *newParent, SProperty *property);
 
-  bool contains(SProperty *) const;
+  bool contains(const SProperty *) const;
+
+  xsize index(const SProperty* prop) const;
 
   static void assignProperty(const SProperty *, SProperty *);
   static void saveProperty(const SProperty *, SSaver & );
