@@ -70,12 +70,11 @@ public:
 
   void removePointer(const typename PTR::PtrType *ptr)
     {
-    xForeach(auto c, walker())
+    xForeach(auto c, SPropertyContainer::walker<Pointer>())
       {
-      Pointer *cT = c->castTo<Pointer>();
-      if(cT)
+      if(c)
         {
-        if(cT->pointed() == ptr)
+        if(c->pointed() == ptr)
           {
           STypedPropertyArray<PTR>::remove(c);
           return;
@@ -86,7 +85,7 @@ public:
 
   bool hasPointer(const typename PTR::PtrType *ptr)
     {
-    xForeach(auto child, walker())
+    xForeach(auto child, SPropertyContainer::walker())
       {
       if(ptr == child->input())
         {

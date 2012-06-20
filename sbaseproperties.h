@@ -410,7 +410,8 @@ public:
 
 template <typename T, typename DERIVED> void SPODProperty<T, DERIVED>::assign(const T &in)
   {
-  SProperty::handler()->doChange<Change>(SPODPropertyBase<T, DERIVED>::_value, in, this);
+  SHandler *h = SProperty::handler();
+  h->doChange<Change>(SPODPropertyBase<T, DERIVED>::_value, in, this);
   }
 
 #endif // SBASEPROPERTIES_H

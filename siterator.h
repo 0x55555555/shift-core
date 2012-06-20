@@ -144,7 +144,7 @@ public:
 
   inline void first(Iterator& i) const
     {
-    first(_parent->begin(), i);
+    firstInternal(_parent->begin(), i);
     }
 
   static void next(Iterator &i)
@@ -155,12 +155,12 @@ public:
     if(!*fwd)
       {
       ++(i.data()._parent);
-      first(i.data()._parent, i);
+      firstInternal(i.data()._parent, i);
       }
     }
 
 private:
-  static void first(typename ParentType::Iterator &i, Iterator& ret)
+  static void firstInternal(const typename ParentType::Iterator &i, Iterator& ret)
     {
     if(*i)
       {
