@@ -77,14 +77,16 @@ public:
       {
       }
 
-    inline void operator++()
+    inline Iterator& operator++()
       {
       IteratorType::next(*this);
+      return *this;
       }
 
-    inline void operator++(int)
+    inline Iterator& operator++(int)
       {
-      IteratorType::next(*this);
+        IteratorType::next(*this);
+        return *this;
       }
 
     inline ExtraData& data()
@@ -171,9 +173,8 @@ private:
       typename ToForward::Iterator fwdIt;
       d._fwd.first(fwdIt);
 
-      while(!*fwdIt)
+      while(!*fwdIt && *(++d._parent))
         {
-        ++(d._parent);
         d._fwd.reset(*d._parent);
 
         d._fwd.first(fwdIt);
