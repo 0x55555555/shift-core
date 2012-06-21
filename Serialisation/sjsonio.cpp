@@ -148,6 +148,7 @@ void SJSONSaver::beginAttribute(const char *attrName)
 void SJSONSaver::endAttribute(const char *attrName)
   {
   SProfileFunction
+  (void)attrName;
   xAssert(!_inAttribute.isEmpty());
   xAssert(_inAttribute == attrName);
 

@@ -24,4 +24,5 @@
 ipch/
 Win32/
 debug/
+release/
 generated-debug/

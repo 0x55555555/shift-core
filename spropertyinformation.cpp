@@ -502,12 +502,14 @@ void SPropertyInstanceInformation::setDefaultInput(const SPropertyInstanceInform
   // find the offset to the holding type information
   xsize targetOffset = 0;
   const SPropertyInformation *targetBase = info->holdingTypeInformation()->findAllocatableBase(targetOffset);
+  (void)targetBase;
   // add the instance location
   targetOffset += info->location();
 
   // find the offset to the holding type information
   xsize sourceOffset = 0;
   const SPropertyInformation *sourceBase = holdingTypeInformation()->findAllocatableBase(sourceOffset);
+  (void)sourceBase;
   // add the instance location
   sourceOffset += location();
 

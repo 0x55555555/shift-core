@@ -85,6 +85,7 @@ void SBinarySaver::beginAttribute(const char *attrName)
 
 void SBinarySaver::endAttribute(const char *attrName)
   {
+  (void)attrName;
   xAssert(!_inAttribute.isEmpty());
   xAssert(_inAttribute == attrName);
 

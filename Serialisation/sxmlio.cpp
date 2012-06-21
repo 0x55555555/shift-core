@@ -75,6 +75,7 @@ void SXMLSaver::beginAttribute(const char *attrName)
 
 void SXMLSaver::endAttribute(const char *attrName)
   {
+  (void)attrName;
   xAssert(!_inAttribute.isEmpty());
   xAssert(_inAttribute == attrName);
 

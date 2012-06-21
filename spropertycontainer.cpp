@@ -369,6 +369,7 @@ bool SPropertyContainer::shouldSavePropertyValue(const SProperty *p)
 
 void SPropertyContainer::postChildSet(SPropertyContainer *cont, SProperty *p)
   {
+  (void)cont;
   xAssert(cont->parent() || cont == cont->database());
   p->setDependantsDirty();
   }
