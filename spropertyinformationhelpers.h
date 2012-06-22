@@ -97,7 +97,7 @@ template <typename T, void FUNC( const SPropertyInstanceInformation *, T * )> st
   {
   static void compute( const SPropertyInstanceInformation *c, SProperty *prop)
     {
-    T* t = prop->castTo<T>();
+    T* t = prop->uncheckedCastTo<T>();
     xAssert(t);
     FUNC(c, t);
     }
@@ -107,7 +107,7 @@ template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelpe
   {
   static void compute( const SPropertyInstanceInformation *, SProperty *prop)
     {
-    T* t = prop->castTo<T>();
+    T* t = prop->uncheckedCastTo<T>();
     xAssert(t);
     FUNC(t);
     }
