@@ -129,7 +129,7 @@ public:
   bool inheritsFromType(const SPropertyInformation *type) const;
   template <typename T> bool inheritsFromType() const { return inheritsFromType(T::staticTypeInformation()); }
 
-  const SPropertyInformation *typeInformation() const { xAssert(_info); return _info; }
+  const SPropertyInformation *typeInformation() const;
   const SPropertyInstanceInformation *baseInstanceInformation() const { xAssert(_instanceInfo); return _instanceInfo; }
 
   void postSet();
@@ -351,7 +351,6 @@ private:
   SProperty *_nextOutput;
   SHandler *_handler;
   SPropertyContainer *_parent;
-  const SPropertyInformation *_info;
   const InstanceInformation *_instanceInfo;
   mutable SEntity *_entity;
 

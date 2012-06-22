@@ -51,7 +51,6 @@ SDatabase::SDatabase()
 
   _handler = this;
   setDatabase(this);
-  _info = staticTypeInformation();
   _instanceInfo = &_instanceInfoData;
   }
 
@@ -139,7 +138,7 @@ SProperty *SDatabase::createDynamicProperty(const SPropertyInformation *type, SP
     init->initialise((SPropertyInstanceInformation*)prop->_instanceInfo);
     }
 
-  prop->_info = type;
+  instanceInfo->setChildInformation(type);
   prop->_handler = SHandler::findHandler(parentToBe, prop);
   xAssert(_handler);
 
@@ -168,7 +167,7 @@ void SDatabase::deleteDynamicProperty(SProperty *prop)
 
 void SDatabase::initiateInheritedDatabaseType(const SPropertyInformation *info)
   {
-  _info = info;
+  _instanceInfoData.setChildInformation(info);
   initiatePropertyFromMetaData(this, info);
   }
 
@@ -194,7 +193,6 @@ void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, cons
     xAssert(thisProp->_entity == 0);
     xAssert(thisProp->_nextSibling == 0);
 
-    thisProp->_info = childInformation;
     thisProp->_instanceInfo = child;
     container->internalInsertProperty(true, thisProp, X_SIZE_SENTINEL);
     initiateProperty(thisProp);

@@ -274,6 +274,11 @@ private:
   friend class SDatabase;
 };
 
+inline const SPropertyInformation *SProperty::typeInformation() const
+  {
+  return _instanceInfo->childInformation();
+  }
+
 Q_DECLARE_METATYPE(const SPropertyInformation*);
 
 #endif // SPROPERTYINFORMATION_H

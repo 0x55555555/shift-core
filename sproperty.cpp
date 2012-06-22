@@ -150,7 +150,7 @@ bool SProperty::NameChange::inform(bool backwards)
   }
 
 SProperty::SProperty() : _nextSibling(0), _input(0), _output(0), _nextOutput(0),
-    _handler(0), _parent(0), _info(0), _instanceInfo(0), _entity(0),
+    _handler(0), _parent(0), _instanceInfo(0), _entity(0),
     _flags(Dirty)
 
 #ifdef S_PROPERTY_USER_DATA
