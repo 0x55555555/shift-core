@@ -9,6 +9,7 @@
 #include "xqtwrappers.h"
 #include "spropertyinformationhelpers.h"
 #include "XConvertScriptSTL.h"
+#include "spropertycontaineriterators.h"
 
 #ifdef X_DEBUG
 # include "XMemoryTracker"
@@ -57,7 +58,7 @@ SDatabase::SDatabase()
 SDatabase::~SDatabase()
   {
   internalClear();
-  _child = 0;
+  _dynamicChild = 0;
 
   clearChanges();
 

@@ -15,6 +15,11 @@ class SPropertyInstanceInformationInitialiser;
 #define S_AFFECTS(property) reinterpret_cast<SProperty SPropertyContainer::*>(&className :: property),
 #define S_COMPUTE_GROUP_END() 0 };
 
+
+template <typename T, typename Cont> class SPropertyContainerBaseIterator;
+template <typename T, typename Cont> class SPropertyContainerIterator;
+template <typename T, typename Cont, typename Iterator> class SPropertyContainerTypedIteratorWrapperFrom;
+
 class SHIFT_EXPORT SPropertyContainer : public SProperty
   {
   S_PROPERTY_CONTAINER(SPropertyContainer, SProperty, 0);
@@ -75,7 +80,7 @@ public:
   SPropertyContainer();
   ~SPropertyContainer();
 
-  template <typename T> T *firstChild() const
+  template <typename T> T *firstDynamicChild() const
     {
     SProperty *prop = firstChild();
     while(prop)
@@ -90,15 +95,17 @@ public:
     return 0;
     }
 
-  SProperty *firstChild() const { preGet(); return _child; }
+  SProperty *firstChild();
   SProperty *lastChild();
 
-  template <typename T> T *nextSibling(const T *old) const
+  SProperty *firstDynamicChild() const { preGet(); return _dynamicChild; }
+
+  template <typename T> T *nextDynamicSibling(const T *old) const
     {
     return nextSibling<T>((SProperty*)old);
     }
 
-  template <typename T> T *nextSibling(const SProperty *old) const
+  template <typename T> T *nextDynamicSibling(const SProperty *old) const
     {
     SProperty *prop = nextSibling(old);
     while(prop)
@@ -108,12 +115,12 @@ public:
         {
         return t;
         }
-      prop = nextSibling(prop);
+      prop = nextDynamicSibling(prop);
       }
     return 0;
     }
 
-  SProperty *nextSibling(const SProperty *p) const;
+  SProperty *nextDynamicSibling(const SProperty *p) const;
 
   template <typename T> const T *findChild(const QString &name) const
     {
@@ -160,62 +167,15 @@ public:
 
   static void postChildSet(SPropertyContainer *, SProperty *);
 
+  // iterator members, can be used like for (auto prop : container->walker())
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer>> walker();
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer>> walker() const;
+
+  SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer>> walker();
+  SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer>> walker() const;
+  SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer>> walkerFrom(SProperty *prop);
+
   X_ALIGNED_OPERATOR_NEW
-
-  template <typename T> class Iterator
-    {
-    const SPropertyContainer *_c;
-    T *_p;
-  public:
-    Iterator(const SPropertyContainer *c, T *p) : _c(c), _p(p) { }
-    T *operator*() const { return _p; }
-    void operator++() { _p = _c->nextSibling<T>(_p); }
-    bool operator!=(const Iterator<T> &it) { return _p != it._p; }
-    };
-
-  template <typename T, typename Cont> class TypedIteratorWrapper
-    {
-    Cont *_cont;
-  public:
-    TypedIteratorWrapper(Cont *cont) : _cont(cont) { }
-    Iterator<T> begin() { return Iterator<T>(_cont, _cont->firstChild<T>()); }
-    Iterator<T> end() { return Iterator<T>(0, 0); }
-    };
-
-  template <typename T, typename Cont> class TypedIteratorWrapperFrom
-    {
-    Cont *_cont;
-    T *_from;
-  public:
-    TypedIteratorWrapperFrom(Cont *cont, T* from) : _cont(cont), _from(from) { }
-    Iterator<T> begin() { return Iterator<T>(_cont, _from); }
-    Iterator<T> end() { return Iterator<T>(0, 0); }
-    };
-
-  template <typename T> TypedIteratorWrapper<T, SPropertyContainer> walker()
-    {
-    return TypedIteratorWrapper<T, SPropertyContainer>(this);
-    }
-
-  template <typename T> TypedIteratorWrapper<const T, const SPropertyContainer> walker() const
-    {
-    return TypedIteratorWrapper<const T, const SPropertyContainer>(this);
-    }
-
-  TypedIteratorWrapper<SProperty, SPropertyContainer> walker()
-    {
-    return TypedIteratorWrapper<SProperty, SPropertyContainer>(this);
-    }
-
-  TypedIteratorWrapper<const SProperty, const SPropertyContainer> walker() const
-    {
-    return TypedIteratorWrapper<const SProperty, const SPropertyContainer>(this);
-    }
-
-  TypedIteratorWrapperFrom<SProperty, SPropertyContainer> walkerFrom(SProperty *prop)
-    {
-    return TypedIteratorWrapperFrom<SProperty, SPropertyContainer>(this, prop);
-    }
 
 protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
@@ -233,11 +193,11 @@ private:
   SProperty *internalFindChild(const QString &name);
   const SProperty *internalFindChild(const QString &name) const;
   friend void setDependantsDirty(SProperty* prop, bool force);
-  SProperty *_child;
+  SProperty *_dynamicChild;
   xsize _containedProperties;
 
   QString makeUniqueName(const QString &name) const;
-  void internalInsertProperty(bool contained, SProperty *, xsize index);
+  void internalInsertProperty(SProperty *, xsize index);
   void internalRemoveProperty(SProperty *);
 
   friend class TreeChange;

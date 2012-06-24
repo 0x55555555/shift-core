@@ -70,6 +70,8 @@ XProperties:
 
   XROProperty(xptrdiff, defaultInput);
 
+  XROProperty(SPropertyInstanceInformation *, nextSibling);
+
   XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
 
 public:
@@ -186,7 +188,8 @@ XProperties:
 
   XProperty(const SPropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
-  XRefProperty(XList<SPropertyInstanceInformation*>, children);
+  XROProperty(SPropertyInstanceInformation *, firstChild);
+  XROProperty(SPropertyInstanceInformation *, lastChild);
   XProperty(xsize, size, setSize);
   XProperty(xsize, instanceInformationSize, setInstanceInformationSize);
 
@@ -198,8 +201,10 @@ XProperties:
 
   XProperty(XInterfaceBase*, apiInterface, setApiInterface);
 
+  XROProperty(xsize, childCount)
+
 public:
-  SPropertyInformation() { }
+  SPropertyInformation() : _firstChild(0), _lastChild(0), _childCount(0) { }
   static SPropertyInformation *allocate();
   static void destroy(SPropertyInformation *);
 
@@ -212,9 +217,6 @@ public:
 
   bool inheritsFromType(const SPropertyInformation *type) const;
 
-  // this classes children count
-  xsize childCount() const { return children().size(); }
-
   // access the properties from offset of member
   SPropertyInstanceInformation *child(xsize location);
   const SPropertyInstanceInformation *child(xsize location) const;
@@ -222,10 +224,8 @@ public:
   SPropertyInstanceInformation *childFromName(const QString &);
   const SPropertyInstanceInformation *childFromName(const QString &) const;
 
-  // access child instance information
-  SPropertyInstanceInformation *childFromIndex(xsize index);
-  const SPropertyInstanceInformation *childFromIndex(xsize index) const;
-
+  // find the sproperty information that will be allocated dynamically (ie has no static parent)
+  // offset is the offset in bytes back from this base to the allocated base.
   SPropertyInformation *findAllocatableBase(xsize &offset);
   const SPropertyInformation *findAllocatableBase(xsize &offset) const;
 
@@ -266,6 +266,44 @@ public:
 
   static SPropertyInformation *derive(const SPropertyInformation *obj);
   static void initiate(SPropertyInformation *info, const SPropertyInformation *from);
+
+  template <typename Cont, typename Member> class Walker
+    {
+    Cont *_info;
+  public:
+    class Iterator
+      {
+      Member *_current;
+
+    public:
+      Iterator(Member *c) : _current(c) { }
+      Iterator& operator++(int)
+        {
+        _current = _current->nextSibling();
+        return *this;
+        }
+      Iterator& operator++()
+        {
+        _current = _current->nextSibling();
+        return *this;
+        }
+      Member *operator*()
+        {
+        return _current;
+        }
+      bool operator!=(const Iterator &i) const
+        {
+        return i._current != _current;
+        }
+      };
+    Walker(Cont *info) : _info(info) { }
+
+    Iterator begin() { return Iterator(_info->firstChild()); }
+    Iterator end() { return Iterator(0); }
+    };
+
+  Walker<SPropertyInformation, SPropertyInstanceInformation> childWalker() { return Walker<SPropertyInformation, SPropertyInstanceInformation>(this); }
+  Walker<const SPropertyInformation, const SPropertyInstanceInformation> childWalker() const { return Walker<const SPropertyInformation, const SPropertyInstanceInformation>(this); }
 
 private:
   X_DISABLE_COPY(SPropertyInformation);

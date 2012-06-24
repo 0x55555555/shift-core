@@ -2,6 +2,7 @@
 #include "styperegistry.h"
 #include "sdatabase.h"
 #include "spropertyinformationhelpers.h"
+#include "spropertycontaineriterators.h"
 #include "shandlerimpl.h"
 
 S_IMPLEMENT_PROPERTY(SPropertyContainer, Shift)
@@ -101,19 +102,19 @@ bool SPropertyContainer::TreeChange::inform(bool back)
   return true;
   }
 
-SPropertyContainer::SPropertyContainer() : SProperty(), _child(0), _containedProperties(0)
+SPropertyContainer::SPropertyContainer() : SProperty(), _dynamicChild(0), _containedProperties(0)
   {
   }
 
 xsize SPropertyContainer::size() const
   {
   preGet();
-  xsize s = 0;
-  SProperty *c = firstChild();
+  xsize s = typeInformation()->childCount();
+  SProperty *c = firstDynamicChild();
   while(c)
     {
     s++;
-    c = nextSibling(c);
+    c = nextDynamicSibling(c);
     }
 
   return s;
@@ -132,7 +133,13 @@ SProperty *SPropertyContainer::findChild(const QString &name)
 
 SProperty *SPropertyContainer::internalFindChild(const QString &name)
   {
-  for(SProperty *child=_child; child; child=child->_nextSibling)
+  const SPropertyInstanceInformation *inst = typeInformation()->childFromName(name);
+  if(inst)
+    {
+    return inst->locateProperty(this);
+    }
+
+  for(SProperty *child=_dynamicChild; child; child=nextDynamicSibling(child))
     {
     if(child->name() == name)
       {
@@ -150,16 +157,7 @@ const SProperty *SPropertyContainer::internalFindChild(const QString &name) cons
 bool SPropertyContainer::contains(const SProperty *child) const
   {
   preGet();
-  SProperty *prop = _child;
-  while(prop)
-    {
-    if(child == prop)
-      {
-      return true;
-      }
-    prop = prop->_nextSibling;
-    }
-  return false;
+  return child->parent() == this;
   }
 
 SPropertyContainer::~SPropertyContainer()
@@ -172,49 +170,38 @@ void SPropertyContainer::clear()
   SBlock b(handler());
   xAssert(handler());
 
-  SProperty *prop = _child;
+  SProperty *prop = _dynamicChild;
   while(prop)
     {
     xAssert(prop->parent() == this);
-    SProperty *next = prop->_nextSibling;
     if(index(prop) >= _containedProperties)
       {
       removeProperty(prop);
       }
-    prop = next;
+    prop = _dynamicChild;
     }
-  _child = 0;
+
+  xAssert(_dynamicChild == 0);
   }
 
 void SPropertyContainer::internalClear()
   {
   xAssert(handler());
 
-  SProperty *prop = _child;
-  SProperty *previous = 0;
-  while(prop)
+  SProperty *dynamic = _dynamicChild;
+  while(dynamic)
     {
-    SProperty *next = prop->_nextSibling;
-    if(prop->isDynamic())
-      {
-      if(previous)
-        {
-        previous->_nextSibling = next;
-        }
-      else
-        {
-        _child = next;
-        }
-      database()->deleteDynamicProperty(prop);
-      }
-    else
-      {
-      database()->deleteProperty(prop);
-      previous = prop;
-      }
-    prop = next;
+    SProperty *next = nextDynamicSibling(dynamic);
+    database()->deleteDynamicProperty(dynamic);
+    dynamic = next;
     }
-  _child = 0;
+
+  _dynamicChild = 0;
+
+  xForeach(auto prop, walker())
+    {
+    database()->deleteProperty(prop);
+    }
   }
 
 QString SPropertyContainer::makeUniqueName(const QString &name) const
@@ -292,11 +279,12 @@ void SPropertyContainer::assignProperty(const SProperty *f, SProperty *t)
 
   if(from->containedProperties() == to->containedProperties())
     {
-    const SProperty *fChild=from->firstChild();
-    SProperty *tChild=to->_child;
     xsize index = 0;
-    while(fChild)
+    auto tChildIt = to->walker().begin();
+    xForeach(auto fChild, from->walker())
       {
+      auto tChild = *tChildIt;
+
       if(!tChild || tChild->staticTypeInformation() != fChild->staticTypeInformation())
         {
         xAssert(tChild->isDynamic());
@@ -310,9 +298,8 @@ void SPropertyContainer::assignProperty(const SProperty *f, SProperty *t)
 
       tChild->assign(fChild);
 
-      fChild = from->nextSibling(fChild);
-      tChild = to->nextSibling(tChild);
-      index++;
+      ++tChildIt;
+      ++index;
       }
     }
   else
@@ -374,32 +361,24 @@ void SPropertyContainer::postChildSet(SPropertyContainer *cont, SProperty *p)
   p->setDependantsDirty();
   }
 
-void SPropertyContainer::internalInsertProperty(bool contained, SProperty *newProp, xsize index)
+void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
   {
   // xAssert(newProp->_entity == 0); may be true because of post init
   SPropertyInstanceInformation *newPropInstInfo = const_cast<SProperty::InstanceInformation*>(newProp->_instanceInfo);
   xAssert(newPropInstInfo->_dynamicParent == 0);
   xAssert(newProp->_nextSibling == 0);
 
-  if(_child)
+  if(_dynamicChild)
     {
     xsize propIndex = 0;
-    SProperty *prop = _child;
+    SProperty *prop = _dynamicChild;
     while(prop)
       {
       if((index == (propIndex+1) && index > _containedProperties) || !prop->_nextSibling)
         {
-        if(contained)
-          {
-          xAssert(_containedProperties == (propIndex+1));
-          xAssert(newPropInstInfo->_dynamicParent == 0);
-          _containedProperties++;
-          }
-        else
-          {
-          newPropInstInfo->_index = propIndex + 1;
-          newPropInstInfo->_dynamicParent = this;
-          }
+        newPropInstInfo->_index = propIndex + 1;
+        newPropInstInfo->_dynamicParent = this;
+
         // insert this prop into the list
         newProp->_nextSibling = prop->_nextSibling;
         prop->_nextSibling = newProp;
@@ -414,20 +393,14 @@ void SPropertyContainer::internalInsertProperty(bool contained, SProperty *newPr
     }
   else
     {
-    if(contained)
-      {
-      xAssert(_containedProperties == 0);
-      xAssert(newPropInstInfo->_dynamicParent == 0);
-      _containedProperties++;
-      }
-    else
-      {
-      newPropInstInfo->_index = 0;
-      newPropInstInfo->_dynamicParent = this;
-      }
-    _child = newProp;
+    newPropInstInfo->_index = 0;
+    newPropInstInfo->_dynamicParent = this;
+
+    _dynamicChild = newProp;
     newProp->_handler = SHandler::findHandler(this, newProp);
     }
+
+  ## todo do this to all properties (static too.)
 
   // is any prop in
   bool parentComputed = isComputed() || _flags.hasFlag(ParentHasInput);
@@ -518,10 +491,21 @@ SProperty *SPropertyContainer::at(xsize i)
   }
 
 
-SProperty *SPropertyContainer::nextSibling(const SProperty *p) const
+SProperty *SPropertyContainer::nextDynamicSibling(const SProperty *p) const
   {
   preGet();
   return p->_nextSibling;
+  }
+
+SProperty *SPropertyContainer::firstChild()
+  {
+  SPropertyInstanceInformation *inst = typeInformation()->firstChild();
+  if(inst)
+    {
+    return inst->locateProperty(this);
+    }
+
+  return firstDynamicChild();
   }
 
 SProperty *SPropertyContainer::lastChild()

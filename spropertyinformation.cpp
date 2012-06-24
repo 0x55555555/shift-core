@@ -32,6 +32,7 @@ SPropertyInstanceInformation::SPropertyInstanceInformation()
   _extra = false;
   _dynamic = false;
   _dynamicParent = 0;
+  _nextSibling = 0;
   _defaultInput = 0;
   }
 
@@ -71,13 +72,14 @@ void SPropertyInformation::destroy(SPropertyInformation *d)
       }
     }
 
-  for(xsize i=0; i<d->childCount(); ++i)
+  xForeach(auto inst, d->childWalker())
     {
-    SPropertyInstanceInformation *inst = d->child(i);
     delete [] inst->affects();
     inst->~SPropertyInstanceInformation();
     SPropertyInstanceInformation::destroy(inst);
     }
+  d->_firstChild = 0;
+  d->_lastChild = 0;
 
   xAssert(STypeRegistry::allocator());
   STypeRegistry::allocator()->free(d);
@@ -166,12 +168,24 @@ SPropertyInstanceInformation *SPropertyInformation::add(const SPropertyInformati
 
   newChildType->functions().createInstanceInformation(def);
 
-  def->initiate(newChildType, name, _children.size(), location);
+  def->initiate(newChildType, name, _childCount, location);
 
   def->setHoldingTypeInformation(this);
   def->setExtra(extra);
 
-  _children << def;
+  if(_lastChild)
+    {
+    xAssert(_lastChild->nextSibling() == 0);
+    _lastChild->_nextSibling = def;
+    }
+  else
+    {
+    _firstChild = def;
+    }
+
+  _lastChild = def;
+
+  ++_childCount;
 
   return def;
   }
@@ -242,7 +256,7 @@ SPropertyInformation *SPropertyInformation::createTypeInformationInternal(const 
 
 SPropertyInstanceInformation *SPropertyInformation::child(xsize location)
   {
-  Q_FOREACH(SPropertyInstanceInformation *i, _children)
+  xForeach(auto i, childWalker())
     {
     if(i->location() == location)
       {
@@ -254,7 +268,7 @@ SPropertyInstanceInformation *SPropertyInformation::child(xsize location)
 
 const SPropertyInstanceInformation *SPropertyInformation::child(xsize location) const
   {
-  Q_FOREACH(const SPropertyInstanceInformation *i, _children)
+  xForeach(auto i, childWalker())
     {
     if(i->location() == location)
       {
@@ -264,21 +278,9 @@ const SPropertyInstanceInformation *SPropertyInformation::child(xsize location) 
   return 0;
   }
 
-const SPropertyInstanceInformation *SPropertyInformation::childFromIndex(xsize index) const
-  {
-  xAssert(index < childCount());
-  return _children[index];
-  }
-
-SPropertyInstanceInformation *SPropertyInformation::childFromIndex(xsize index)
-  {
-  xAssert(index < childCount());
-  return _children[index];
-  }
-
 const SPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in) const
   {
-  Q_FOREACH(SPropertyInstanceInformation *i, _children)
+  xForeach(auto i, childWalker())
     {
     if(i->name() == in)
       {
@@ -290,7 +292,7 @@ const SPropertyInstanceInformation *SPropertyInformation::childFromName(const QS
 
 SPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in)
   {
-  Q_FOREACH(SPropertyInstanceInformation *i, _children)
+  xForeach(auto i, childWalker())
     {
     if(i->name() == in)
       {

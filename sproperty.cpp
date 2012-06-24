@@ -8,6 +8,7 @@
 #include "sprocessmanager.h"
 #include "XProfiler"
 #include "styperegistry.h"
+#include "spropertycontaineriterators.h"
 #include "spropertyinformationhelpers.h"
 #include "XConvertScriptSTL.h"
 #include "shandlerimpl.h"
@@ -98,11 +99,9 @@ void SProperty::setDependantsDirty()
     SPropertyContainer *c = castTo<SPropertyContainer>();
     if(c)
       {
-      SProperty *child = c->_child;
-      while(child)
+      xForeach(auto child, c->walker())
         {
         child->setDirty();
-        child = child->_nextSibling;
         }
       }
     }
@@ -783,15 +782,13 @@ void SProperty::ConnectionChange::setParentHasOutputConnection(SProperty *prop)
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    SProperty *child = cont->_child;
-    while(child)
+    xForeach(auto child, cont->walker())
       {
       if(!child->_flags.hasFlag(SProperty::ParentHasOutput))
         {
         child->_flags.setFlag(SProperty::ParentHasOutput);
         setParentHasOutputConnection(child);
         }
-      child = child->_nextSibling;
       }
     }
   }
