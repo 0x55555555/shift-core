@@ -234,6 +234,7 @@ private:
   const SProperty *internalFindChild(const QString &name) const;
   friend void setDependantsDirty(SProperty* prop, bool force);
   SProperty *_child;
+  SEntity *_entity;
   xsize _containedProperties;
 
   QString makeUniqueName(const QString &name) const;

@@ -245,8 +245,9 @@ public:
 
     while(!n && d._currentParent != i.data()._root)
       {
-      n = d._currentParent->parent()->nextSibling(d._currentParent);
-      d._currentParent = d._currentParent->parent();
+      SPropertyContainer *parent = d._currentParent->parent();
+      n = parent->nextSibling(d._currentParent);
+      d._currentParent = parent;
       }
 
     i.setProperty(n);
@@ -289,8 +290,11 @@ public:
 
       while(!n && d._currentParent != i.data()._root)
         {
-        n = d._currentParent->parent()->nextSibling<SEntity>(d._currentParent);
-        d._currentParent = d._currentParent->parent()->parent();
+        // get the parent's (children member) parent (should be an entity,
+        // in another children member) and get its next sibling.
+        SPropertyContainer *parent = d._currentParent->parent()->parent();
+        n = parent->nextSibling<SEntity>(d._currentParent);
+        d._currentParent = parent;
         }
 
       i.setProperty(n);

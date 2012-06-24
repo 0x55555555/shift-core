@@ -377,7 +377,8 @@ void SPropertyContainer::postChildSet(SPropertyContainer *cont, SProperty *p)
 void SPropertyContainer::internalInsertProperty(bool contained, SProperty *newProp, xsize index)
   {
   // xAssert(newProp->_entity == 0); may be true because of post init
-  xAssert(newProp->_parent == 0);
+  SPropertyInstanceInformation *newPropInstInfo = const_cast<SProperty::InstanceInformation*>(newProp->_instanceInfo);
+  xAssert(newPropInstInfo->_dynamicParent == 0);
   xAssert(newProp->_nextSibling == 0);
 
   if(_child)
@@ -391,19 +392,19 @@ void SPropertyContainer::internalInsertProperty(bool contained, SProperty *newPr
         if(contained)
           {
           xAssert(_containedProperties == (propIndex+1));
+          xAssert(newPropInstInfo->_dynamicParent = 0);
           _containedProperties++;
           }
         else
           {
-          ((SProperty::InstanceInformation*)newProp->_instanceInfo)->_index = propIndex + 1;
+          newPropInstInfo->_index = propIndex + 1;
+          newPropInstInfo->_dynamicParent = this;
           }
         // insert this prop into the list
         newProp->_nextSibling = prop->_nextSibling;
         prop->_nextSibling = newProp;
 
         // set up state info
-        newProp->_parent = this;
-        newProp->_entity = 0;
         newProp->_handler = SHandler::findHandler(this, newProp);
         break;
         }
@@ -416,15 +417,15 @@ void SPropertyContainer::internalInsertProperty(bool contained, SProperty *newPr
     if(contained)
       {
       xAssert(_containedProperties == 0);
+      xAssert(newPropInstInfo->_dynamicParent == 0);
       _containedProperties++;
       }
     else
       {
-      ((SProperty::InstanceInformation*)newProp->_instanceInfo)->_index = 0;
+      newPropInstInfo->_index = 0;
+      newPropInstInfo->_dynamicParent = this;
       }
     _child = newProp;
-    newProp->_parent = this;
-    newProp->_entity = 0;
     newProp->_handler = SHandler::findHandler(this, newProp);
     }
 
@@ -439,7 +440,7 @@ void SPropertyContainer::internalInsertProperty(bool contained, SProperty *newPr
     {
     newProp->_flags.setFlag(ParentHasOutput);
     }
-  xAssert(newProp->_parent);
+  xAssert(newProp->parent());
   }
 
 void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
@@ -454,7 +455,6 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
     _child = _child->_nextSibling;
 
     removed = true;
-    oldProp->_entity = 0;
     ((SProperty::InstanceInformation*)oldProp->_instanceInfo)->_index = X_SIZE_SENTINEL;
     }
   else
@@ -468,7 +468,6 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
         xAssert((propIndex+1) >= _containedProperties);
 
         removed = true;
-        oldProp->_entity = 0;
         ((SProperty::InstanceInformation*)oldProp->_instanceInfo)->_index = X_SIZE_SENTINEL;
 
         prop->_nextSibling = oldProp->_nextSibling;
@@ -483,7 +482,10 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
   SProperty::ConnectionChange::clearParentHasOutputConnection(oldProp);
 
   xAssert(removed);
-  oldProp->_parent = 0;
+  SPropertyInstanceInformation *oldPropInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
+  // not dynamic or has a parent
+  xAssert(!oldPropInstInfo->dynamic() || oldPropInstInfo->dynamicParent());
+  oldPropInstInfo->_dynamicParent = 0;
   oldProp->_nextSibling = 0;
   }
 

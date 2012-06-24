@@ -80,10 +80,14 @@ public:
 
   // get the parent entity for this attribute
   // or if this attribute is an entity, get it.
-  SEntity *entity() const;
+  const SEntity *entity() const;
+  SEntity *entity();
 
   void setParent(SPropertyContainer *parent);
-  SPropertyContainer *parent() const {return _parent;}
+  const SPropertyContainer *parent() const;
+  SPropertyContainer *parent();
+  const SPropertyContainer *embeddedParent() const;
+  SPropertyContainer *embeddedParent();
 
   SProperty *input() const {return _input;}
   SProperty *output() const {return _output;}
@@ -115,7 +119,8 @@ public:
   bool isComputed() const;
   bool hasInput() const { return _input; }
   bool hasOutputs() const { return _output; }
-  QVector<SProperty *> affects() const;
+  QVector<const SProperty *> affects() const;
+  QVector<SProperty *> affects();
 
   SHandler *handler() { return _handler; }
   const SHandler *handler() const { return _handler; }
@@ -350,9 +355,7 @@ private:
   SProperty *_output;
   SProperty *_nextOutput;
   SHandler *_handler;
-  SPropertyContainer *_parent;
   const InstanceInformation *_instanceInfo;
-  mutable SEntity *_entity;
 
   enum Flags
     {
@@ -370,6 +373,7 @@ private:
   friend class SEntity;
   friend class SDatabase;
   friend class SPropertyContainer;
+  friend class SPropertyInstanceInformation;
   friend class SProcessManager;
   };
 

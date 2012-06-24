@@ -37,7 +37,10 @@ void SProperty::createTypeInformation(SPropertyInformationTyped<SProperty> *info
     auto *api = info->apiInterface();
     api->addProperty<const SPropertyInformation *, &SProperty::typeInformation>("typeInformation");
     api->addProperty<SProperty *, const SProperty *, &SProperty::input, &SProperty::setInput>("input");
-    api->addProperty<SPropertyContainer *, SPropertyContainer *, &SProperty::parent, &SProperty::setParent>("parent");
+
+    typedef XScript::XMethodToGetter<SProperty, SPropertyContainer * (), &SProperty::parent> ParentGetter;
+    typedef XScript::XMethodToSetter<SProperty, SPropertyContainer *, &SProperty::setParent> ParentSetter;
+    api->addProperty("parent", ParentGetter::Get, ParentGetter::GetDart, ParentSetter::Set, ParentSetter::SetDart);
 
     api->addProperty<SProperty *, &SProperty::output>("firstOutput");
     api->addProperty<SProperty *, &SProperty::nextOutput>("nextOutput");
@@ -49,7 +52,9 @@ void SProperty::createTypeInformation(SPropertyInformationTyped<SProperty> *info
     api->addProperty<QVariant, const QVariant &, &SProperty::value, &SProperty::setValue>("value");
     api->addProperty<QString, &SProperty::valueAsString>("valueString");
 
-    api->addProperty<QVector<SProperty*>, &SProperty::affects>("affects");
+
+    typedef XScript::XMethodToGetter<SProperty, QVector<SProperty*> (), &SProperty::affects> Getter;
+    api->addProperty("affects", Getter::Get, Getter::GetDart, 0, 0);
 
     api->addConstMethod<QString (const SProperty *), &SProperty::pathTo>("pathTo");
 
@@ -150,9 +155,7 @@ bool SProperty::NameChange::inform(bool backwards)
   }
 
 SProperty::SProperty() : _nextSibling(0), _input(0), _output(0), _nextOutput(0),
-    _handler(0), _parent(0), _instanceInfo(0), _entity(0),
-    _flags(Dirty)
-
+    _handler(0), _instanceInfo(0), _flags(Dirty)
 #ifdef S_PROPERTY_USER_DATA
     , _userData(0)
 #endif
@@ -558,28 +561,64 @@ void SProperty::assign(const SProperty *propToAssign)
   info->functions().assign(propToAssign, this);
   }
 
-SEntity *SProperty::entity() const
+const SEntity *SProperty::entity() const
+  {
+  return const_cast<SProperty*>(this)->entity();
+  }
+
+SEntity *SProperty::entity()
   {
   SProfileFunction
-  if(_entity)
+
+  SEntity *e = castTo<SEntity>();
+  if(e)
     {
-    return _entity;
+    return e;
     }
-  _entity = (SEntity *)castTo<SEntity>();
-  if(_entity)
+
+  SProperty *par = parent();
+  if(par)
     {
-    return _entity;
+    return par->entity();
     }
-  if(_parent)
-    {
-    _entity = _parent->entity();
-    }
-  return _entity;
+  return 0;
   }
 
 void SProperty::setParent(SPropertyContainer *newParent)
   {
   parent()->moveProperty(newParent, this);
+  }
+
+SPropertyContainer *SProperty::parent()
+  {
+  const SPropertyInstanceInformation *inst = instanceInformation();
+  if(!inst->dynamic())
+    {
+    return inst->locateParent(this);
+    }
+
+  return inst->dynamicParent();
+  }
+
+const SPropertyContainer *SProperty::parent() const
+  {
+  return const_cast<SProperty*>(this)->parent();
+  }
+
+SPropertyContainer *SProperty::embeddedParent()
+  {
+  const SPropertyInstanceInformation *inst = instanceInformation();
+  xAssert(!inst->dynamic());
+
+  return inst->locateParent(this);
+  }
+
+const SPropertyContainer *SProperty::embeddedParent() const
+  {
+  const SPropertyInstanceInformation *inst = instanceInformation();
+  xAssert(!inst->dynamic());
+
+  return inst->locateConstParent(this);
   }
 
 void SProperty::connect(SProperty *prop) const
@@ -632,7 +671,13 @@ void SProperty::disconnect() const
     }
   }
 
-QVector<SProperty *> SProperty::affects() const
+QVector<const SProperty *> SProperty::affects() const
+  {
+  QVector<SProperty *> aff = const_cast<SProperty*>(this)->affects();
+  return *reinterpret_cast<QVector<const SProperty*>*>(&aff);
+  }
+
+QVector<SProperty *> SProperty::affects()
   {
   QVector<SProperty *> ret;
 
@@ -757,15 +802,18 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    xForeach(auto child, cont->walker())
+    SProperty *parent = cont->parent();
+    if(!parent->input() &&
+        !parent->instanceInformation()->isComputed() &&
+        !parent->_flags.hasFlag(ParentHasInput))
       {
-      if(child->_flags.hasFlag(SProperty::ParentHasInput) &&
-         (!prop->parent()->input() &&
-          !prop->parent()->instanceInformation()->isComputed() &&
-          !prop->parent()->_flags.hasFlag(ParentHasInput)))
+      xForeach(auto child, cont->walker())
         {
-        child->_flags.clearFlag(SProperty::ParentHasInput);
-        clearParentHasInputConnection(child);
+        if(child->_flags.hasFlag(SProperty::ParentHasInput))
+          {
+          child->_flags.clearFlag(SProperty::ParentHasInput);
+          clearParentHasInputConnection(child);
+          }
         }
       }
     }
@@ -777,15 +825,18 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    xForeach(auto child, cont->walker())
+    SPropertyContainer *parent = cont->parent();
+    if(!parent->output() &&
+        !parent->instanceInformation()->affectsSiblings() &&
+        !parent->_flags.hasFlag(ParentHasOutput))
       {
-      if(child->_flags.hasFlag(SProperty::ParentHasOutput) &&
-         (!prop->parent()->output() &&
-          !prop->parent()->instanceInformation()->affectsSiblings() &&
-          !prop->parent()->_flags.hasFlag(ParentHasOutput)))
+      xForeach(auto child, cont->walker())
         {
-        child->_flags.clearFlag(SProperty::ParentHasOutput);
-        clearParentHasOutputConnection(child);
+        if(child->_flags.hasFlag(SProperty::ParentHasOutput))
+          {
+          child->_flags.clearFlag(SProperty::ParentHasOutput);
+          clearParentHasOutputConnection(child);
+          }
         }
       }
     }
@@ -836,11 +887,12 @@ void SProperty::disconnectInternal(SProperty *prop) const
 QString SProperty::path() const
   {
   SProfileFunction
-  if(parent() == 0)
+  const SProperty *par = parent();
+  if(par == 0)
     {
     return QString();
     }
-  return parent()->path() + SDatabase::pathSeparator() + escapedName();
+  return par->path() + SDatabase::pathSeparator() + escapedName();
   }
 
 QString SProperty::path(const SProperty *from) const
@@ -865,10 +917,13 @@ QString SProperty::path(const SProperty *from) const
       }
     return ret + escapedName();
     }
-  else if(from->parent())
+
+  const SProperty *parent = from->parent();
+  if(parent)
     {
-    return ".." + SDatabase::pathSeparator() + path(from->parent());
+    return ".." + SDatabase::pathSeparator() + path(parent);
     }
+
   xAssert(0);
   return "";
   }
@@ -885,11 +940,13 @@ bool SProperty::isDescendedFrom(const SProperty *in) const
     {
     return true;
     }
-  else if(parent() == 0)
+
+  const SProperty *par = parent();
+  if(par == 0)
     {
     return false;
     }
-  return parent()->isDescendedFrom(in);
+  return par->isDescendedFrom(in);
   }
 
 SProperty *SProperty::resolvePath(const QString &path)
@@ -1026,9 +1083,10 @@ void SProperty::setDirty()
 
 void SProperty::updateParent() const
   {
-  if(parent())
+  const SProperty *par = parent();
+  if(par)
     {
-    parent()->preGet();
+    par->preGet();
     }
   }
 
@@ -1048,9 +1106,10 @@ void SProperty::update() const
   const SPropertyInstanceInformation *child = baseInstanceInformation();
   if(child && child->compute())
     {
-    xAssert(parent());
-    SProcessManager::preCompute(child, parent());
-    child->compute()(child, parent());
+    SPropertyContainer *par = const_cast<SProperty*>(this)->embeddedParent();
+    xAssert(par);
+    //SProcessManager::preCompute(child, parent());
+    child->compute()(child, par);
     }
   else if(input())
     {

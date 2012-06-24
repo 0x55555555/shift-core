@@ -70,6 +70,8 @@ XProperties:
 
   XROProperty(xptrdiff, defaultInput);
 
+  XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
+
 public:
   SPropertyInstanceInformation();
   static SPropertyInstanceInformation *allocate(xsize size);
@@ -101,6 +103,9 @@ public:
 
   SProperty *locateProperty(SPropertyContainer *parent) const;
   const SProperty *locateProperty(const SPropertyContainer *parent) const;
+
+  const SPropertyContainer *locateConstParent(const SProperty *prop) const;
+  SPropertyContainer *locateParent(SProperty *prop) const;
 
   X_ALIGNED_OPERATOR_NEW
 

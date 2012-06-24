@@ -168,6 +168,7 @@ void SDatabase::deleteDynamicProperty(SProperty *prop)
 void SDatabase::initiateInheritedDatabaseType(const SPropertyInformation *info)
   {
   _instanceInfoData.setChildInformation(info);
+  _instanceInfoData.setDynamic(true);
   initiatePropertyFromMetaData(this, info);
   }
 
@@ -189,8 +190,6 @@ void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, cons
       childInformation->functions().createPropertyInPlace(thisProp);
       }
 
-    xAssert(thisProp->_parent == 0);
-    xAssert(thisProp->_entity == 0);
     xAssert(thisProp->_nextSibling == 0);
 
     thisProp->_instanceInfo = child;

@@ -31,6 +31,7 @@ SPropertyInstanceInformation::SPropertyInstanceInformation()
   _mode = Default;
   _extra = false;
   _dynamic = false;
+  _dynamicParent = 0;
   _defaultInput = 0;
   }
 
@@ -572,6 +573,20 @@ const SProperty *SPropertyInstanceInformation::locateProperty(const SPropertyCon
   const xuint8* childOffset = parentOffset + location();
   const SProperty *child = reinterpret_cast<const SProperty*>(childOffset);
   return child;
+  }
+
+const SPropertyContainer *SPropertyInstanceInformation::locateConstParent(const SProperty *prop) const
+  {
+  return locateParent(const_cast<SProperty*>(prop));
+  }
+
+SPropertyContainer *SPropertyInstanceInformation::locateParent(SProperty *prop) const
+  {
+  xuint8* data = (xuint8*)prop;
+  data -= location();
+
+  SPropertyContainer *parent = (SPropertyContainer*)data;
+  return parent;
   }
 
 const SPropertyInstanceInformation *SPropertyInstanceInformation::resolvePath(const QString &path) const

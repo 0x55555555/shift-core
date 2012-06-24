@@ -78,7 +78,16 @@ SProperty *SEntity::addProperty(const SPropertyInformation *info, const QString&
   return p;
   }
 
-SEntity *SEntity::parentEntity() const
+const SEntity *SEntity::parentEntity() const
+  {
+  if(parent())
+    {
+    return parent()->entity();
+    }
+  return 0;
+  }
+
+SEntity *SEntity::parentEntity()
   {
   if(parent())
     {

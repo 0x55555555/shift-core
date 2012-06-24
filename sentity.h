@@ -59,7 +59,8 @@ public:
   // accessing child properties by index
   using SPropertyContainer::at;
 
-  SEntity *parentEntity() const;
+  const SEntity *parentEntity() const;
+  SEntity *parentEntity();
 
   void addDirtyObserver(SDirtyObserver *);
   void addTreeObserver(STreeObserver *);
