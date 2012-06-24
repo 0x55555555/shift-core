@@ -392,7 +392,7 @@ void SPropertyContainer::internalInsertProperty(bool contained, SProperty *newPr
         if(contained)
           {
           xAssert(_containedProperties == (propIndex+1));
-          xAssert(newPropInstInfo->_dynamicParent = 0);
+          xAssert(newPropInstInfo->_dynamicParent == 0);
           _containedProperties++;
           }
         else
