@@ -3,6 +3,7 @@
 #include "sdatabase.h"
 #include "QPushButton"
 #include "QStyleOptionViewItem"
+#include "spropertycontaineriterators.h"
 
 Q_DECLARE_METATYPE(QModelIndex)
 

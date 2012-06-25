@@ -4,6 +4,7 @@
 #include "sproperty.h"
 #include "sdatabase.h"
 #include "sinterfaces.h"
+#include "spropertycontaineriterators.h"
 
 class SHIFT_EXPORT Pointer : public SProperty
   {

@@ -193,7 +193,7 @@ void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, cons
     xAssert(thisProp->_nextSibling == 0);
 
     thisProp->_instanceInfo = child;
-    container->internalInsertProperty(true, thisProp, X_SIZE_SENTINEL);
+    container->internalSetupProperty(thisProp);
     initiateProperty(thisProp);
     }
   }

@@ -18,17 +18,18 @@ public:
       }
     return _fromDynamic;
     }
-  void operator++()
+  SPropertyContainerBaseIterator<T,CONT>& operator++()
     {
     if(_from)
       {
-      SPropertyInstanceInformation *nextStatic = _from->nextSibling();
+      const SPropertyInstanceInformation *nextStatic = _from->nextSibling();
       _from = nextStatic;
       }
     else
       {
       _fromDynamic = _c->nextDynamicSibling(_fromDynamic);
       }
+    return *this;
     }
   bool operator!=(const SPropertyContainerBaseIterator<T, CONT> &it) const { return _from != it._from || _fromDynamic != it._fromDynamic; }
   };
@@ -39,10 +40,29 @@ template <typename T, typename CONT> class SPropertyContainerIterator
   const SPropertyInstanceInformation *_from;
   T *_fromDynamic;
 public:
-  SPropertyContainerIterator(CONT *c, const SPropertyInstanceInformation *p, T *dP) : _c(c), _from(p), _fromDynamic(_dP) { }
-  //T *operator*() const { return _p; }
-  //void operator++() { _p = _c->nextSibling<T>(_p); }
-  bool operator!=(const SPropertyContainerBaseIterator<T, CONT> &it) const { return _from != it._from || _fromDynamic != it._fromDynamic; }
+  SPropertyContainerIterator(CONT *c, const SPropertyInstanceInformation *p, T *dP) : _c(c), _from(p), _fromDynamic(dP) { }
+  T *operator*() const
+    {
+    if(_from)
+      {
+      return _from->locateProperty(_c)->uncheckedCastTo<T>();
+      }
+    return _fromDynamic;
+    }
+  SPropertyContainerIterator<T,CONT>& operator++()
+    {
+    if(_from)
+      {
+      const SPropertyInstanceInformation *nextStatic = _from->nextSibling<T>();
+      _from = nextStatic;
+      }
+    else
+      {
+      _fromDynamic = _c->nextDynamicSibling<T>(_fromDynamic);
+      }
+    return *this;
+    }
+  bool operator!=(const SPropertyContainerIterator<T, CONT> &it) const { return _from != it._from || _fromDynamic != it._fromDynamic; }
   };
 
 
@@ -79,7 +99,49 @@ template <typename T>
         );
   }
 
-SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > SPropertyContainer::walker()
+template <typename T>
+    SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > SPropertyContainer::walkerFrom(T *prop)
+  {
+  if(!prop->isDynamic())
+    {
+    return SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer>>(
+        this,
+        prop->instanceInformation(),
+        firstDynamicChild<T>()
+        );
+    }
+  else
+    {
+    return SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer>>(
+        this,
+        0,
+        prop
+        );
+    }
+  }
+
+template <typename T>
+    SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > SPropertyContainer::walkerFrom(const T *prop) const
+  {
+  if(!prop->isDynamic())
+    {
+    return SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer>>(
+        this,
+        prop->instanceInformation(),
+        firstDynamicChild<T>()
+        );
+    }
+  else
+    {
+    return SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer>>(
+        this,
+        0,
+        prop
+        );
+    }
+  }
+
+inline SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > SPropertyContainer::walker()
   {
   return SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer>>(
         this,
@@ -88,7 +150,7 @@ SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPrope
         );
   }
 
-SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer> > SPropertyContainer::walker() const
+inline SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer> > SPropertyContainer::walker() const
   {
   return SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer> >(
         this,
@@ -97,7 +159,7 @@ SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyConta
         );
   }
 
-SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > SPropertyContainer::walkerFrom(SProperty *prop)
+inline SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > SPropertyContainer::walkerFrom(SProperty *prop)
   {
   if(!prop->isDynamic())
     {

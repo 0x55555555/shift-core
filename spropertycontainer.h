@@ -80,34 +80,14 @@ public:
   SPropertyContainer();
   ~SPropertyContainer();
 
-  template <typename T> T *firstDynamicChild() const
+  template <typename T> const T *firstDynamicChild() const
+    {
+    return ((SPropertyContainer*)this)->firstDynamicChild<T>();
+    }
+
+  template <typename T> T *firstDynamicChild()
     {
     SProperty *prop = firstChild();
-    while(prop)
-      {
-      T *t = prop->castTo<T>();
-      if(t)
-        {
-        return t;
-        }
-      prop = nextSibling(prop);
-      }
-    return 0;
-    }
-
-  SProperty *firstChild();
-  SProperty *lastChild();
-
-  SProperty *firstDynamicChild() const { preGet(); return _dynamicChild; }
-
-  template <typename T> T *nextDynamicSibling(const T *old) const
-    {
-    return nextSibling<T>((SProperty*)old);
-    }
-
-  template <typename T> T *nextDynamicSibling(const SProperty *old) const
-    {
-    SProperty *prop = nextSibling(old);
     while(prop)
       {
       T *t = prop->castTo<T>();
@@ -120,7 +100,36 @@ public:
     return 0;
     }
 
-  SProperty *nextDynamicSibling(const SProperty *p) const;
+  SProperty *firstChild();
+  const SProperty *firstChild() const;
+  SProperty *lastChild();
+  const SProperty *lastChild() const;
+
+  SProperty *firstDynamicChild() { preGet(); return _dynamicChild; }
+  const SProperty *firstDynamicChild() const { preGet(); return _dynamicChild; }
+
+  template <typename T> const T *nextDynamicSibling(const T *old) const
+    {
+    return ((SPropertyContainer*)this)->nextDynamicSibling<T>((T*)old);
+    }
+
+  template <typename T> T *nextDynamicSibling(const T *old)
+    {
+    SProperty *prop = nextDynamicSibling((const SProperty*)old);
+    while(prop)
+      {
+      T *t = prop->castTo<T>();
+      if(t)
+        {
+        return t;
+        }
+      prop = nextDynamicSibling((const SProperty*)prop);
+      }
+    return 0;
+    }
+
+  SProperty *nextDynamicSibling(const SProperty *p);
+  const SProperty *nextDynamicSibling(const SProperty *p) const;
 
   template <typename T> const T *findChild(const QString &name) const
     {
@@ -168,12 +177,15 @@ public:
   static void postChildSet(SPropertyContainer *, SProperty *);
 
   // iterator members, can be used like for (auto prop : container->walker())
-  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer>> walker();
-  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer>> walker() const;
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > walker();
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > walker() const;
 
-  SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer>> walker();
-  SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer>> walker() const;
-  SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer>> walkerFrom(SProperty *prop);
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > walkerFrom(T *);
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > walkerFrom(const T *) const;
+
+  SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > walker();
+  SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer> > walker() const;
+  SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > walkerFrom(SProperty *prop);
 
   X_ALIGNED_OPERATOR_NEW
 
@@ -198,7 +210,9 @@ private:
 
   QString makeUniqueName(const QString &name) const;
   void internalInsertProperty(SProperty *, xsize index);
+  void internalSetupProperty(SProperty *);
   void internalRemoveProperty(SProperty *);
+  void internalUnsetupProperty(SProperty *);
 
   friend class TreeChange;
   friend class SEntity;

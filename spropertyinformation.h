@@ -70,7 +70,7 @@ XProperties:
 
   XROProperty(xptrdiff, defaultInput);
 
-  XROProperty(SPropertyInstanceInformation *, nextSibling);
+  XPropertyMember(SPropertyInstanceInformation *, nextSibling);
 
   XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
 
@@ -108,6 +108,25 @@ public:
 
   const SPropertyContainer *locateConstParent(const SProperty *prop) const;
   SPropertyContainer *locateParent(SProperty *prop) const;
+
+  SPropertyInstanceInformation *nextSibling() { return _nextSibling; }
+  const SPropertyInstanceInformation *nextSibling() const { return _nextSibling; }
+
+  template <typename T> const SPropertyInstanceInformation *nextSibling() const
+    {
+    const SPropertyInformation *info = T::staticTypeInformation();
+    const SPropertyInstanceInformation *next = _nextSibling;
+    while(next)
+      {
+      const SPropertyInformation *nextInfo = next->childInformation();
+      if(nextInfo->inheritsFromType(info))
+        {
+        return next;
+        }
+      next = next->nextSibling();
+      }
+    return 0;
+    }
 
   X_ALIGNED_OPERATOR_NEW
 
@@ -266,6 +285,22 @@ public:
 
   static SPropertyInformation *derive(const SPropertyInformation *obj);
   static void initiate(SPropertyInformation *info, const SPropertyInformation *from);
+
+  template <typename T> const SPropertyInstanceInformation *firstChild() const
+    {
+    const SPropertyInformation *info = T::staticTypeInformation();
+    const SPropertyInstanceInformation *first = firstChild();
+    while(first)
+      {
+      const SPropertyInformation *firstInfo = first->childInformation();
+      if(firstInfo->inheritsFromType(info))
+        {
+        return first;
+        }
+      first = first->nextSibling();
+      }
+    return 0;
+    }
 
   template <typename Cont, typename Member> class Walker
     {

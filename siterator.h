@@ -2,6 +2,7 @@
 #define SITERATOR_H
 
 #include "sentity.h"
+#include "spropertycontaineriterators.h"
 
 namespace SIterator
 {
@@ -241,12 +242,18 @@ public:
       }
 
     ChildTreeExtraData &d = i.data();
-    SProperty *n = d._currentParent->nextSibling(current);
+    auto walker = d._currentParent->walkerFrom(current);
+    auto walkerIt = ++walker.begin();
+    SProperty *n = *walkerIt;
 
     while(!n && d._currentParent != i.data()._root)
       {
       SPropertyContainer *parent = d._currentParent->parent();
-      n = parent->nextSibling(d._currentParent);
+
+      auto walker = d._currentParent->walkerFrom(d._currentParent);
+      auto walkerIt = ++walker.begin();
+      n = *walkerIt;
+
       d._currentParent = parent;
       }
 
@@ -269,31 +276,32 @@ public:
 
   inline static void next(Iterator &i)
     {
-    SProperty *current = *i;
-    SEntity *cont = current->castTo<SEntity>();
+    SEntity *current = *i;
     // there is a non-entity in children?
-    xAssert(cont);
-    if(cont)
+    xAssert(current);
+    if(current)
       {
-      SEntity *child = cont->children.firstChild<SEntity>();
+      SEntity *child = *current->children.walker<SEntity>().begin();
       if(child)
         {
         ChildTreeExtraData &d = i.data();
-        d._currentParent = cont;
+        d._currentParent = current;
 
         i.setProperty(child);
         return;
         }
 
       ChildTreeExtraData &d = i.data();
-      SEntity *n = d._currentParent->nextSibling<SEntity>(cont);
+      SEntity *n = *d._currentParent->walkerFrom<SEntity>(current).begin();
 
       while(!n && d._currentParent != i.data()._root)
         {
         // get the parent's (children member) parent (should be an entity,
         // in another children member) and get its next sibling.
-        SPropertyContainer *parent = d._currentParent->parent()->parent();
-        n = parent->nextSibling<SEntity>(d._currentParent);
+        SEntity* parentEntity = d._currentParent->entity();
+        SPropertyContainer *parent = parentEntity->parent();
+
+        n = *parent->walkerFrom<SEntity>(parentEntity).begin();
         d._currentParent = parent;
         }
 
