@@ -224,7 +224,7 @@ void SProperty::setName(const QString &in)
     realName = fixedName + QString::number(num++);
     }
 
-  handler()->doChange<NameChange>(name(), realName, this);
+  SPropertyDoChange(NameChange, name(), realName, this);
   }
 
 void SProperty::assignProperty(const SProperty *, SProperty *)
@@ -620,12 +620,25 @@ const SPropertyContainer *SProperty::embeddedParent() const
   return inst->locateConstParent(this);
   }
 
+void SProperty::setInput(const SProperty *inp)
+  {
+  SProfileFunction
+  if(inp)
+    {
+    SPropertyDoChange(ConnectionChange, ConnectionChange::Connect, (SProperty*)inp, this);
+    }
+  else if(input())
+    {
+    SPropertyDoChange(ConnectionChange, ConnectionChange::Disconnect, (SProperty*)input(), this);
+    }
+  }
+
 void SProperty::connect(SProperty *prop) const
   {
   SProfileFunction
   if(prop && prop != this)
     {
-    ((SDatabase*)handler())->doChange<ConnectionChange>(ConnectionChange::Connect, (SProperty*)this, prop);
+    prop->setInput(this);
     }
   else
     {
@@ -647,8 +660,8 @@ void SProperty::connect(const QVector<SProperty*> &l) const
 
 void SProperty::disconnect(SProperty *prop) const
   {
-  SProfileFunction
-  ((SDatabase*)handler())->doChange<ConnectionChange>(ConnectionChange::Disconnect, (SProperty*)this, prop);
+  xAssert(this == prop->input());
+  prop->setInput(0);
   }
 
 bool SProperty::isComputed() const

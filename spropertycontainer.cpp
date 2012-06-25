@@ -235,7 +235,7 @@ SProperty *SPropertyContainer::addProperty(const SPropertyInformation *info, xsi
     ((SPropertyInstanceInformation*)newProp->_instanceInfo)->_name = name;
     }
 
-  handler()->doChange<TreeChange>((SPropertyContainer*)0, this, newProp, index);
+  SPropertyDoChange(TreeChange, (SPropertyContainer*)0, this, newProp, index);
   return newProp;
   }
 
@@ -250,11 +250,11 @@ void SPropertyContainer::moveProperty(SPropertyContainer *c, SProperty *p)
     SBlock b(database());
 
     p->setName(c->makeUniqueName(name));
-    handler()->doChange<TreeChange>(this, c, p, X_SIZE_SENTINEL);
+    SPropertyDoChange(TreeChange, this, c, p, X_SIZE_SENTINEL);
     }
   else
     {
-    handler()->doChange<TreeChange>(this, c, p, X_SIZE_SENTINEL);
+    SPropertyDoChange(TreeChange, this, c, p, X_SIZE_SENTINEL);
     }
   }
 
@@ -268,7 +268,7 @@ void SPropertyContainer::removeProperty(SProperty *oldProp)
   SBlock b(db);
 
   oldProp->disconnect();
-  handler()->doChange<TreeChange>(this, (SPropertyContainer*)0, oldProp, index(oldProp));
+  SPropertyDoChange(TreeChange, this, (SPropertyContainer*)0, oldProp, index(oldProp));
   }
 
 void SPropertyContainer::assignProperty(const SProperty *f, SProperty *t)
@@ -382,9 +382,6 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
         // insert this prop into the list
         newProp->_nextSibling = prop->_nextSibling;
         prop->_nextSibling = newProp;
-
-        // set up state info
-        newProp->_handler = SHandler::findHandler(this, newProp);
         break;
         }
       propIndex++;
@@ -397,7 +394,6 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
     newPropInstInfo->_dynamicParent = this;
 
     _dynamicChild = newProp;
-    newProp->_handler = SHandler::findHandler(this, newProp);
     }
 
   internalSetupProperty(newProp);
@@ -405,6 +401,9 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
 
 void SPropertyContainer::internalSetupProperty(SProperty *newProp)
   {
+  // set up state info
+  newProp->_handler = SHandler::findHandler(this, newProp);
+
   // is any prop in
   bool parentComputed = isComputed() || _flags.hasFlag(ParentHasInput);
   if(input() || _flags.hasFlag(ParentHasInput) || parentComputed)

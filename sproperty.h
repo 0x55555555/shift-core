@@ -65,6 +65,16 @@ class SInterfaceBase;
   typedef superName ParentType; \
   S_REGISTER_TYPE_FUNCTION(myName)
 
+// its possible we might want to not use a handler globally, and just apply all changes directly.
+#if 1
+# define SPropertyDoChangeNonLocal(type, ths, ...) {\
+  SHandler *hand = ths->handler(); \
+  hand->doChange<type>(__VA_ARGS__); \
+  }
+#endif
+
+#define SPropertyDoChange(type, ...) SPropertyDoChangeNonLocal(type, this, __VA_ARGS__)
+
 class SHIFT_EXPORT SProperty
   {
 public:
@@ -110,7 +120,7 @@ public:
 
   // connect this property (driver) to the passed property (driven)
   void connect(SProperty *) const;
-  void setInput(const SProperty *inp) { if(inp) { inp->connect(this); } else if(input()) { this->disconnect(input()); } }
+  void setInput(const SProperty *inp);
   void connect(const QVector<SProperty*> &) const;
   void disconnect(SProperty *) const;
   void disconnect() const;
@@ -351,9 +361,11 @@ private:
   void disconnectInternal(SProperty *) const;
 
   SProperty *_nextSibling;
+
   SProperty *_input;
   SProperty *_output;
   SProperty *_nextOutput;
+
   SHandler *_handler;
   const InstanceInformation *_instanceInfo;
 

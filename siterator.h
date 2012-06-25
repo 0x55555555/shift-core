@@ -269,8 +269,8 @@ public:
   inline void first(Iterator& i) const
     {
     ChildTreeExtraData &d = i.data();
-    d._root = property();
-    d._currentParent = d._root->parent();
+    d._currentParent = property()->parent();
+    d._root = d._currentParent;
     i.setProperty(property()->entity());
     }
 
@@ -285,23 +285,27 @@ public:
       if(child)
         {
         ChildTreeExtraData &d = i.data();
-        d._currentParent = current;
+        d._currentParent = &current->children;
 
         i.setProperty(child);
         return;
         }
 
       ChildTreeExtraData &d = i.data();
-      SEntity *n = *d._currentParent->walkerFrom<SEntity>(current).begin();
+      auto walker = d._currentParent->walkerFrom<SEntity>(current);
+      auto walkerIt = ++walker.begin();
+      SEntity *n = *walkerIt;
 
       while(!n && d._currentParent != i.data()._root)
         {
         // get the parent's (children member) parent (should be an entity,
         // in another children member) and get its next sibling.
-        SEntity* parentEntity = d._currentParent->entity();
+        SEntity* parentEntity = d._currentParent->parent()->castTo<SEntity>();
         SPropertyContainer *parent = parentEntity->parent();
 
-        n = *parent->walkerFrom<SEntity>(parentEntity).begin();
+        auto walker = parent->walkerFrom<SEntity>(parentEntity);
+        auto walkerIt = ++walker.begin();
+        n = *walkerIt;
         d._currentParent = parent;
         }
 

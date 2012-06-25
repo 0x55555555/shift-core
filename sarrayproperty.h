@@ -148,8 +148,7 @@ private:
 
   void applyChange(const EigenArray &arr)
     {
-    SHandler& db = *handler();
-    db.doChange<ArrayChange>(mData, arr, this);
+    SPropertyDoChange(ArrayChange, mData, arr, this);
     }
 
   Eigen::Array <T, Eigen::Dynamic, Eigen::Dynamic> mData;
