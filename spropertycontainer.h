@@ -87,7 +87,7 @@ public:
 
   template <typename T> T *firstDynamicChild()
     {
-    SProperty *prop = firstChild();
+    SProperty *prop = firstDynamicChild();
     while(prop)
       {
       T *t = prop->castTo<T>();
