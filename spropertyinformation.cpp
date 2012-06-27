@@ -32,6 +32,7 @@ SPropertyInstanceInformation::SPropertyInstanceInformation()
   _extra = false;
   _dynamic = false;
   _dynamicParent = 0;
+  _dynamicNextSibling = 0;
   _nextSibling = 0;
   _defaultInput = 0;
   }

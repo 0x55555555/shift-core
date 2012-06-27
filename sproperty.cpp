@@ -153,7 +153,7 @@ bool SProperty::NameChange::inform(bool backwards)
   return true;
   }
 
-SProperty::SProperty() : _nextSibling(0), _input(0), _output(0), _nextOutput(0),
+SProperty::SProperty() : _input(0), _output(0), _nextOutput(0),
     _handler(0), _instanceInfo(0), _flags(Dirty)
 #ifdef S_PROPERTY_USER_DATA
     , _userData(0)

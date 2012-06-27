@@ -190,8 +190,6 @@ void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, cons
       childInformation->functions().createPropertyInPlace(thisProp);
       }
 
-    xAssert(thisProp->_nextSibling == 0);
-
     thisProp->_instanceInfo = child;
     container->internalSetupProperty(thisProp);
     initiateProperty(thisProp);

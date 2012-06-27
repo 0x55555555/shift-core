@@ -366,7 +366,7 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
   // xAssert(newProp->_entity == 0); may be true because of post init
   SPropertyInstanceInformation *newPropInstInfo = const_cast<SProperty::InstanceInformation*>(newProp->_instanceInfo);
   xAssert(newPropInstInfo->_dynamicParent == 0);
-  xAssert(newProp->_nextSibling == 0);
+  xAssert(newPropInstInfo->_dynamicNextSibling == 0);
 
   if(_dynamicChild)
     {
@@ -374,24 +374,28 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
     SProperty *prop = _dynamicChild;
     while(prop)
       {
-      if((index == (propIndex+1) && index > _containedProperties) || !prop->_nextSibling)
+      SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(prop->_instanceInfo);
+
+      if((index == (propIndex+1) && index > _containedProperties) || !propInstInfo->dynamicNextSibling())
         {
         newPropInstInfo->_index = propIndex + 1;
         newPropInstInfo->_dynamicParent = this;
 
         // insert this prop into the list
-        newProp->_nextSibling = prop->_nextSibling;
-        prop->_nextSibling = newProp;
+        newPropInstInfo->_dynamicNextSibling = propInstInfo->_dynamicNextSibling;
+        propInstInfo->_dynamicNextSibling = newProp;
         break;
         }
       propIndex++;
-      prop = prop->_nextSibling;
+      prop = nextDynamicSibling(prop);
       }
     }
   else
     {
     newPropInstInfo->_index = 0;
     newPropInstInfo->_dynamicParent = this;
+
+    xAssert(newPropInstInfo->dynamicNextSibling() == 0);
 
     _dynamicChild = newProp;
     }
@@ -420,6 +424,7 @@ void SPropertyContainer::internalSetupProperty(SProperty *newProp)
 
 void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
   {
+  xAssert(oldProp);
   xAssert(oldProp->parent() == this);
   bool removed = false;
 
@@ -427,10 +432,12 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
     {
     xAssert(_containedProperties == 0);
 
-    _dynamicChild = _dynamicChild->_nextSibling;
+    SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
+
+    _dynamicChild = propInstInfo->_dynamicNextSibling;
 
     removed = true;
-    ((SProperty::InstanceInformation*)oldProp->_instanceInfo)->_index = X_SIZE_SENTINEL;
+    propInstInfo->_index = X_SIZE_SENTINEL;
     }
   else
     {
@@ -438,18 +445,22 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
     SProperty *prop = _dynamicChild;
     while(prop)
       {
-      if(oldProp == prop->_nextSibling)
+      SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(prop->_instanceInfo);
+
+      if(oldProp == propInstInfo->_dynamicNextSibling)
         {
         xAssert((propIndex+1) >= _containedProperties);
 
-        removed = true;
-        ((SProperty::InstanceInformation*)oldProp->_instanceInfo)->_index = X_SIZE_SENTINEL;
+        SPropertyInstanceInformation *oldPropInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
 
-        prop->_nextSibling = oldProp->_nextSibling;
+        removed = true;
+        oldPropInstInfo->_index = X_SIZE_SENTINEL;
+
+        propInstInfo->_dynamicNextSibling = oldPropInstInfo->_dynamicNextSibling;
         break;
         }
       propIndex++;
-      prop = prop->_nextSibling;
+      prop = nextDynamicSibling(prop);
       }
     }
 
@@ -460,7 +471,7 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
   // not dynamic or has a parent
   xAssert(!oldPropInstInfo->dynamic() || oldPropInstInfo->dynamicParent());
   oldPropInstInfo->_dynamicParent = 0;
-  oldProp->_nextSibling = 0;
+  oldPropInstInfo->_dynamicNextSibling = 0;
   }
 
 void SPropertyContainer::internalUnsetupProperty(SProperty *oldProp)
@@ -500,13 +511,15 @@ SProperty *SPropertyContainer::at(xsize i)
 SProperty *SPropertyContainer::nextDynamicSibling(const SProperty *p)
   {
   preGet();
-  return p->_nextSibling;
+  xAssert(p->isDynamic());
+  return p->instanceInformation()->dynamicNextSibling();
   }
 
 const SProperty *SPropertyContainer::nextDynamicSibling(const SProperty *p) const
   {
   preGet();
-  return p->_nextSibling;
+  xAssert(p->isDynamic());
+  return p->instanceInformation()->dynamicNextSibling();
   }
 
 SProperty *SPropertyContainer::firstChild()

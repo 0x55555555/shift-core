@@ -73,6 +73,7 @@ XProperties:
   XPropertyMember(SPropertyInstanceInformation *, nextSibling);
 
   XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
+  XProperty(SProperty *, dynamicNextSibling, setDynamicNextSibling)
 
 public:
   SPropertyInstanceInformation();

@@ -360,8 +360,6 @@ private:
   void connectInternal(SProperty *) const;
   void disconnectInternal(SProperty *) const;
 
-  SProperty *_nextSibling;
-
   SProperty *_input;
   SProperty *_output;
   SProperty *_nextOutput;
