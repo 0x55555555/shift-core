@@ -17,6 +17,8 @@ SPropertyGroup::Information SPropertyGroup::registerPropertyInformation(SPropert
 
 void SPropertyGroup::bootstrap()
   {
+  SProfileFunction
+
   for(Information *i = _first; i; i = i->next)
     {
     i->bootstrap();

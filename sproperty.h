@@ -151,10 +151,10 @@ public:
   void setDependantsDirty();
   void preGet() const
     {
-    if(_flags.hasFlag(ParentHasInput))
+    /*if(_flags.hasFlag(ParentHasInput))
       {
       updateParent();
-      }
+      }*/
 
     if(_flags.hasFlag(Dirty))
       {
@@ -359,6 +359,8 @@ private:
 
   void connectInternal(SProperty *) const;
   void disconnectInternal(SProperty *) const;
+
+  SEntity *dynamicEntity();
 
   SProperty *_input;
   SProperty *_output;

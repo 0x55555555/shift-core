@@ -76,20 +76,21 @@ void SProperty::setDependantsDirty()
     }
 
   const SPropertyInstanceInformation *child = baseInstanceInformation();
+  xAssert(child);
 
-  if(child && child->affects())
+  const xsize *affectsLocations = child->affects();
+  if(affectsLocations)
     {
-    SPropertyContainer *par = parent();
-    const SPropertyInformation *parentInfo = par->typeInformation();
-    xsize i=0;
-    while(child->affects()[i])
+    xuint8* parentLocation = (xuint8*)this;
+    parentLocation -= child->location();
+
+    for(;*affectsLocations; ++affectsLocations)
       {
-      const SPropertyInstanceInformation *propInst = parentInfo->child(child->affects()[i]);
-      SProperty *affectsProp = propInst->locateProperty(par);
+      xuint8* affectedLocation = parentLocation + *affectsLocations;
+      SProperty *affectsProp = (SProperty *)affectedLocation;
 
       xAssert(affectsProp);
       affectsProp->setDirty();
-      i++;
       }
     }
 
@@ -569,16 +570,38 @@ SEntity *SProperty::entity()
   {
   SProfileFunction
 
+  SPropertyInformation *info = SEntity::staticTypeInformation();
+
+  xsize offset = 0;
+  SPropertyInstanceInformation *inst = baseInstanceInformation();
+  while(inst)
+    {
+    offset += inst->location();
+    if(inst->childInformation() == info)
+      {
+      xuint8* prop = (xuin8*)this;
+      prop -= offset;
+      SProperty *ent = (SProperty*)prop;
+      return ent->uncheckedCastTo<SEntity>();
+      }
+    inst = inst->holdingTypeInformation();
+    }
+
+  return dynamicEntity();
+  }
+
+SEntity *SProperty::dynamicEntity()
+  {
   SEntity *e = castTo<SEntity>();
   if(e)
     {
     return e;
     }
 
-  SProperty *par = parent();
+  SPropertyContainer *par = parent();
   if(par)
     {
-    return par->entity();
+    return par->dynamicEntity();
     }
   return 0;
   }
@@ -1065,10 +1088,11 @@ void SProperty::internalSetName(const QString &name)
 void SProperty::postSet()
   {
   SProfileFunction
-  SPropertyContainer *c = parent();
-  xAssert(c); // setting the db object? that is odd. Or a property in undo somewhere?
-  const SPropertyInformation *info = c->typeInformation();
-  info->functions().postChildSet(c, this);
+  //SPropertyContainer *c = parent();
+  //xAssert(c); // setting the db object? that is odd. Or a property in undo somewhere?
+  //const SPropertyInformation *info = c->typeInformation();
+  //info->functions().postChildSet(c, this);
+  SPropertyContainer::postChildSet(0, this);
 
   _flags.clearFlag(Dirty);
   }
@@ -1081,12 +1105,14 @@ void SProperty::setDirty()
     _flags.setFlag(Dirty);
     SPropertyContainer *c = parent();
     xAssert(c);
-    const SPropertyInformation *info = c->typeInformation();
-    info->functions().postChildSet(c, this);
+    //const SPropertyInformation *info = c->typeInformation();
+    //info->functions().postChildSet(c, this);
+    SPropertyContainer::postChildSet(0, this);
 
-    if(entity())
+    SEntity *ent = entity();
+    if(ent)
       {
-      entity()->informDirtyObservers(this);
+      ent->informDirtyObservers(this);
       }
     }
   }
