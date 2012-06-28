@@ -570,40 +570,16 @@ SEntity *SProperty::entity()
   {
   SProfileFunction
 
-  SPropertyInformation *info = SEntity::staticTypeInformation();
+  SProperty *prop = this;
 
-  xsize offset = 0;
-  SPropertyInstanceInformation *inst = baseInstanceInformation();
-  while(inst)
+  SEntity *e = prop->castTo<SEntity>();
+  while(!e && prop)
     {
-    offset += inst->location();
-    if(inst->childInformation() == info)
-      {
-      xuint8* prop = (xuin8*)this;
-      prop -= offset;
-      SProperty *ent = (SProperty*)prop;
-      return ent->uncheckedCastTo<SEntity>();
-      }
-    inst = inst->holdingTypeInformation();
+    prop = prop->parent();
+    e = prop->castTo<SEntity>();
     }
 
-  return dynamicEntity();
-  }
-
-SEntity *SProperty::dynamicEntity()
-  {
-  SEntity *e = castTo<SEntity>();
-  if(e)
-    {
-    return e;
-    }
-
-  SPropertyContainer *par = parent();
-  if(par)
-    {
-    return par->dynamicEntity();
-    }
-  return 0;
+  return e;
   }
 
 void SProperty::setParent(SPropertyContainer *newParent)
