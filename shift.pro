@@ -75,7 +75,9 @@ HEADERS += \
     spropertyinformationhelpers.h \
     spropertygroup.h \
     shandlerimpl.h \
-    spropertycontaineriterators.h
+    spropertycontaineriterators.h \
+    spropertymacros.h \
+    spropertychanges.h
 
 
 

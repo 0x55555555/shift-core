@@ -449,6 +449,20 @@ SProperty *SProperty::loadProperty(SPropertyContainer *parent, SLoader &l)
   return prop;
   }
 
+SHandler *SProperty::handler()
+  {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  return _handler;
+#else
+  return 0;
+#endif
+  }
+
+const SHandler *SProperty::handler() const
+  {
+  return const_cast<SProperty*>(this)->handler();
+  }
+
 SDatabase *SProperty::database()
   {
 #ifdef S_CENTRAL_CHANGE_HANDLER
@@ -783,7 +797,7 @@ bool SProperty::ConnectionChange::inform(bool back)
 void SProperty::ConnectionChange::setParentHasInputConnection(SProperty *prop)
   {
   xAssert(prop);
-  prop->_flags.setFlag(ParentHasInput);
+  prop->_flags.setFlag(SProperty::ParentHasInput);
 
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
@@ -825,7 +839,7 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
     SProperty *parent = cont->parent();
     if(!parent->input() &&
         !parent->instanceInformation()->isComputed() &&
-        !parent->_flags.hasFlag(ParentHasInput))
+        !parent->_flags.hasFlag(SProperty::ParentHasInput))
       {
       xForeach(auto child, cont->walker())
         {
@@ -848,7 +862,7 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
     SPropertyContainer *parent = cont->parent();
     if(!parent->output() &&
         !parent->instanceInformation()->affectsSiblings() &&
-        !parent->_flags.hasFlag(ParentHasOutput))
+        !parent->_flags.hasFlag(SProperty::ParentHasOutput))
       {
       xForeach(auto child, cont->walker())
         {
@@ -902,6 +916,11 @@ void SProperty::disconnectInternal(SProperty *prop) const
       output = &((*output)->_nextOutput);
       }
     }
+  }
+
+QString SProperty::pathTo(const SProperty *that) const
+  {
+  return that->path(this);
   }
 
 QString SProperty::path() const

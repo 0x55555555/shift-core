@@ -15,6 +15,7 @@
 #include "sinterface.h"
 #include "sinterfaces.h"
 #include "shandler.h"
+#include "spropertychanges.h"
 #include "QByteArray"
 
 typedef QVector<QString> SStringVector;
