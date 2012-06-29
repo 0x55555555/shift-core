@@ -102,7 +102,11 @@ bool SPropertyContainer::TreeChange::inform(bool back)
   return true;
   }
 
-SPropertyContainer::SPropertyContainer() : SProperty(), _dynamicChild(0), _containedProperties(0)
+SPropertyContainer::SPropertyContainer()
+  : SProperty(), _dynamicChild(0), _containedProperties(0)
+#ifndef S_CENTRAL_CHANGE_HANDLER
+    , _database(0)
+#endif
   {
   }
 
@@ -406,7 +410,16 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
 void SPropertyContainer::internalSetupProperty(SProperty *newProp)
   {
   // set up state info
+#ifdef S_CENTRAL_CHANGE_HANDLER
   newProp->_handler = SHandler::findHandler(this, newProp);
+#else
+  SPropertyContainer *cont = newProp->castTo<SPropertyContainer>();
+  if(cont)
+    {
+    xAssert(_database);
+    cont->_database = _database;
+    }
+#endif
 
   // is any prop in
   bool parentComputed = isComputed() || _flags.hasFlag(ParentHasInput);

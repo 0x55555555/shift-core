@@ -155,7 +155,10 @@ bool SProperty::NameChange::inform(bool backwards)
   }
 
 SProperty::SProperty() : _input(0), _output(0), _nextOutput(0),
-    _handler(0), _instanceInfo(0), _flags(Dirty)
+    _instanceInfo(0), _flags(Dirty)
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    , _handler(0)
+  #endif
 #ifdef S_PROPERTY_USER_DATA
     , _userData(0)
 #endif
@@ -448,12 +451,20 @@ SProperty *SProperty::loadProperty(SPropertyContainer *parent, SLoader &l)
 
 SDatabase *SProperty::database()
   {
+#ifdef S_CENTRAL_CHANGE_HANDLER
   return handler()->database();
+#else
+  return parent()->_database;
+#endif
   }
 
 const SDatabase *SProperty::database() const
   {
+#ifdef S_CENTRAL_CHANGE_HANDLER
   return handler()->database();
+#else
+  return parent()->_database;
+#endif
   }
 
 void SProperty::beginBlock()

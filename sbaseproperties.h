@@ -292,9 +292,10 @@ private:
 
     bool inform(bool)
       {
-      if(ComputeChange::property()->entity())
+      SEntity *ent = ComputeChange::property()->entity();
+      if(ent)
         {
-        ComputeChange::property()->entity()->informDirtyObservers(ComputeChange::property());
+        ent->informDirtyObservers(ComputeChange::property());
         }
       return true;
       }

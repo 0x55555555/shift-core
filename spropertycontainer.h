@@ -207,6 +207,7 @@ private:
   friend void setDependantsDirty(SProperty* prop, bool force);
   SProperty *_dynamicChild;
   xsize _containedProperties;
+  SDatabase *_database;
 
   QString makeUniqueName(const QString &name) const;
   void internalInsertProperty(SProperty *, xsize index);

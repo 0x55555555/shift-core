@@ -49,8 +49,12 @@ SDatabase::SDatabase()
 #endif
   xAssert(_memory);
 
-
+#ifdef S_CENTRAL_CHANGE_HANDLER
   _handler = this;
+#else
+  _stateStorageEnabled = false;
+  SPropertyContainer::_database = this;
+#endif
   setDatabase(this);
   _instanceInfo = &_instanceInfoData;
   }
@@ -140,8 +144,14 @@ SProperty *SDatabase::createDynamicProperty(const SPropertyInformation *type, SP
     }
 
   instanceInfo->setChildInformation(type);
+
+
+#ifdef S_CENTRAL_CHANGE_HANDLER
   prop->_handler = SHandler::findHandler(parentToBe, prop);
   xAssert(_handler);
+#else
+  (void)parentToBe;
+#endif
 
   initiateProperty(prop);
   xAssert(prop->isDirty());
@@ -225,6 +235,10 @@ void SDatabase::initiateProperty(SProperty *prop)
     const SPropertyInformation *metaData = container->typeInformation();
     xAssert(metaData);
 
+#ifndef S_CENTRAL_CHANGE_HANDLER
+    container->_database = SPropertyContainer::_database;
+#endif
+
     initiatePropertyFromMetaData(container, metaData);
     }
 
@@ -233,7 +247,9 @@ void SDatabase::initiateProperty(SProperty *prop)
   {
     xAssert(prop->isDirty());
   }
+#ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(prop->handler());
+#endif
   }
 
 void SDatabase::postInitiateProperty(SProperty *prop)
@@ -276,7 +292,9 @@ void SDatabase::postInitiateProperty(SProperty *prop)
     }
 #endif
 
+#ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(prop->handler());
+#endif
   }
 
 void SDatabase::uninitiateProperty(SProperty *prop)

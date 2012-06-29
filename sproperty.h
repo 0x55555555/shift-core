@@ -66,10 +66,15 @@ class SInterfaceBase;
   S_REGISTER_TYPE_FUNCTION(myName)
 
 // its possible we might want to not use a handler globally, and just apply all changes directly.
-#if 1
+#ifdef S_CENTRAL_CHANGE_HANDLER
 # define SPropertyDoChangeNonLocal(type, ths, ...) {\
   SHandler *hand = ths->handler(); \
   hand->doChange<type>(__VA_ARGS__); \
+  }
+#else
+# define SPropertyDoChangeNonLocal(type, ths, ...) {\
+  type change(__VA_ARGS__); \
+  ((SChange&)change).apply(); \
   }
 #endif
 
@@ -132,8 +137,23 @@ public:
   QVector<const SProperty *> affects() const;
   QVector<SProperty *> affects();
 
-  SHandler *handler() { return _handler; }
-  const SHandler *handler() const { return _handler; }
+  SHandler *handler()
+    {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    return _handler;
+#else
+    return 0;
+#endif
+    }
+  const SHandler *handler() const
+    {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    return _handler;
+#else
+    return 0;
+#endif
+    }
+
   SDatabase *database();
   const SDatabase *database() const;
   void beginBlock();
@@ -364,7 +384,6 @@ private:
   SProperty *_output;
   SProperty *_nextOutput;
 
-  SHandler *_handler;
   const InstanceInformation *_instanceInfo;
 
   enum Flags
@@ -375,6 +394,10 @@ private:
     PreGetting = 8
     };
   XFlags<Flags, xuint8> _flags;
+
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  SHandler *_handler;
+#endif
 
 #ifdef S_PROPERTY_USER_DATA
   UserData *_userData;

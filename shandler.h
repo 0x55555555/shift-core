@@ -59,12 +59,16 @@ class SHIFT_EXPORT SBlock
 public:
   SBlock(SHandler *db) : _db(db)
     {
+#ifdef S_CENTRAL_CHANGE_HANDLER
     _db->beginBlock();
+#endif
     }
 
   ~SBlock()
     {
+#ifdef S_CENTRAL_CHANGE_HANDLER
     _db->endBlock();
+#endif
     }
 
 private:
