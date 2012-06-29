@@ -15,6 +15,7 @@
 #include "sinterface.h"
 #include "sinterfaces.h"
 #include "shandler.h"
+#include "spropertychanges.h"
 #include "QByteArray"
 
 typedef QVector<QString> SStringVector;
@@ -107,8 +108,7 @@ public:
       }
     ~ComputeLock()
       {
-      SHandler* han = _ptr->handler();
-      han->doChange<Change>(_ptr);
+      SPropertyDoChangeNonLocal(Change, _ptr, _ptr);
       }
 
     T* data()
@@ -180,8 +180,7 @@ public:
       }
     ~Lock()
       {
-      SHandler* han = _ptr->handler();
-      han->doChange<Change>(_oldData, *_data, _ptr);
+      SPropertyDoChange(Change, _oldData, *_data, _ptr);
       _data = 0;
       }
 
@@ -294,9 +293,10 @@ private:
 
     bool inform(bool)
       {
-      if(ComputeChange::property()->entity())
+      SEntity *ent = ComputeChange::property()->entity();
+      if(ent)
         {
-        ComputeChange::property()->entity()->informDirtyObservers(ComputeChange::property());
+        ent->informDirtyObservers(ComputeChange::property());
         }
       return true;
       }
@@ -410,8 +410,7 @@ public:
 
 template <typename T, typename DERIVED> void SPODProperty<T, DERIVED>::assign(const T &in)
   {
-  SHandler *h = SProperty::handler();
-  h->doChange<Change>(SPODPropertyBase<T, DERIVED>::_value, in, this);
+  SPropertyDoChange(Change, SPODPropertyBase<T, DERIVED>::_value, in, this);
   }
 
 #endif // SBASEPROPERTIES_H

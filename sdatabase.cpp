@@ -9,6 +9,7 @@
 #include "xqtwrappers.h"
 #include "spropertyinformationhelpers.h"
 #include "XConvertScriptSTL.h"
+#include "spropertycontaineriterators.h"
 
 #ifdef X_DEBUG
 # include "XMemoryTracker"
@@ -48,8 +49,12 @@ SDatabase::SDatabase()
 #endif
   xAssert(_memory);
 
-
+#ifdef S_CENTRAL_CHANGE_HANDLER
   _handler = this;
+#else
+  _stateStorageEnabled = false;
+  SPropertyContainer::_database = this;
+#endif
   setDatabase(this);
   _instanceInfo = &_instanceInfoData;
   }
@@ -57,7 +62,7 @@ SDatabase::SDatabase()
 SDatabase::~SDatabase()
   {
   internalClear();
-  _child = 0;
+  _dynamicChild = 0;
 
   clearChanges();
 
@@ -139,8 +144,14 @@ SProperty *SDatabase::createDynamicProperty(const SPropertyInformation *type, SP
     }
 
   instanceInfo->setChildInformation(type);
+
+
+#ifdef S_CENTRAL_CHANGE_HANDLER
   prop->_handler = SHandler::findHandler(parentToBe, prop);
   xAssert(_handler);
+#else
+  (void)parentToBe;
+#endif
 
   initiateProperty(prop);
   xAssert(prop->isDirty());
@@ -190,10 +201,8 @@ void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, cons
       childInformation->functions().createPropertyInPlace(thisProp);
       }
 
-    xAssert(thisProp->_nextSibling == 0);
-
     thisProp->_instanceInfo = child;
-    container->internalInsertProperty(true, thisProp, X_SIZE_SENTINEL);
+    container->internalSetupProperty(thisProp);
     initiateProperty(thisProp);
     }
   }
@@ -229,6 +238,10 @@ void SDatabase::initiateProperty(SProperty *prop)
     const SPropertyInformation *metaData = container->typeInformation();
     xAssert(metaData);
 
+#ifndef S_CENTRAL_CHANGE_HANDLER
+    container->_database = SPropertyContainer::_database;
+#endif
+
     initiatePropertyFromMetaData(container, metaData);
     }
 
@@ -237,7 +250,9 @@ void SDatabase::initiateProperty(SProperty *prop)
   {
     xAssert(prop->isDirty());
   }
+#ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(prop->handler());
+#endif
   }
 
 void SDatabase::postInitiateProperty(SProperty *prop)
@@ -282,7 +297,9 @@ void SDatabase::postInitiateProperty(SProperty *prop)
     }
 #endif
 
+#ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(prop->handler());
+#endif
   }
 
 void SDatabase::uninitiateProperty(SProperty *prop)

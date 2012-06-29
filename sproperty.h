@@ -2,8 +2,8 @@
 #define SPROPERTY_H
 
 #include "sglobal.h"
-#include "XObject"
 #include "schange.h"
+#include "spropertymacros.h"
 #include "XFlags"
 #include "XInterface.h"
 
@@ -20,50 +20,9 @@ class SPropertyInformationCreateData;
 class SSaver;
 class SLoader;
 class SInterfaceBase;
-
-#ifdef S_PROPERTY_USER_DATA
-#define S_USER_DATA_TYPE(typeId) public: \
-  enum { UserDataType = SUserDataTypes::typeId }; \
-  virtual xuint32 userDataTypeId() const { return UserDataType; } \
-  private:
-#endif
-
-#define S_REGISTER_TYPE_FUNCTION(name) \
-  public: static void createTypeInformation(SPropertyInformationTyped<name> *info, \
-    const SPropertyInformationCreateData &data); \
-  static const SPropertyInformation *staticTypeInformation(); \
-  static const SPropertyInformation *bootstrapStaticTypeInformation();
-
-#define S_ADD_INSTANCE_INFORMATION(name) const InstanceInformation *instanceInformation() const \
-  { return static_cast<const InstanceInformation *>(baseInstanceInformation()); }
-
-
-#define S_ADD_STATIC_INFO(name, version) \
-  public: enum { Version = version, IsAbstract = false };
-
-#define S_ADD_ABSTRACT_STATIC_INFO(name, version) \
-  public: enum { Version = version, IsAbstract = true };
-
-#define S_PROPERTY_ROOT(myName, version) \
-  public: \
-  S_ADD_STATIC_INFO(myName, version); \
-  S_ADD_INSTANCE_INFORMATION(myName) \
-  typedef void ParentType; \
-  S_REGISTER_TYPE_FUNCTION(myName)
-
-#define S_PROPERTY(myName, superName, version) \
-  public: \
-  S_ADD_STATIC_INFO(myName, version) \
-  S_ADD_INSTANCE_INFORMATION(myName) \
-  typedef superName ParentType; \
-  S_REGISTER_TYPE_FUNCTION(myName)
-
-#define S_ABSTRACT_PROPERTY(myName, superName, version) \
-  public: \
-  S_ADD_ABSTRACT_STATIC_INFO(myName, version) \
-  S_ADD_INSTANCE_INFORMATION(myName) \
-  typedef superName ParentType; \
-  S_REGISTER_TYPE_FUNCTION(myName)
+class SPropertyDataChange;
+class SPropertyConnectionChange;
+class SPropertyNameChange;
 
 class SHIFT_EXPORT SProperty
   {
@@ -93,24 +52,11 @@ public:
   SProperty *output() const {return _output;}
   SProperty *nextOutput() const {return _nextOutput;}
 
-  template <typename T> T *output() const
-    {
-    SProperty *p = output();
-    while(p)
-      {
-      T *t = p->castTo<T>();
-      if(t)
-        {
-        return t;
-        }
-      p = p->nextOutput();
-      }
-    return 0;
-    }
+  template <typename T> T *output() const;
 
   // connect this property (driver) to the passed property (driven)
   void connect(SProperty *) const;
-  void setInput(const SProperty *inp) { if(inp) { inp->connect(this); } else if(input()) { this->disconnect(input()); } }
+  void setInput(const SProperty *inp);
   void connect(const QVector<SProperty*> &) const;
   void disconnect(SProperty *) const;
   void disconnect() const;
@@ -122,8 +68,9 @@ public:
   QVector<const SProperty *> affects() const;
   QVector<SProperty *> affects();
 
-  SHandler *handler() { return _handler; }
-  const SHandler *handler() const { return _handler; }
+  SHandler *handler();
+  const SHandler *handler() const;
+
   SDatabase *database();
   const SDatabase *database() const;
   void beginBlock();
@@ -141,10 +88,10 @@ public:
   void setDependantsDirty();
   void preGet() const
     {
-    if(_flags.hasFlag(ParentHasInput))
+    /*if(_flags.hasFlag(ParentHasInput))
       {
       updateParent();
-      }
+      }*/
 
     if(_flags.hasFlag(Dirty))
       {
@@ -157,11 +104,7 @@ public:
   bool isDynamic() const;
 
   // find a path from this to that
-  QString pathTo(const SProperty *that) const
-    {
-    return that->path(this);
-    }
-
+  QString pathTo(const SProperty *that) const;
   QString path() const;
   QString path(const SProperty *from) const;
 
@@ -186,6 +129,7 @@ public:
     xAssert(castTo<T>());
     return static_cast<T *>(this);
     }
+
   template <typename T>const T *uncheckedCastTo() const
     {
     xAssert(castTo<T>());
@@ -240,90 +184,9 @@ public:
   void removeUserData(UserData *userData);
 #endif
 
-  class DataChange : public SChange
-    {
-    S_CHANGE(DataChange, SChange, 53)
-  public:
-    DataChange(SProperty *p) : _property(p) { }
-    SProperty *property() {return _property;}
-    const SProperty *property() const {return _property;}
-  private:
-    SProperty *_property;
-    };
-
-  class NameChange : public SChange
-    {
-    S_CHANGE(NameChange, SChange, 50)
-  public:
-    NameChange(const QString &b, const QString &a, SProperty *ent)
-      : _before(b), _after(a), _property(ent)
-      { }
-    const QString &before(bool back=false) const
-      {
-      if(back)
-        {
-        return _after;
-        }
-      return _before;
-      }
-    const QString &after(bool back=false) const
-      {
-      if(back)
-        {
-        return _before;
-        }
-      return _after;
-      }
-    SProperty *property() {return _property;}
-    const SProperty *property() const {return _property;}
-  private:
-    QString _before;
-    QString _after;
-    SProperty *_property;
-    bool apply();
-    bool unApply();
-    bool inform(bool back);
-    };
-
-  class ConnectionChange : public SChange
-    {
-    S_CHANGE(ConnectionChange, SChange, 51)
-  public:
-    enum Mode
-      {
-      Connect,
-      Disconnect
-      };
-
-    ConnectionChange(Mode m, SProperty *driver, SProperty *driven)
-      : _driver(driver), _driven(driven), _mode(m)
-      { }
-    SProperty *driver() { return _driver; }
-    SProperty *driven() { return _driven; }
-    const SProperty *driver() const { return _driver; }
-    const SProperty *driven() const { return _driven; }
-    Mode mode(bool back=false) const
-      {
-      if(back)
-        {
-        return (Mode)(_mode - Disconnect);
-        }
-      return _mode;
-      }
-
-    static void setParentHasInputConnection(SProperty *);
-    static void setParentHasOutputConnection(SProperty *);
-    static void clearParentHasInputConnection(SProperty *);
-    static void clearParentHasOutputConnection(SProperty *);
-
-  private:
-    SProperty *_driver;
-    SProperty *_driven;
-    Mode _mode;
-    bool apply();
-    bool unApply();
-    bool inform(bool back);
-    };
+  typedef SPropertyDataChange DataChange;
+  typedef SPropertyConnectionChange ConnectionChange;
+  typedef SPropertyNameChange NameChange;
 
   static void assignProperty(const SProperty *, SProperty *);
   static void saveProperty(const SProperty *, SSaver & );
@@ -350,11 +213,10 @@ private:
   void connectInternal(SProperty *) const;
   void disconnectInternal(SProperty *) const;
 
-  SProperty *_nextSibling;
   SProperty *_input;
   SProperty *_output;
   SProperty *_nextOutput;
-  SHandler *_handler;
+
   const InstanceInformation *_instanceInfo;
 
   enum Flags
@@ -366,6 +228,10 @@ private:
     };
   XFlags<Flags, xuint8> _flags;
 
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  SHandler *_handler;
+#endif
+
 #ifdef S_PROPERTY_USER_DATA
   UserData *_userData;
 #endif
@@ -375,6 +241,9 @@ private:
   friend class SPropertyContainer;
   friend class SPropertyInstanceInformation;
   friend class SProcessManager;
+  friend class SPropertyDataChange;
+  friend class SPropertyConnectionChange;
+  friend class SPropertyNameChange;
   };
 
 template <typename T> inline const XInterfaceBase *findPropertyInterface(const T* prop)
@@ -405,6 +274,21 @@ X_SCRIPTABLE_TYPE(SProperty)
 template <> inline const XInterfaceBase *findInterface<SProperty>(const SProperty* p)
   {
   return findPropertyInterface<SProperty>(p);
+  }
+
+template <typename T> inline T *SProperty::output() const
+  {
+  SProperty *p = output();
+  while(p)
+    {
+    T *t = p->castTo<T>();
+    if(t)
+      {
+      return t;
+      }
+    p = p->nextOutput();
+    }
+  return 0;
   }
 
 #endif // SPROPERTY_H

@@ -6,6 +6,7 @@
 #ifdef X_CPPOX_VARIADIC_TEMPLATES_SUPPORT
 template <typename CLS, typename... CLSARGS> void SHandler::doChange(CLSARGS&&... params)
   {
+  SProfileFunction
   bool oldStateStorageEnabled = database()->stateStorageEnabled();
   database()->setStateStorageEnabled(false);
 
@@ -51,6 +52,7 @@ template <typename CLS, typename... CLSARGS> void SHandler::doChange(CLSARGS&&..
   }
 #else
 #define DO_CHANGE_IMPL(...) { \
+  SProfileFunction \
   bool oldStateStorageEnabled = database()->stateStorageEnabled(); \
   database()->setStateStorageEnabled(false); \
   if(!oldStateStorageEnabled) { \

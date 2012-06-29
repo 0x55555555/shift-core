@@ -2,6 +2,7 @@
 #include "QFormLayout"
 #include "QWidget"
 #include "spropertydefaultui.h"
+#include "spropertycontaineriterators.h"
 #include "QString"
 #include "sentity.h"
 #include "sproperty.h"

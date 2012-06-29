@@ -74,7 +74,10 @@ HEADERS += \
     sinterfaces.h \
     spropertyinformationhelpers.h \
     spropertygroup.h \
-    shandlerimpl.h
+    shandlerimpl.h \
+    spropertycontaineriterators.h \
+    spropertymacros.h \
+    spropertychanges.h
 
 
 

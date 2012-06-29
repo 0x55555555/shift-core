@@ -2,6 +2,7 @@
 #define SITERATOR_H
 
 #include "sentity.h"
+#include "spropertycontaineriterators.h"
 
 namespace SIterator
 {
@@ -241,12 +242,18 @@ public:
       }
 
     ChildTreeExtraData &d = i.data();
-    SProperty *n = d._currentParent->nextSibling(current);
+    auto walker = d._currentParent->walkerFrom(current);
+    auto walkerIt = ++walker.begin();
+    SProperty *n = *walkerIt;
 
     while(!n && d._currentParent != i.data()._root)
       {
       SPropertyContainer *parent = d._currentParent->parent();
-      n = parent->nextSibling(d._currentParent);
+
+      auto walker = d._currentParent->walkerFrom(d._currentParent);
+      auto walkerIt = ++walker.begin();
+      n = *walkerIt;
+
       d._currentParent = parent;
       }
 
@@ -262,38 +269,43 @@ public:
   inline void first(Iterator& i) const
     {
     ChildTreeExtraData &d = i.data();
-    d._root = property();
-    d._currentParent = d._root->parent();
+    d._currentParent = property()->parent();
+    d._root = d._currentParent;
     i.setProperty(property()->entity());
     }
 
   inline static void next(Iterator &i)
     {
-    SProperty *current = *i;
-    SEntity *cont = current->castTo<SEntity>();
+    SEntity *current = *i;
     // there is a non-entity in children?
-    xAssert(cont);
-    if(cont)
+    xAssert(current);
+    if(current)
       {
-      SEntity *child = cont->children.firstChild<SEntity>();
+      SEntity *child = *current->children.walker<SEntity>().begin();
       if(child)
         {
         ChildTreeExtraData &d = i.data();
-        d._currentParent = cont;
+        d._currentParent = &current->children;
 
         i.setProperty(child);
         return;
         }
 
       ChildTreeExtraData &d = i.data();
-      SEntity *n = d._currentParent->nextSibling<SEntity>(cont);
+      auto walker = d._currentParent->walkerFrom<SEntity>(current);
+      auto walkerIt = ++walker.begin();
+      SEntity *n = *walkerIt;
 
       while(!n && d._currentParent != i.data()._root)
         {
         // get the parent's (children member) parent (should be an entity,
         // in another children member) and get its next sibling.
-        SPropertyContainer *parent = d._currentParent->parent()->parent();
-        n = parent->nextSibling<SEntity>(d._currentParent);
+        SEntity* parentEntity = d._currentParent->parent()->castTo<SEntity>();
+        SPropertyContainer *parent = parentEntity->parent();
+
+        auto walker = parent->walkerFrom<SEntity>(parentEntity);
+        auto walkerIt = ++walker.begin();
+        n = *walkerIt;
         d._currentParent = parent;
         }
 

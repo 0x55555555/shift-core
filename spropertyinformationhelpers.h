@@ -179,8 +179,6 @@ public:
 
   static SPropertyInformation *createTypeInformation(const char *name, const SPropertyInformation *parentType)
     {
-    SProfileFunction
-
     typedef void (*FnType)(SPropertyInformation *, const char *);
     FnType fn = SPropertyInformationTyped<PropType>::initiate;
 

@@ -8,6 +8,7 @@
 #include "sprocessmanager.h"
 #include "XProfiler"
 #include "styperegistry.h"
+#include "spropertycontaineriterators.h"
 #include "spropertyinformationhelpers.h"
 #include "XConvertScriptSTL.h"
 #include "shandlerimpl.h"
@@ -75,20 +76,21 @@ void SProperty::setDependantsDirty()
     }
 
   const SPropertyInstanceInformation *child = baseInstanceInformation();
+  xAssert(child);
 
-  if(child && child->affects())
+  const xsize *affectsLocations = child->affects();
+  if(affectsLocations)
     {
-    SPropertyContainer *par = parent();
-    const SPropertyInformation *parentInfo = par->typeInformation();
-    xsize i=0;
-    while(child->affects()[i])
+    xuint8* parentLocation = (xuint8*)this;
+    parentLocation -= child->location();
+
+    for(;*affectsLocations; ++affectsLocations)
       {
-      const SPropertyInstanceInformation *propInst = parentInfo->child(child->affects()[i]);
-      SProperty *affectsProp = propInst->locateProperty(par);
+      xuint8* affectedLocation = parentLocation + *affectsLocations;
+      SProperty *affectsProp = (SProperty *)affectedLocation;
 
       xAssert(affectsProp);
       affectsProp->setDirty();
-      i++;
       }
     }
 
@@ -98,11 +100,9 @@ void SProperty::setDependantsDirty()
     SPropertyContainer *c = castTo<SPropertyContainer>();
     if(c)
       {
-      SProperty *child = c->_child;
-      while(child)
+      xForeach(auto child, c->walker())
         {
         child->setDirty();
-        child = child->_nextSibling;
         }
       }
     }
@@ -154,8 +154,11 @@ bool SProperty::NameChange::inform(bool backwards)
   return true;
   }
 
-SProperty::SProperty() : _nextSibling(0), _input(0), _output(0), _nextOutput(0),
-    _handler(0), _instanceInfo(0), _flags(Dirty)
+SProperty::SProperty() : _input(0), _output(0), _nextOutput(0),
+    _instanceInfo(0), _flags(Dirty)
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    , _handler(0)
+  #endif
 #ifdef S_PROPERTY_USER_DATA
     , _userData(0)
 #endif
@@ -225,7 +228,7 @@ void SProperty::setName(const QString &in)
     realName = fixedName + QString::number(num++);
     }
 
-  handler()->doChange<NameChange>(name(), realName, this);
+  SPropertyDoChange(NameChange, name(), realName, this);
   }
 
 void SProperty::assignProperty(const SProperty *, SProperty *)
@@ -446,14 +449,36 @@ SProperty *SProperty::loadProperty(SPropertyContainer *parent, SLoader &l)
   return prop;
   }
 
+SHandler *SProperty::handler()
+  {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  return _handler;
+#else
+  return 0;
+#endif
+  }
+
+const SHandler *SProperty::handler() const
+  {
+  return const_cast<SProperty*>(this)->handler();
+  }
+
 SDatabase *SProperty::database()
   {
+#ifdef S_CENTRAL_CHANGE_HANDLER
   return handler()->database();
+#else
+  return parent()->_database;
+#endif
   }
 
 const SDatabase *SProperty::database() const
   {
+#ifdef S_CENTRAL_CHANGE_HANDLER
   return handler()->database();
+#else
+  return parent()->_database;
+#endif
   }
 
 void SProperty::beginBlock()
@@ -570,18 +595,16 @@ SEntity *SProperty::entity()
   {
   SProfileFunction
 
-  SEntity *e = castTo<SEntity>();
-  if(e)
+  SProperty *prop = this;
+
+  SEntity *e = prop->castTo<SEntity>();
+  while(!e && prop)
     {
-    return e;
+    prop = prop->parent();
+    e = prop->castTo<SEntity>();
     }
 
-  SProperty *par = parent();
-  if(par)
-    {
-    return par->entity();
-    }
-  return 0;
+  return e;
   }
 
 void SProperty::setParent(SPropertyContainer *newParent)
@@ -621,12 +644,25 @@ const SPropertyContainer *SProperty::embeddedParent() const
   return inst->locateConstParent(this);
   }
 
+void SProperty::setInput(const SProperty *inp)
+  {
+  SProfileFunction
+  if(inp)
+    {
+    SPropertyDoChange(ConnectionChange, ConnectionChange::Connect, (SProperty*)inp, this);
+    }
+  else if(input())
+    {
+    SPropertyDoChange(ConnectionChange, ConnectionChange::Disconnect, (SProperty*)input(), this);
+    }
+  }
+
 void SProperty::connect(SProperty *prop) const
   {
   SProfileFunction
   if(prop && prop != this)
     {
-    ((SDatabase*)handler())->doChange<ConnectionChange>(ConnectionChange::Connect, (SProperty*)this, prop);
+    prop->setInput(this);
     }
   else
     {
@@ -648,8 +684,8 @@ void SProperty::connect(const QVector<SProperty*> &l) const
 
 void SProperty::disconnect(SProperty *prop) const
   {
-  SProfileFunction
-  ((SDatabase*)handler())->doChange<ConnectionChange>(ConnectionChange::Disconnect, (SProperty*)this, prop);
+  xAssert(this == prop->input());
+  prop->setInput(0);
   }
 
 bool SProperty::isComputed() const
@@ -761,7 +797,7 @@ bool SProperty::ConnectionChange::inform(bool back)
 void SProperty::ConnectionChange::setParentHasInputConnection(SProperty *prop)
   {
   xAssert(prop);
-  prop->_flags.setFlag(ParentHasInput);
+  prop->_flags.setFlag(SProperty::ParentHasInput);
 
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
@@ -783,15 +819,13 @@ void SProperty::ConnectionChange::setParentHasOutputConnection(SProperty *prop)
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    SProperty *child = cont->_child;
-    while(child)
+    xForeach(auto child, cont->walker())
       {
       if(!child->_flags.hasFlag(SProperty::ParentHasOutput))
         {
         child->_flags.setFlag(SProperty::ParentHasOutput);
         setParentHasOutputConnection(child);
         }
-      child = child->_nextSibling;
       }
     }
   }
@@ -805,7 +839,7 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
     SProperty *parent = cont->parent();
     if(!parent->input() &&
         !parent->instanceInformation()->isComputed() &&
-        !parent->_flags.hasFlag(ParentHasInput))
+        !parent->_flags.hasFlag(SProperty::ParentHasInput))
       {
       xForeach(auto child, cont->walker())
         {
@@ -828,7 +862,7 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
     SPropertyContainer *parent = cont->parent();
     if(!parent->output() &&
         !parent->instanceInformation()->affectsSiblings() &&
-        !parent->_flags.hasFlag(ParentHasOutput))
+        !parent->_flags.hasFlag(SProperty::ParentHasOutput))
       {
       xForeach(auto child, cont->walker())
         {
@@ -882,6 +916,11 @@ void SProperty::disconnectInternal(SProperty *prop) const
       output = &((*output)->_nextOutput);
       }
     }
+  }
+
+QString SProperty::pathTo(const SProperty *that) const
+  {
+  return that->path(this);
   }
 
 QString SProperty::path() const
@@ -1055,10 +1094,11 @@ void SProperty::internalSetName(const QString &name)
 void SProperty::postSet()
   {
   SProfileFunction
-  SPropertyContainer *c = parent();
-  xAssert(c); // setting the db object? that is odd. Or a property in undo somewhere?
-  const SPropertyInformation *info = c->typeInformation();
-  info->functions().postChildSet(c, this);
+  //SPropertyContainer *c = parent();
+  //xAssert(c); // setting the db object? that is odd. Or a property in undo somewhere?
+  //const SPropertyInformation *info = c->typeInformation();
+  //info->functions().postChildSet(c, this);
+  SPropertyContainer::postChildSet(0, this);
 
   _flags.clearFlag(Dirty);
   }
@@ -1071,12 +1111,14 @@ void SProperty::setDirty()
     _flags.setFlag(Dirty);
     SPropertyContainer *c = parent();
     xAssert(c);
-    const SPropertyInformation *info = c->typeInformation();
-    info->functions().postChildSet(c, this);
+    //const SPropertyInformation *info = c->typeInformation();
+    //info->functions().postChildSet(c, this);
+    SPropertyContainer::postChildSet(0, this);
 
-    if(entity())
+    SEntity *ent = entity();
+    if(ent)
       {
-      entity()->informDirtyObservers(this);
+      ent->informDirtyObservers(this);
       }
     }
   }

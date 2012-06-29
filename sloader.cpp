@@ -1,6 +1,7 @@
 #include "sloader.h"
 #include "spropertycontainer.h"
 #include "spropertyinformation.h"
+#include "spropertycontaineriterators.h"
 
 void SLoader::loadChildren(SPropertyContainer *parent)
   {

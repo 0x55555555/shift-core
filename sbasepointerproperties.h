@@ -4,6 +4,7 @@
 #include "sproperty.h"
 #include "sdatabase.h"
 #include "sinterfaces.h"
+#include "spropertycontaineriterators.h"
 
 class SHIFT_EXPORT Pointer : public SProperty
   {
@@ -57,10 +58,7 @@ template <typename PTR> class TypedPointerArray : public STypedPropertyArray<PTR
 public:
   PTR* addPointer(const typename PTR::PtrType *prop)
     {
-    SHandler* db = SProperty::handler();
-    xAssert(db);
-
-    SBlock b(db);
+    SBlock b(SProperty::handler());
     PTR *p = STypedPropertyArray<PTR>::add();
     xAssert(p);
     p->setPointed(prop);
