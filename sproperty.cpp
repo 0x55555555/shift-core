@@ -468,7 +468,8 @@ SDatabase *SProperty::database()
 #ifdef S_CENTRAL_CHANGE_HANDLER
   return handler()->database();
 #else
-  return parent()->_database;
+  SPropertyContainer *cont = parent();
+  return cont->_database;
 #endif
   }
 
@@ -1094,11 +1095,7 @@ void SProperty::internalSetName(const QString &name)
 void SProperty::postSet()
   {
   SProfileFunction
-  //SPropertyContainer *c = parent();
-  //xAssert(c); // setting the db object? that is odd. Or a property in undo somewhere?
-  //const SPropertyInformation *info = c->typeInformation();
-  //info->functions().postChildSet(c, this);
-  SPropertyContainer::postChildSet(0, this);
+  setDependantsDirty();
 
   _flags.clearFlag(Dirty);
   }
@@ -1106,20 +1103,18 @@ void SProperty::postSet()
 void SProperty::setDirty()
   {
   SProfileFunction
-  if((!_flags.hasAnyFlags(Dirty|PreGetting)))
+  if(!_flags.hasAnyFlags(Dirty|PreGetting))
   {
     _flags.setFlag(Dirty);
-    SPropertyContainer *c = parent();
-    xAssert(c);
-    //const SPropertyInformation *info = c->typeInformation();
-    //info->functions().postChildSet(c, this);
-    SPropertyContainer::postChildSet(0, this);
+    setDependantsDirty();
 
+#ifdef S_CENTRAL_CHANGE_HANDLER
     SEntity *ent = entity();
     if(ent)
       {
       ent->informDirtyObservers(this);
       }
+#endif
     }
   }
 

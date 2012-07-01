@@ -174,8 +174,6 @@ public:
   static SProperty *loadProperty(SPropertyContainer *, SLoader &);
   static bool shouldSavePropertyValue(const SProperty *);
 
-  static void postChildSet(SPropertyContainer *, SProperty *);
-
   // iterator members, can be used like for (auto prop : container->walker())
   template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > walker();
   template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > walker() const;

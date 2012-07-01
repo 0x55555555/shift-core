@@ -190,7 +190,9 @@ void SPropertyContainer::clear()
 
 void SPropertyContainer::internalClear()
   {
+#ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(handler());
+#endif
 
   SProperty *dynamic = _dynamicChild;
   while(dynamic)
@@ -202,9 +204,11 @@ void SPropertyContainer::internalClear()
 
   _dynamicChild = 0;
 
-  xForeach(auto prop, walker())
+  const SPropertyInformation *info = typeInformation();
+  xForeach(auto child, info->childWalker())
     {
-    database()->deleteProperty(prop);
+    SProperty *prop = child->locateProperty(this);
+    _database->deleteProperty(prop);
     }
   }
 
@@ -356,13 +360,6 @@ bool SPropertyContainer::shouldSavePropertyValue(const SProperty *p)
     }
 
   return false;
-  }
-
-void SPropertyContainer::postChildSet(SPropertyContainer *cont, SProperty *p)
-  {
-  //(void)cont;
-  //xAssert(cont->parent() || cont == cont->database());
-  p->setDependantsDirty();
   }
 
 void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)

@@ -172,8 +172,11 @@ void SDatabase::deleteProperty(SProperty *prop)
 
 void SDatabase::deleteDynamicProperty(SProperty *prop)
   {
+  X_HEAP_CHECK
   deleteProperty(prop);
+  X_HEAP_CHECK
   _memory->free(prop);
+  X_HEAP_CHECK
   }
 
 void SDatabase::initiateInheritedDatabaseType(const SPropertyInformation *info)
@@ -187,10 +190,9 @@ void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, cons
   {
   xAssert(mD);
 
-  for(xsize i=0, s=mD->childCount(); i<s; ++i)
+  xForeach(auto child, mD->childWalker())
     {
     // no contained properties with duplicated names...
-    const SPropertyInstanceInformation *child = mD->childFromIndex(i);
     const SPropertyInformation *childInformation = child->childInformation();
 
     // extract the properties location from the meta data.
@@ -211,10 +213,8 @@ void SDatabase::uninitiatePropertyFromMetaData(SPropertyContainer *container, co
   {
   xAssert(mD);
 
-  for(xsize i=0; i<mD->childCount(); ++i)
+  xForeach(auto child, mD->childWalker())
     {
-    // no contained properties with duplicated names...
-    const SPropertyInstanceInformation *child = mD->childFromIndex(i);
     // extract the properties location from the meta data.
     SProperty *thisProp = child->locateProperty(container);
 
@@ -267,10 +267,8 @@ void SDatabase::postInitiateProperty(SProperty *prop)
     const SPropertyInformation *metaData = container->typeInformation();
     xAssert(metaData);
 
-    for(xsize i=0, s=metaData->childCount(); i<s; ++i)
+    xForeach(auto child, metaData->childWalker())
       {
-      const SPropertyInstanceInformation *child = metaData->childFromIndex(i);
-
       SProperty *thisProp = child->locateProperty(container);
       postInitiateProperty(thisProp);
       }
