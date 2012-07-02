@@ -113,21 +113,7 @@ public:
   SPropertyInstanceInformation *nextSibling() { return _nextSibling; }
   const SPropertyInstanceInformation *nextSibling() const { return _nextSibling; }
 
-  template <typename T> const SPropertyInstanceInformation *nextSibling() const
-    {
-    const SPropertyInformation *info = T::staticTypeInformation();
-    const SPropertyInstanceInformation *next = _nextSibling;
-    while(next)
-      {
-      const SPropertyInformation *nextInfo = next->childInformation();
-      if(nextInfo->inheritsFromType(info))
-        {
-        return next;
-        }
-      next = next->nextSibling();
-      }
-    return 0;
-    }
+  template <typename T> const SPropertyInstanceInformation *nextSibling() const;
 
   X_ALIGNED_OPERATOR_NEW
 
@@ -359,5 +345,22 @@ inline const SPropertyInformation *SProperty::typeInformation() const
   }
 
 Q_DECLARE_METATYPE(const SPropertyInformation*);
+
+
+template <typename T> const SPropertyInstanceInformation *SPropertyInstanceInformation::nextSibling() const
+  {
+  const SPropertyInformation *info = T::staticTypeInformation();
+  const SPropertyInstanceInformation *next = _nextSibling;
+  while(next)
+    {
+    const SPropertyInformation *nextInfo = next->childInformation();
+    if(nextInfo->inheritsFromType(info))
+      {
+      return next;
+      }
+    next = next->nextSibling();
+    }
+  return 0;
+  }
 
 #endif // SPROPERTYINFORMATION_H
