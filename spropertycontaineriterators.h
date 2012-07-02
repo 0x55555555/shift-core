@@ -45,8 +45,8 @@ public:
     {
     if(_from)
       {
-      auto prop = _from->locateProperty(_c);
-      return prop->uncheckedCastTo<T>();
+      T* prop = static_cast<T*>(_from->locateProperty(_c));
+      return prop;
       }
     return _fromDynamic;
     }
