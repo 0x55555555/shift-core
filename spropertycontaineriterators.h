@@ -45,7 +45,8 @@ public:
     {
     if(_from)
       {
-      return _from->locateProperty(_c)->uncheckedCastTo<T>();
+      SProperty *prop = _from->locateProperty(_c);
+      return prop->uncheckedCastTo<T>();
       }
     return _fromDynamic;
     }
@@ -58,7 +59,7 @@ public:
       }
     else
       {
-      _fromDynamic = _c->nextDynamicSibling<T>(_fromDynamic);
+      _fromDynamic = _c->nextDynamicSibling(_fromDynamic);
       }
     return *this;
     }
