@@ -61,7 +61,7 @@ SDatabase::SDatabase()
 
 SDatabase::~SDatabase()
   {
-  internalClear();
+  uninitiatePropertyFromMetaData(this, typeInformation());
   _dynamicChild = 0;
 
   clearChanges();
@@ -161,13 +161,17 @@ SProperty *SDatabase::createDynamicProperty(const SPropertyInformation *type, SP
   }
 
 void SDatabase::deleteProperty(SProperty *prop)
-  {
-  const SPropertyInformation *info = prop->typeInformation();
+{
+  const SPropertyInstanceInformation *inst = prop->instanceInformation();
+  const SPropertyInformation *info = inst->childInformation();
 
   xAssert(!prop->_flags.hasFlag(PreGetting));
   uninitiateProperty(prop);
 
-  info->functions().destroyProperty(prop);
+  if(inst->extra())
+    {
+    info->functions().destroyProperty(prop);
+    }
   }
 
 void SDatabase::deleteDynamicProperty(SProperty *prop)
@@ -226,6 +230,9 @@ void SDatabase::uninitiatePropertyFromMetaData(SPropertyContainer *container, co
       info->functions().destroyProperty(thisProp);
       }
     }
+
+  container->internalClear();
+  xAssert(container->_dynamicChild == 0);
   }
 
 void SDatabase::initiateProperty(SProperty *prop)

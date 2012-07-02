@@ -166,7 +166,6 @@ bool SPropertyContainer::contains(const SProperty *child) const
 
 SPropertyContainer::~SPropertyContainer()
   {
-  internalClear();
   }
 
 void SPropertyContainer::clear()
@@ -203,13 +202,6 @@ void SPropertyContainer::internalClear()
     }
 
   _dynamicChild = 0;
-
-  const SPropertyInformation *info = typeInformation();
-  xForeach(auto child, info->childWalker())
-    {
-    SProperty *prop = child->locateProperty(this);
-    _database->deleteProperty(prop);
-    }
   }
 
 QString SPropertyContainer::makeUniqueName(const QString &name) const
