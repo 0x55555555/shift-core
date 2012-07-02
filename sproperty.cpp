@@ -998,7 +998,7 @@ SProperty *SProperty::resolvePath(const QString &path)
 
   QString name;
   bool escape = false;
-  for(xsize i = 0, s = path.size(); i < s; ++i)
+  for(int i = 0, s = path.size(); i < s; ++i)
     {
     QChar c = path[i];
 
