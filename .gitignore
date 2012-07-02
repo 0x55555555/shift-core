@@ -19,9 +19,11 @@
 *.opensdf
 *.user
 *.a
+*.o
 *.Debug
 *.Release
 ipch/
+moc_*
 Win32/
 debug/
 release/
