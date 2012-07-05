@@ -114,10 +114,10 @@ template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelpe
   };
 }
 
-template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType
+template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType::InstanceInformation
   {
 public:
-  using InstanceType::setCompute;
+  using InstanceType::InstanceInformation::setCompute;
 
   template <void FUNC(PropType * )>
       void setCompute()
@@ -150,21 +150,19 @@ public:
     }
 
   template <typename U, typename PropTypeAncestor>
-  SPropertyInstanceInformationTyped<PropType, typename U::InstanceInformation> *child(U PropTypeAncestor::* ptr)
+  SPropertyInstanceInformationTyped<PropType, U> *child(U PropTypeAncestor::* ptr)
     {
     xsize location = findLocation(ptr);
 
-    return static_cast<SPropertyInstanceInformationTyped<PropType,
-                                                         typename U::InstanceInformation>*>(SPropertyInformation::child(location));
+    return static_cast<SPropertyInstanceInformationTyped<PropType, U>*>(SPropertyInformation::child(location));
     }
 
   template <typename U, typename PropTypeAncestor>
-  const SPropertyInstanceInformationTyped<PropType, typename U::InstanceInformation> *child(U PropTypeAncestor::* ptr) const
+  const SPropertyInstanceInformationTyped<PropType, U> *child(U PropTypeAncestor::* ptr) const
     {
     xsize location = findLocation(ptr);
 
-    return static_cast<const SPropertyInstanceInformationTyped<PropType,
-                                                               typename U::InstanceInformation>*>(SPropertyInformation::child(location));
+    return static_cast<const SPropertyInstanceInformationTyped<PropType, U>*>(SPropertyInformation::child(location));
     }
 
   XInterface<PropType> *apiInterface()
@@ -201,8 +199,7 @@ public:
     }
 
   template <typename U>
-      SPropertyInstanceInformationTyped<PropType, typename U::InstanceInformation> *add(U PropType::* ptr,
-                                                                                    const QString &name)
+      SPropertyInstanceInformationTyped<PropType, U> *add(U PropType::* ptr, const QString &name)
     {
     xptrdiff location = findLocation(ptr);
 
@@ -221,18 +218,17 @@ public:
 
     SPropertyInstanceInformation *inst = SPropertyInformation::add(newChildType, name);
 
-    return static_cast<SPropertyInstanceInformationTyped<PropType, typename T::InstanceInformation> *>(inst);
+    return static_cast<SPropertyInstanceInformationTyped<PropType, typename T> *>(inst);
     }
 
   template <typename T>
-      SPropertyInstanceInformationTyped<PropType, typename T::InstanceInformation> *add(xsize location,
-                                                                                        const QString &name)
+      SPropertyInstanceInformationTyped<PropType, T> *add(xsize location, const QString &name)
     {
     const SPropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
 
     SPropertyInstanceInformation *inst = SPropertyInformation::add(newChildType, location, name, false);
 
-    return static_cast<SPropertyInstanceInformationTyped<PropType, typename T::InstanceInformation> *>(inst);
+    return static_cast<SPropertyInstanceInformationTyped<PropType, T> *>(inst);
     }
 
   template <typename T> void addInheritedInterface()
@@ -252,12 +248,12 @@ public:
     }
 
   template <typename PropTypeIn, typename InstanceTypeIn>
-      SPropertyInformationTyped<PropType> *
+      SPropertyInformationTyped<InstanceTypeIn> *
           extendContainedProperty(SPropertyInstanceInformationTyped<PropTypeIn, InstanceTypeIn> *inst)
     {
     SPropertyInformation *info = SPropertyInformation::extendContainedProperty(inst);
 
-    return static_cast<SPropertyInformationTyped<PropType>*>(info);
+    return static_cast<SPropertyInformationTyped<InstanceTypeIn>*>(info);
     }
 
 #ifdef S_PROPERTY_USER_DATA

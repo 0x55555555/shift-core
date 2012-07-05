@@ -181,6 +181,9 @@ public:
   template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > walkerFrom(T *);
   template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > walkerFrom(const T *) const;
 
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > walkerFrom(SProperty *);
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > walkerFrom(const SProperty *) const;
+
   SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > walker();
   SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer> > walker() const;
   SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > walkerFrom(SProperty *prop);
