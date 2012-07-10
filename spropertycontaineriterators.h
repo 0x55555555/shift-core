@@ -96,7 +96,7 @@ template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SProp
 
 template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContainer::walkerFrom(T *prop)
   {
-  SPropertyIntanceInformation *inst = 0;
+  const SPropertyInstanceInformation *inst = 0;
   T *dyProp = 0;
   if(!prop->isDynamic())
     {
@@ -118,7 +118,7 @@ template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContaine
 
 template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SPropertyContainer::walkerFrom(const T *prop) const
   {
-  SPropertyIntanceInformation *inst = 0;
+  const SPropertyInstanceInformation *inst = 0;
   const T *dyProp = 0;
   if(!prop->isDynamic())
     {
@@ -140,17 +140,28 @@ template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SProp
 
 template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContainer::walkerFrom(SProperty *prop)
   {
-  SPropertyIntanceInformation *inst = 0;
+  SPropertyInstanceInformation *inst = 0;
   const T *dyProp = 0;
   if(!prop->isDynamic())
     {
     inst = prop->instanceInformation();
+    const SPropertyInformation* type = T::staticTypeInformation();
+    while(inst && !inst->childInformation()->inheritsFromType(type))
+      {
+      inst = inst->nextSibling();
+      }
+
     dyProp = firstDynamicChild<T>();
     }
   else
     {
     inst = 0;
-    dyProp = prop;
+    SProperty* itProp = prop;
+    while(!dyProp && itProp)
+      {
+      dyProp = itProp->castTo<T>();
+      itProp = nextDynamicSibling(itProp);
+      }
     }
 
   return WRAPPER_TYPE_FROM(T, SPropertyContainer)(
@@ -162,17 +173,28 @@ template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContaine
 
 template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SPropertyContainer::walkerFrom(const SProperty *prop) const
   {
-  SPropertyIntanceInformation *inst = 0;
+  const SPropertyInstanceInformation *inst = 0;
   const T *dyProp = 0;
   if(!prop->isDynamic())
     {
     inst = prop->instanceInformation();
+    const SPropertyInformation* type = T::staticTypeInformation();
+    while(inst && !inst->childInformation()->inheritsFromType(type))
+      {
+      inst = inst->nextSibling();
+      }
+
     dyProp = firstDynamicChild<T>();
     }
   else
     {
     inst = 0;
-    dyProp = prop;
+    const SProperty* itProp = prop;
+    while(!dyProp && itProp)
+      {
+      dyProp = itProp->castTo<T>();
+      itProp = nextDynamicSibling(itProp);
+      }
     }
 
   return WRAPPER_TYPE_FROM(const T, const SPropertyContainer)(

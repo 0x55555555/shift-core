@@ -118,11 +118,12 @@ template <typename PropType, typename InstanceType> class SPropertyInstanceInfor
   {
 public:
   using InstanceType::InstanceInformation::setCompute;
+  typedef typename InstanceType::InstanceInformation::ComputeFunction Function;
 
   template <void FUNC(PropType * )>
       void setCompute()
     {
-    typename InstanceType::ComputeFunction t = (typename InstanceType::ComputeFunction)ComputeNoInstanceInformationHelper<PropType, FUNC>::compute;
+    Function t = (Function)ComputeNoInstanceInformationHelper<PropType, FUNC>::compute;
 
     setCompute(t);
     }
@@ -130,7 +131,7 @@ public:
   template <void FUNC( const SPropertyInstanceInformation *, PropType * )>
       void setComputeWithInstanceInformation()
     {
-    typename InstanceType::ComputeFunction t = (typename InstanceType::ComputeFunction)ComputeHelper<PropType, FUNC>::compute;
+    Function t = (Function)ComputeHelper<PropType, FUNC>::compute;
 
     setCompute(t);
     }
