@@ -364,13 +364,21 @@ public:
     };
 
   S_PROPERTY(StringProperty, StringPropertyBase, 0);
-  StringProperty()
-    {
-    }
   StringProperty &operator=(const QString &in)
     {
     assign(in);
     return *this;
+    }
+  };
+
+template <typename T> class FlagsProperty : public IntProperty
+  {
+public:
+  void setFlag(T t, bool onOff)
+    {
+    XFlags<T> val(_value);
+    val.setFlag(t, onOff);
+    assign(*val);
     }
   };
 
