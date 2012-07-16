@@ -161,11 +161,16 @@ public:
       propertyToInitiate->uncheckedCastTo<DERIVED>()->_value = defaultValue();
       }
 
-    virtual void setDefaultValue(const QString &val)
+    virtual void setDefaultValueFromString(const QString &val)
       {
       QString cpyVal(val);
       QTextStream s(&cpyVal);
       s >> _defaultValue;
+      }
+
+    void setDefaultValue(const T &val)
+      {
+      _defaultValue = val;
       }
     };
 
