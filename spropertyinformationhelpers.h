@@ -163,6 +163,10 @@ public:
     {
     xsize location = findLocation(ptr);
 
+    xsize offset = 0;
+    SPropertyInformation* allocatable = findAllocatableBase(offset);
+    location -= offset;
+
     return static_cast<const SPropertyInstanceInformationTyped<PropType, U>*>(SPropertyInformation::child(location));
     }
 
@@ -186,7 +190,7 @@ public:
 
   template <typename U, typename AncestorPropType> xsize findLocation(U AncestorPropType::* ptr)
     {
-    PropType *u = reinterpret_cast<PropType*>(1); // avoid special casing for zero static cast
+    AncestorPropType *u = reinterpret_cast<AncestorPropType*>(1); // avoid special casing for zero static cast
     SPropertyContainer *container = static_cast<SPropertyContainer *>(u);
     U *offset = &(u->*ptr);
 
@@ -199,21 +203,20 @@ public:
     return (xsize)location;
     }
 
-  template <typename U>
-      SPropertyInstanceInformationTyped<PropType, U> *add(U PropType::* ptr, const QString &name)
+  template <typename U, typename AncestorPropType>
+      SPropertyInstanceInformationTyped<PropType, U> *add(U AncestorPropType::* ptr, const QString &name)
     {
     xptrdiff location = findLocation(ptr);
 
-    if(extendedParent())
-      {
-      location -= extendedParent()->location();
-      }
+    xsize offset = 0;
+    findAllocatableBase(offset);
+    location -= offset;
 
     return add<U>(location, name);
     }
 
   template <typename T>
-      SPropertyInstanceInformationTyped<PropType, typename T::InstanceInformation> *add(const QString &name)
+      SPropertyInstanceInformationTyped<PropType, T> *add(const QString &name)
     {
     const SPropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
 
