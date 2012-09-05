@@ -124,7 +124,7 @@ S_PROPERTY_INTERFACE(Pointer)
   if(data.registerInterfaces) { \
   assignPointerInformation(info, name::PtrType::staticTypeInformation()); } } \
 
-template <typename T, typename TYPE> void createTypedPointerArray(SPropertyInformation *info,
+template <typename T, typename TYPE> void createTypedPointerArray(SPropertyInformationTyped<T> *info,
                                                                   const SPropertyInformationCreateData &data)
   {
   if(data.registerInterfaces)
@@ -160,17 +160,21 @@ template <typename T, typename TYPE> void createTypedPointerArray(SPropertyInfor
 
 
 
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (), &T::clear> Fn1;
-    api->addFunction("clear", 1, Fn1::Arity, Fn1::Call, Fn1::CallDart);
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (), &T::clear> ClearType;
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, TYPE *(const PtrType *), &T::addPointer> AddType;
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, bool (const PtrType *), &T::hasPointer> HasType;
+    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (const PtrType *), &T::removePointer> RemoveType;
 
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, TYPE *(const PtrType *), &T::addPointer> Fn2;
-    api->addFunction("addPointer", 1, Fn2::Arity, Fn2::Call, Fn2::CallDart);
+    XScript::ClassDef<0,0,4> cls = {
+      {
+        api->method<ClearType>("clear"),
+        api->method<AddType>("addPointer"),
+        api->method<HasType>("hasPointer"),
+        api->method<RemoveType>("removePointer"),
+      }
+    };
 
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, bool (const PtrType *), &T::hasPointer> Fn3;
-    api->addFunction("hasPointer", 1, Fn3::Arity, Fn3::Call, Fn3::CallDart);
-
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (const PtrType *), &T::removePointer> Fn4;
-    api->addFunction("removePointer", 1, Fn4::Arity, Fn4::Call, Fn4::CallDart);
+    api->buildInterface(cls);
     }
   }
 

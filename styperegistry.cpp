@@ -21,7 +21,7 @@ STypeRegistry::STypeRegistry()
 
 void STypeRegistry::initiate()
   {
-  XScriptEngine::initiate();
+  XScript::Engine::initiate(false);
 
   _internalTypes = new TypeData();
 
@@ -29,14 +29,14 @@ void STypeRegistry::initiate()
 
   addPropertyGroup(Shift::propertyGroup());
 
-  XInterface<STreeObserver> *treeObs = XInterface<STreeObserver>::create("_STreeObserver");
+  XScript::Interface<STreeObserver> *treeObs = XScript::Interface<STreeObserver>::create("_STreeObserver");
   treeObs->seal();
   }
 
 void STypeRegistry::terminate()
 {
   // script engine needs to access type info.
-  XScriptEngine::terminate();
+  XScript::Engine::terminate();
 
   delete _internalTypes->allocator;
   _internalTypes->allocator = 0;

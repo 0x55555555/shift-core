@@ -25,12 +25,12 @@ template <typename PropType> struct ApiHelper
 public:
   static void create(SPropertyInformation *info)
     {
-    const XInterface<typename PropType::ParentType> *parentTempl =
-        static_cast<XInterface<typename PropType::ParentType>*>(PropType::ParentType::staticTypeInformation()->apiInterface());
-    const XInterface<SProperty> *baseTempl =
-        static_cast<XInterface<SProperty>*>(SProperty::staticTypeInformation()->apiInterface());
+    const XScript::Interface<typename PropType::ParentType> *parentTempl =
+        static_cast<XScript::Interface<typename PropType::ParentType>*>(PropType::ParentType::staticTypeInformation()->apiInterface());
+    const XScript::Interface<SProperty> *baseTempl =
+        static_cast<XScript::Interface<SProperty>*>(SProperty::staticTypeInformation()->apiInterface());
 
-    XInterface<PropType> *templ = XInterface<PropType>::createWithParent(info->typeName(), parentTempl, baseTempl);
+    XScript::Interface<PropType> *templ = XScript::Interface<PropType>::createWithParent(info->typeName(), parentTempl, baseTempl);
     info->setApiInterface(templ);
     }
   };
@@ -40,7 +40,7 @@ template <> struct ApiHelper<SProperty>
 public:
   static void create(SPropertyInformation *info)
     {
-    XInterface<SProperty> *templ = XInterface<SProperty>::create(info->typeName());
+    XScript::Interface<SProperty> *templ = XScript::Interface<SProperty>::create(info->typeName());
     info->setApiInterface(templ);
     }
   };
@@ -167,14 +167,14 @@ public:
                                                                typename U::InstanceInformation>*>(SPropertyInformation::child(location));
     }
 
-  XInterface<PropType> *apiInterface()
+  XScript::Interface<PropType> *apiInterface()
     {
-    return static_cast<XInterface<PropType>*>(SPropertyInformation::apiInterface());
+    return static_cast<XScript::Interface<PropType>*>(SPropertyInformation::apiInterface());
     }
 
-  const XInterface<PropType> *apiInterface() const
+  const XScript::Interface<PropType> *apiInterface() const
     {
-    return static_cast<const XInterface<PropType>*>(SPropertyInformation::apiInterface());
+    return static_cast<const XScript::Interface<PropType>*>(SPropertyInformation::apiInterface());
     }
 
   static SPropertyInformation *createTypeInformation(const char *name, const SPropertyInformation *parentType)
@@ -341,7 +341,9 @@ private:
     }
   };
 
-namespace XScriptConvert
+namespace XScript
+{
+namespace Convert
 {
 namespace internal
 {
@@ -349,14 +351,15 @@ template <> struct SHIFT_EXPORT JSToNative<SPropertyInformation>
   {
   typedef const SPropertyInformation *ResultType;
 
-  ResultType operator()(XScriptValue const &h) const;
+  ResultType operator()(Value const &h) const;
   };
 
 template <> struct SHIFT_EXPORT NativeToJS<SPropertyInformation>
   {
-  XScriptValue operator()(const SPropertyInformation *x) const;
-  XScriptValue operator()(const SPropertyInformation &x) const;
+  Value operator()(const SPropertyInformation *x) const;
+  Value operator()(const SPropertyInformation &x) const;
   };
+}
 }
 }
 

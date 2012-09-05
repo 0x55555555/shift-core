@@ -33,8 +33,14 @@ void SDatabase::createTypeInformation(SPropertyInformationTyped<SDatabase> *info
 
     auto *api = info->apiInterface();
 
-    api->addMethod<QVector<SProperty *> (const QString &, QIODevice *, SPropertyContainer *), &SDatabase::load>("load");
-    api->addMethod<void (const QString &, QIODevice *, SEntity *, bool, bool), &SDatabase::save>("save");
+    static XScript::ClassDef<0,0,2> cls = {
+      {
+      api->method<QVector<SProperty *> (const QString &, QIODevice *, SPropertyContainer *), &SDatabase::load>("load"),
+      api->method<void (const QString &, QIODevice *, SEntity *, bool, bool), &SDatabase::save>("save"),
+      }
+    };
+
+    api->buildInterface(cls);
     }
   }
 
