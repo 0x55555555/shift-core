@@ -264,10 +264,6 @@ void SDatabase::initiateProperty(SProperty *prop)
 
 void SDatabase::postInitiateProperty(SProperty *prop)
   {
-  if(prop->instanceInformation()->name() == "width")
-  {
-    xAssert(prop->isDirty());
-  }
   SPropertyContainer *container = prop->castTo<SPropertyContainer>();
   if(container)
     {
@@ -283,10 +279,6 @@ void SDatabase::postInitiateProperty(SProperty *prop)
 
   const SPropertyInstanceInformation *inst = prop->instanceInformation();
   xAssert(inst);
-  if(inst->name() == "width")
-  {
-    xAssert(prop->isDirty());
-  }
   inst->initiateProperty(prop);
 
 #ifdef S_PROPERTY_POST_CREATE

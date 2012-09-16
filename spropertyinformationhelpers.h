@@ -215,6 +215,10 @@ public:
     return add<U>(location, name);
     }
 
+  // add a dynamic child, ie it is embedded in the container when created,
+  // but not accessible via a member.
+  // this will fail and go crazy if you try to aggregate an entity with dynamic members...
+  // i should fix this...
   template <typename T>
       SPropertyInstanceInformationTyped<PropType, T> *add(const QString &name)
     {
