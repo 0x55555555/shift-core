@@ -116,6 +116,11 @@ public:
       return _data;
       }
 
+    T *operator->()
+      {
+      return _data;
+      }
+
   private:
     SPODPropertyBase<T, DERIVED> *_ptr;
     T* _data;
