@@ -9,9 +9,9 @@ class SHIFT_EXPORT SPropertyArray : public SPropertyContainer
   S_PROPERTY_CONTAINER(SPropertyArray, SPropertyContainer, 0);
 
 public:
-  template <typename T> T *add()
+  template <typename T> T *add(const QString& name=QString())
     {
-    return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL)->castTo<T>();
+    return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->castTo<T>();
     }
 
   SProperty *add(const SPropertyInformation *info, const QString &name, SPropertyInstanceInformationInitialiser *init)
