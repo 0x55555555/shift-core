@@ -124,6 +124,24 @@ xsize SPropertyContainer::size() const
   return s;
   }
 
+void SPropertyContainer::disconnectTree()
+  {
+  disconnect();
+
+  xForeach(auto p, walker())
+    {
+    SPropertyContainer *c = p->castTo<SPropertyContainer>();
+    if(c)
+      {
+      c->disconnectTree();
+      }
+    else
+      {
+      p->disconnect();
+      }
+    }
+  }
+
 const SProperty *SPropertyContainer::findChild(const QString &name) const
   {
   return const_cast<SPropertyContainer*>(this)->findChild(name);
@@ -263,11 +281,22 @@ void SPropertyContainer::removeProperty(SProperty *oldProp)
   xAssert(oldProp->parent() == this);
 
   SHandler* db = handler();
+
+#ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(db);
+#endif
 
   SBlock b(db);
 
-  oldProp->disconnect();
+  SPropertyContainer *oldCont = oldProp->castTo<SPropertyContainer>();
+  if(oldCont)
+    {
+    oldCont->disconnectTree();
+    }
+  else
+    {
+    oldProp->disconnect();
+    }
   SPropertyDoChange(TreeChange, this, (SPropertyContainer*)0, oldProp, index(oldProp));
   }
 

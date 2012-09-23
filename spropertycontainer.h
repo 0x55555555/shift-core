@@ -66,6 +66,7 @@ public:
 
     SProperty *property() const {return _property;}
     xsize index() const { return _index; }
+
   private:
     SPropertyContainer *_before;
     SPropertyContainer *_after;
@@ -104,6 +105,8 @@ public:
   const SProperty *firstChild() const;
   SProperty *lastChild();
   const SProperty *lastChild() const;
+
+  void disconnectTree();
 
   SProperty *firstDynamicChild() { preGet(); return _dynamicChild; }
   const SProperty *firstDynamicChild() const { preGet(); return _dynamicChild; }

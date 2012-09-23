@@ -889,13 +889,23 @@ void SProperty::connectInternal(SProperty *prop) const
   SProperty **output = (SProperty**)&_output;
   while(*output)
     {
-    output = &((*output)->_nextOutput);
+    SProperty **nextOp = &((*output)->_nextOutput);
+    output = nextOp;
     }
 
   if(output)
     {
     *output = prop;
     }
+
+#ifdef X_DEBUG
+  const SProperty *p = this;
+  while(p)
+    {
+    xAssert(p != p->nextOutput());
+    p = p->nextOutput();
+    }
+#endif
   }
 
 void SProperty::disconnectInternal(SProperty *prop) const
@@ -917,6 +927,15 @@ void SProperty::disconnectInternal(SProperty *prop) const
       output = &((*output)->_nextOutput);
       }
     }
+
+#ifdef X_DEBUG
+  const SProperty *p = this;
+  while(p)
+    {
+    xAssert(p != p->nextOutput());
+    p = p->nextOutput();
+    }
+#endif
   }
 
 QString SProperty::pathTo(const SProperty *that) const
