@@ -72,6 +72,7 @@ void SProperty::setDependantsDirty()
   {
   for(SProperty *o=output(); o; o = o->nextOutput())
     {
+    xAssert(o != o->nextOutput());
     o->setDirty();
     }
 
