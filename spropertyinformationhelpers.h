@@ -226,7 +226,7 @@ public:
 
     SPropertyInstanceInformation *inst = SPropertyInformation::add(newChildType, name);
 
-    return static_cast<SPropertyInstanceInformationTyped<PropType, typename T> *>(inst);
+    return static_cast<SPropertyInstanceInformationTyped<PropType, T> *>(inst);
     }
 
   template <typename T>

@@ -32,6 +32,7 @@ public:
     return *this;
     }
   bool operator!=(const SPropertyContainerBaseIterator<T, CONT> &it) const { return _from != it._from || _fromDynamic != it._fromDynamic; }
+
 protected:
   CONT *_c;
   const SPropertyInstanceInformation *_from;
@@ -42,21 +43,8 @@ template <typename T, typename CONT> class SPropertyContainerIterator : public S
   {
 public:
   SPropertyContainerIterator(CONT *c, const SPropertyInstanceInformation *p, T *dP)
-    : SPropertyContainerBaseIterator(c, p, dP)
+    : SPropertyContainerBaseIterator<T, CONT>(c, p, dP)
     {
-    }
-  SPropertyContainerIterator<T,CONT>& operator++()
-    {
-    if(_from)
-      {
-      const SPropertyInstanceInformation *nextStatic = _from->nextSibling<T>();
-      _from = nextStatic;
-      }
-    else
-      {
-      _fromDynamic = _c->nextDynamicSibling(_fromDynamic);
-      }
-    return *this;
     }
   };
 
