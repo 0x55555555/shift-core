@@ -921,13 +921,15 @@ void SProperty::disconnectInternal(SProperty *prop) const
     if((*output) == prop)
       {
       (*output) = (*output)->_nextOutput;
-      return;
+      break;
       }
     else
       {
       output = &((*output)->_nextOutput);
       }
     }
+
+  prop->_nextOutput = 0;
 
 #ifdef X_DEBUG
   const SProperty *p = this;
