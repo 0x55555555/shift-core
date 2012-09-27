@@ -187,9 +187,11 @@ SPropertyContainer::~SPropertyContainer()
   }
 
 void SPropertyContainer::clear()
-  {
-  SBlock b(handler());
+{
+#ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(handler());
+#endif
+  SBlock b(handler());
 
   SProperty *prop = _dynamicChild;
   while(prop)
