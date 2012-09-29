@@ -22,7 +22,7 @@ public:
     {
     if(_from)
       {
-      const SPropertyInstanceInformation *nextStatic = _from->nextSibling();
+      const SPropertyInstanceInformation *nextStatic = _from->nextSibling<T>();
       _from = nextStatic;
       }
     else

@@ -205,6 +205,18 @@ public:
   A _a;
   };
 
+template <typename A, typename B, typename C> class Compound3 : public Forwarder<C, Forwarder<B, A>>
+  {
+public:
+  Compound3(SProperty *root) : Forwarder<C, Forwarder<B, A>>(&_f), _f(&_a)
+    {
+    _a.reset(root);
+    }
+
+  Forwarder<B, A> _f;
+  A _a;
+  };
+
 struct ChildTreeExtraData
   {
   SPropertyContainer *_currentParent;

@@ -231,7 +231,7 @@ void SDatabase::uninitiatePropertyFromMetaData(SPropertyContainer *container, co
       }
     }
 
-  container->internalClear();
+  container->internalClear(this);
   xAssert(container->_dynamicChild == 0);
   }
 

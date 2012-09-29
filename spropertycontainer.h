@@ -203,7 +203,7 @@ protected:
   void clear();
 
   // remove and destroy all children. not for use by "array types", use clear instead.
-  void internalClear();
+  void internalClear(SDatabase *db);
 
 private:
   SProperty *internalFindChild(const QString &name);

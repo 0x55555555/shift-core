@@ -207,17 +207,13 @@ void SPropertyContainer::clear()
   xAssert(_dynamicChild == 0);
   }
 
-void SPropertyContainer::internalClear()
+void SPropertyContainer::internalClear(SDatabase *db)
   {
-#ifdef S_CENTRAL_CHANGE_HANDLER
-  xAssert(handler());
-#endif
-
   SProperty *dynamic = _dynamicChild;
   while(dynamic)
     {
     SProperty *next = nextDynamicSibling(dynamic);
-    database()->deleteDynamicProperty(dynamic);
+    db->deleteDynamicProperty(dynamic);
     dynamic = next;
     }
 
