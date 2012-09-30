@@ -66,6 +66,7 @@ public:
 
     SProperty *property() const {return _property;}
     xsize index() const { return _index; }
+
   private:
     SPropertyContainer *_before;
     SPropertyContainer *_after;
@@ -104,6 +105,8 @@ public:
   const SProperty *firstChild() const;
   SProperty *lastChild();
   const SProperty *lastChild() const;
+
+  void disconnectTree();
 
   SProperty *firstDynamicChild() { preGet(); return _dynamicChild; }
   const SProperty *firstDynamicChild() const { preGet(); return _dynamicChild; }
@@ -181,6 +184,9 @@ public:
   template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > walkerFrom(T *);
   template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > walkerFrom(const T *) const;
 
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<T, SPropertyContainer, SPropertyContainerIterator<T, SPropertyContainer> > walkerFrom(SProperty *);
+  template <typename T> SPropertyContainerTypedIteratorWrapperFrom<const T, const SPropertyContainer, SPropertyContainerIterator<const T, const SPropertyContainer> > walkerFrom(const SProperty *) const;
+
   SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > walker();
   SPropertyContainerTypedIteratorWrapperFrom<const SProperty, const SPropertyContainer, SPropertyContainerBaseIterator<const SProperty, const SPropertyContainer> > walker() const;
   SPropertyContainerTypedIteratorWrapperFrom<SProperty, SPropertyContainer, SPropertyContainerBaseIterator<SProperty, SPropertyContainer> > walkerFrom(SProperty *prop);
@@ -197,7 +203,7 @@ protected:
   void clear();
 
   // remove and destroy all children. not for use by "array types", use clear instead.
-  void internalClear();
+  void internalClear(SDatabase *db);
 
 private:
   SProperty *internalFindChild(const QString &name);

@@ -24,6 +24,18 @@ public:
     return 0;
     }
 
+  template <typename T>
+  T *pointed()
+    {
+    SProperty *p = pointed();
+    if(p)
+      {
+      return p->castTo<T>();
+      }
+    return 0;
+    }
+
+  SProperty *pointed() { preGet(); return input(); }
   const SProperty *pointed() const { preGet(); return input(); }
   const SProperty *operator()() const { preGet(); return pointed(); }
 

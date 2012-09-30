@@ -72,6 +72,7 @@ void SProperty::setDependantsDirty()
   {
   for(SProperty *o=output(); o; o = o->nextOutput())
     {
+    xAssert(o != o->nextOutput());
     o->setDirty();
     }
 
@@ -889,13 +890,23 @@ void SProperty::connectInternal(SProperty *prop) const
   SProperty **output = (SProperty**)&_output;
   while(*output)
     {
-    output = &((*output)->_nextOutput);
+    SProperty **nextOp = &((*output)->_nextOutput);
+    output = nextOp;
     }
 
   if(output)
     {
     *output = prop;
     }
+
+#ifdef X_DEBUG
+  const SProperty *p = this;
+  while(p)
+    {
+    xAssert(p != p->nextOutput());
+    p = p->nextOutput();
+    }
+#endif
   }
 
 void SProperty::disconnectInternal(SProperty *prop) const
@@ -910,13 +921,24 @@ void SProperty::disconnectInternal(SProperty *prop) const
     if((*output) == prop)
       {
       (*output) = (*output)->_nextOutput;
-      return;
+      break;
       }
     else
       {
       output = &((*output)->_nextOutput);
       }
     }
+
+  prop->_nextOutput = 0;
+
+#ifdef X_DEBUG
+  const SProperty *p = this;
+  while(p)
+    {
+    xAssert(p != p->nextOutput());
+    p = p->nextOutput();
+    }
+#endif
   }
 
 QString SProperty::pathTo(const SProperty *that) const
