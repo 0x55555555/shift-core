@@ -10,7 +10,6 @@
 *.exp
 *.ilk
 *.lib
-*.obj
 *.pdb
 *.exe
 *.ncb
@@ -20,10 +19,12 @@
 *.user
 *.a
 *.o
+moc_*.cpp
+qrc_*.cpp
+*.pro.user*
 *.Debug
 *.Release
 ipch/
-moc_*
 Win32/
 debug/
 release/
