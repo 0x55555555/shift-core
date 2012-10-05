@@ -36,33 +36,43 @@ void SProperty::createTypeInformation(SPropertyInformationTyped<SProperty> *info
   if(data.registerInterfaces)
     {
     auto *api = info->apiInterface();
-    api->addProperty<const SPropertyInformation *, &SProperty::typeInformation>("typeInformation");
-    api->addProperty<SProperty *, const SProperty *, &SProperty::input, &SProperty::setInput>("input");
 
     typedef XScript::XMethodToGetter<SProperty, SPropertyContainer * (), &SProperty::parent> ParentGetter;
     typedef XScript::XMethodToSetter<SProperty, SPropertyContainer *, &SProperty::setParent> ParentSetter;
-    api->addProperty("parent", ParentGetter::Get, ParentGetter::GetDart, ParentSetter::Set, ParentSetter::SetDart);
 
-    api->addProperty<SProperty *, &SProperty::output>("firstOutput");
-    api->addProperty<SProperty *, &SProperty::nextOutput>("nextOutput");
+    typedef XScript::XMethodToGetter<SProperty, QVector<SProperty*> (), &SProperty::affects> AffectsGetter;
 
-    api->addProperty<QString, &SProperty::mode>("mode");
-    api->addProperty<bool, &SProperty::isDynamic>("dynamic");
-    api->addProperty<const QString &, const QString &, &SProperty::name, &SProperty::setName>("name");
+    static XScript::ClassDef<0,11,4> cls = {
+      {
+        api->property<const SPropertyInformation *, &SProperty::typeInformation>("typeInformation"),
+        api->property<SProperty *, const SProperty *, &SProperty::input, &SProperty::setInput>("input"),
 
-    api->addProperty<QVariant, const QVariant &, &SProperty::value, &SProperty::setValue>("value");
-    api->addProperty<QString, &SProperty::valueAsString>("valueString");
+        api->property<ParentGetter, ParentSetter>("parent"),
+
+        api->property<SProperty *, &SProperty::output>("firstOutput"),
+        api->property<SProperty *, &SProperty::nextOutput>("nextOutput"),
+
+        api->property<QString, &SProperty::mode>("mode"),
+        api->property<bool, &SProperty::isDynamic>("dynamic"),
+        api->property<const QString &, const QString &, &SProperty::name, &SProperty::setName>("name"),
+
+        api->property<QVariant, const QVariant &, &SProperty::value, &SProperty::setValue>("value"),
+        api->property<QString, &SProperty::valueAsString>("valueString"),
 
 
-    typedef XScript::XMethodToGetter<SProperty, QVector<SProperty*> (), &SProperty::affects> Getter;
-    api->addProperty("affects", Getter::Get, Getter::GetDart, 0, 0);
+        api->property<AffectsGetter>("affects")
+      },
+      {
+        api->constMethod<QString (const SProperty *), &SProperty::pathTo>("pathTo"),
 
-    api->addConstMethod<QString (const SProperty *), &SProperty::pathTo>("pathTo");
+        api->method<void(), &SProperty::beginBlock>("beginBlock"),
+        api->method<void(bool), &SProperty::endBlock>("endBlock"),
 
-    api->addMethod<void(), &SProperty::beginBlock>("beginBlock");
-    api->addMethod<void(bool), &SProperty::endBlock>("endBlock");
+        api->constMethod<bool(const SProperty *), &SProperty::equals>("equals"),
+      }
+    };
 
-    api->addConstMethod<bool(const SProperty *), &SProperty::equals>("equals");
+    api->buildInterface(cls);
 
     info->addStaticInterface(new SBasicColourInterface);
     }
@@ -548,12 +558,12 @@ bool SProperty::shouldSaveProperty(const SProperty *p)
   return false;
   }
 
-const XInterfaceBase *SProperty::apiInterface() const
+const XScript::InterfaceBase *SProperty::apiInterface() const
   {
   return typeInformation()->apiInterface();
   }
 
-const XInterfaceBase *SProperty::staticApiInterface()
+const XScript::InterfaceBase *SProperty::staticApiInterface()
   {
   return staticTypeInformation()->apiInterface();
   }

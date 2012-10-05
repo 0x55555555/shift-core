@@ -21,8 +21,11 @@ public:
   virtual void initialise(SPropertyInstanceInformation *) = 0;
   };
 
-class XInterfaceBase;
-template <typename T> class XInterface;
+namespace XScript
+{
+class InterfaceBase;
+template <typename T> class Interface;
+}
 
 // Child information
 class SHIFT_EXPORT SPropertyInstanceInformation
@@ -205,7 +208,7 @@ XProperties:
 
   XProperty(SPropertyInstanceInformation *, extendedParent, setExtendedParent);
 
-  XProperty(XInterfaceBase*, apiInterface, setApiInterface);
+  XProperty(XScript::InterfaceBase *, apiInterface, setApiInterface);
 
   XROProperty(xsize, childCount)
 

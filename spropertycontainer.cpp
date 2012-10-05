@@ -14,13 +14,19 @@ void SPropertyContainer::createTypeInformation(SPropertyInformationTyped<SProper
     {
     auto *api = info->apiInterface();
 
-    typedef XScript::XMethodToIndexedGetter<SPropertyContainer, SProperty *(xsize i), &SPropertyContainer::at> Getter;
-    api->XInterfaceBase::setIndexAccessor(Getter::Get, Getter::GetDart);
+    //typedef XScript::XMethodToIndexedGetter<SPropertyContainer, SProperty *(xsize i), &SPropertyContainer::at> Getter;
+    //api->XInterfaceBase::setIndexAccessor(Getter::Get, Getter::GetDart);
 
-    XInterfaceBase::NamedGetter namedGetter = XScript::XMethodToNamedGetter<SPropertyContainer, SProperty *(const QString &n), &SPropertyContainer::findChild>::Get;
-    api->XInterfaceBase::setNamedAccessor(namedGetter);
+    //XInterfaceBase::NamedGetter namedGetter = XScript::XMethodToNamedGetter<SPropertyContainer, SProperty *(const QString &n), &SPropertyContainer::findChild>::Get;
+    //api->XInterfaceBase::setNamedAccessor(namedGetter);
 
-    api->addProperty<xsize, &SPropertyContainer::size>("length");
+    static XScript::ClassDef<0,1,0> cls = {
+      {
+      api->property<xsize, &SPropertyContainer::size>("length")
+      }
+    };
+
+    api->buildInterface(cls);
     }
   }
 

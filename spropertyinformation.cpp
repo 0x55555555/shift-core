@@ -712,15 +712,17 @@ void SPropertyInformation::dereference() const
   --((SPropertyInformation*)this)->_instances;
   }
 
-namespace XScriptConvert
+namespace XScript
+{
+namespace Convert
 {
 namespace internal
 {
-JSToNative<SPropertyInformation>::ResultType JSToNative<SPropertyInformation>::operator()(XScriptValue const &h) const
+JSToNative<SPropertyInformation>::ResultType JSToNative<SPropertyInformation>::operator()(Value const &h) const
   {
   if(h.isObject())
     {
-    XScriptObject obj(h);
+    Object obj(h);
     return (SPropertyInformation*)STypeRegistry::findType(obj.get("typeName").toString());
     }
   else
@@ -729,15 +731,16 @@ JSToNative<SPropertyInformation>::ResultType JSToNative<SPropertyInformation>::o
     }
   }
 
-XScriptValue NativeToJS<SPropertyInformation>::operator()(const SPropertyInformation &x) const
+Value NativeToJS<SPropertyInformation>::operator()(const SPropertyInformation &x) const
   {
   return x.typeName();
   }
 
-XScriptValue NativeToJS<SPropertyInformation>::operator()(const SPropertyInformation *x) const
+Value NativeToJS<SPropertyInformation>::operator()(const SPropertyInformation *x) const
   {
   xAssert(x)
   return x->typeName();
   }
+}
 }
 }

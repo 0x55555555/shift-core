@@ -200,8 +200,8 @@ public:
   // but the above can be false when this is true.
   static bool shouldSaveProperty(const SProperty *);
 
-  const XInterfaceBase *apiInterface() const;
-  static const XInterfaceBase *staticApiInterface();
+  const XScript::InterfaceBase *apiInterface() const;
+  static const XScript::InterfaceBase *staticApiInterface();
 
   X_ALIGNED_OPERATOR_NEW
 
@@ -246,7 +246,7 @@ private:
   friend class SPropertyNameChange;
   };
 
-template <typename T> inline const XInterfaceBase *findPropertyInterface(const T* prop)
+template <typename T> inline const XScript::InterfaceBase *findPropertyInterface(const T* prop)
   {
   if(prop)
     {
@@ -256,25 +256,30 @@ template <typename T> inline const XInterfaceBase *findPropertyInterface(const T
   }
 
 #define S_PROPERTY_INTERFACE(name) X_SCRIPTABLE_TYPE_INHERITS(name, SProperty) \
-  template <> inline const XInterfaceBase *findInterface<name>(const name *p) { \
+  namespace XScript { \
+  template <> inline const InterfaceBase *findInterface<name>(const name *p) { \
     return findPropertyInterface<SProperty>(p); } \
-  namespace XScriptConvert { \
+  namespace Convert { \
   template <> inline name *castFromBase<name, SProperty>(SProperty *ptr) { \
-    return ptr->castTo<name>(); } }
+    return ptr->castTo<name>(); } } }
 
 #define S_PROPERTY_ABSTRACT_INTERFACE(name) X_SCRIPTABLE_ABSTRACT_TYPE_INHERITS(name, SProperty) \
-  template <> inline const XInterfaceBase *findInterface<name>(const name *p) { \
+  namespace XScript { \
+  template <> inline const InterfaceBase *findInterface<name>(const name *p) { \
     return findPropertyInterface<SProperty>(p); } \
-  namespace XScriptConvert { \
+  namespace Convert { \
   template <> inline name *castFromBase<name, SProperty>(SProperty *ptr) { \
-    return ptr->castTo<name>(); } }
+    return ptr->castTo<name>(); } } }
 
 X_SCRIPTABLE_TYPE(SProperty)
 
-template <> inline const XInterfaceBase *findInterface<SProperty>(const SProperty* p)
+namespace XScript
+{
+template <> inline const InterfaceBase *findInterface<SProperty>(const SProperty* p)
   {
   return findPropertyInterface<SProperty>(p);
   }
+}
 
 template <typename T> inline T *SProperty::output() const
   {

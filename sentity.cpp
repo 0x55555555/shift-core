@@ -19,15 +19,20 @@ void SEntity::createTypeInformation(SPropertyInformationTyped<SEntity> *info,
   if(data.registerInterfaces)
     {
     auto *api = info->apiInterface();
-    api->addMethod<SProperty* (const SPropertyInformation *, const QString &), &SEntity::addChild>("addChild");
 
-    api->addMethod<void (STreeObserver* obs), &SEntity::addTreeObserver>("addTreeObserver");
-    api->addMethod<void (SDirtyObserver* obs), &SEntity::addDirtyObserver>("addDirtyObserver");
-    api->addMethod<void (SConnectionObserver* obs), &SEntity::addConnectionObserver>("addConnectionObserver");
+    static XScript::ClassDef<0,0,7> cls = {
+      api->method<SProperty* (const SPropertyInformation *, const QString &), &SEntity::addChild>("addChild"),
 
-    api->addMethod<void (STreeObserver* obs), &SEntity::removeTreeObserver>("removeTreeObserver");
-    api->addMethod<void (SDirtyObserver* obs), &SEntity::removeDirtyObserver>("removeDirtyObserver");
-    api->addMethod<void (SConnectionObserver* obs), &SEntity::removeConnectionObserver>("removeConnectionObserver");
+      api->method<void (STreeObserver* obs), &SEntity::addTreeObserver>("addTreeObserver"),
+      api->method<void (SDirtyObserver* obs), &SEntity::addDirtyObserver>("addDirtyObserver"),
+      api->method<void (SConnectionObserver* obs), &SEntity::addConnectionObserver>("addConnectionObserver"),
+
+      api->method<void (STreeObserver* obs), &SEntity::removeTreeObserver>("removeTreeObserver"),
+      api->method<void (SDirtyObserver* obs), &SEntity::removeDirtyObserver>("removeDirtyObserver"),
+      api->method<void (SConnectionObserver* obs), &SEntity::removeConnectionObserver>("removeConnectionObserver"),
+    };
+
+    api->buildInterface(cls);
 
     info->addStaticInterface(new SBasicPositionInterface);
     }
