@@ -567,6 +567,7 @@ SProperty *SPropertyInstanceInformation::locateProperty(SPropertyContainer *pare
   xuint8* parentOffset = reinterpret_cast<xuint8*>(parent);
   xuint8* childOffset = parentOffset + location();
   SProperty *child = reinterpret_cast<SProperty*>(childOffset);
+
   return child;
   }
 
