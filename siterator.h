@@ -262,7 +262,7 @@ public:
       {
       SPropertyContainer *parent = d._currentParent->parent();
 
-      auto walker = d._currentParent->walkerFrom(d._currentParent);
+      auto walker = parent->walkerFrom(d._currentParent);
       auto walkerIt = ++walker.begin();
       n = *walkerIt;
 
