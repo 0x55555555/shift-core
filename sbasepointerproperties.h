@@ -168,14 +168,23 @@ template <typename T, typename TYPE> void createTypedPointerArray(SPropertyInfor
 
     info->addInterfaceFactoryInternal(PointerArrayConnectionInterface::InterfaceType::InterfaceTypeId, new PointerArrayConnectionInterface);
 
-    auto api = info->apiInterface();
+    typedef XScript::MethodToInCa
+        <TypedPointerArray<TYPE>, void (), &T::clear>
+        ClearType;
 
+    typedef XScript::MethodToInCa
+        <TypedPointerArray<TYPE>, TYPE *(const PtrType *), &T::addPointer>
+        AddType;
 
+    typedef XScript::MethodToInCa
+        <TypedPointerArray<TYPE>, bool (const PtrType *), &T::hasPointer>
+        HasType;
 
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (), &T::clear> ClearType;
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, TYPE *(const PtrType *), &T::addPointer> AddType;
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, bool (const PtrType *), &T::hasPointer> HasType;
-    typedef XScript::MethodToInCa<TypedPointerArray<TYPE>, void (const PtrType *), &T::removePointer> RemoveType;
+    typedef XScript::MethodToInCa
+        <TypedPointerArray<TYPE>, void (const PtrType *), &T::removePointer>
+        RemoveType;
+
+    XScript::InterfaceBase* api = info->apiInterface();;
 
     XScript::ClassDef<0,0,4> cls = {
       {
