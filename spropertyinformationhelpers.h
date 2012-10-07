@@ -2,6 +2,8 @@
 #define SPROPERTYINFORMATIONAPIUTILITIES_H
 
 #include "spropertyinformation.h"
+#include "spropertyinstanceinformation.h"
+#include "sproperty.inl"
 #include "spropertygroup.h"
 #include "XInterface.h"
 #include "sproperty.h"
@@ -315,7 +317,6 @@ private:
     fns.shouldSave = PropType::shouldSaveProperty;
     fns.shouldSaveValue = PropType::shouldSavePropertyValue;
     fns.assign = PropType::assignProperty;
-    fns.postChildSet = PropType::postChildSet;
 
 #ifdef S_PROPERTY_POST_CREATE
     fns.postCreate = 0;

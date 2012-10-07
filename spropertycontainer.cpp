@@ -250,11 +250,11 @@ SProperty *SPropertyContainer::addProperty(const SPropertyInformation *info, xsi
   bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
   if(!nameUnique)
     {
-    ((SPropertyInstanceInformation*)newProp->_instanceInfo)->_name = makeUniqueName(name);
+    ((SPropertyInstanceInformation*)newProp->_instanceInfo)->name() = makeUniqueName(name);
     }
   else
     {
-    ((SPropertyInstanceInformation*)newProp->_instanceInfo)->_name = name;
+    ((SPropertyInstanceInformation*)newProp->_instanceInfo)->name() = name;
     }
 
   SPropertyDoChange(TreeChange, (SPropertyContainer*)0, this, newProp, index);
@@ -391,8 +391,8 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
   {
   // xAssert(newProp->_entity == 0); may be true because of post init
   SPropertyInstanceInformation *newPropInstInfo = const_cast<SProperty::InstanceInformation*>(newProp->_instanceInfo);
-  xAssert(newPropInstInfo->_dynamicParent == 0);
-  xAssert(newPropInstInfo->_dynamicNextSibling == 0);
+  xAssert(newPropInstInfo->dynamicParent() == 0);
+  xAssert(newPropInstInfo->dynamicNextSibling() == 0);
 
   if(_dynamicChild)
     {
@@ -404,12 +404,12 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
 
       if((index == (propIndex+1) && index > _containedProperties) || !propInstInfo->dynamicNextSibling())
         {
-        newPropInstInfo->_index = propIndex + 1;
-        newPropInstInfo->_dynamicParent = this;
+        newPropInstInfo->setIndex(propIndex + 1);
+        newPropInstInfo->setDynamicParent(this);
 
         // insert this prop into the list
-        newPropInstInfo->_dynamicNextSibling = propInstInfo->_dynamicNextSibling;
-        propInstInfo->_dynamicNextSibling = newProp;
+        newPropInstInfo->setDynamicNextSibling(propInstInfo->dynamicNextSibling());
+        propInstInfo->setDynamicNextSibling(newProp);
         break;
         }
       propIndex++;
@@ -418,8 +418,8 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
     }
   else
     {
-    newPropInstInfo->_index = 0;
-    newPropInstInfo->_dynamicParent = this;
+    newPropInstInfo->setIndex(0);
+    newPropInstInfo->setDynamicParent(this);
 
     xAssert(newPropInstInfo->dynamicNextSibling() == 0);
 
@@ -469,10 +469,10 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
 
     SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
 
-    _dynamicChild = propInstInfo->_dynamicNextSibling;
+    _dynamicChild = propInstInfo->dynamicNextSibling();
 
     removed = true;
-    propInstInfo->_index = X_SIZE_SENTINEL;
+    propInstInfo->setIndex(X_SIZE_SENTINEL);
     }
   else
     {
@@ -482,16 +482,16 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
       {
       SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(prop->_instanceInfo);
 
-      if(oldProp == propInstInfo->_dynamicNextSibling)
+      if(oldProp == propInstInfo->dynamicNextSibling())
         {
         xAssert((propIndex+1) >= _containedProperties);
 
         SPropertyInstanceInformation *oldPropInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
 
         removed = true;
-        oldPropInstInfo->_index = X_SIZE_SENTINEL;
+        oldPropInstInfo->setIndex(X_SIZE_SENTINEL);
 
-        propInstInfo->_dynamicNextSibling = oldPropInstInfo->_dynamicNextSibling;
+        propInstInfo->setDynamicNextSibling(oldPropInstInfo->dynamicNextSibling());
         break;
         }
       propIndex++;
@@ -505,8 +505,8 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
   SPropertyInstanceInformation *oldPropInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
   // not dynamic or has a parent
   xAssert(!oldPropInstInfo->dynamic() || oldPropInstInfo->dynamicParent());
-  oldPropInstInfo->_dynamicParent = 0;
-  oldPropInstInfo->_dynamicNextSibling = 0;
+  oldPropInstInfo->setDynamicParent(0);
+  oldPropInstInfo->setDynamicNextSibling(0);
   }
 
 void SPropertyContainer::internalUnsetupProperty(SProperty *oldProp)

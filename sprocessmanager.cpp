@@ -1,3 +1,4 @@
+#if 0
 #include "sprocessmanager.h"
 #include "spropertyinformation.h"
 #include "sproperty.h"
@@ -191,3 +192,4 @@ void SProcessManager::preCompute(const SPropertyInstanceInformation *info, SProp
       }
     }
   }
+#endif

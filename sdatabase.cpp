@@ -174,7 +174,7 @@ void SDatabase::deleteProperty(SProperty *prop)
   xAssert(!prop->_flags.hasFlag(PreGetting));
   uninitiateProperty(prop);
 
-  if(inst->extra())
+  if(inst->isExtraClassMember())
     {
     info->functions().destroyProperty(prop);
     }
@@ -208,7 +208,7 @@ void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, cons
     // extract the properties location from the meta data.
     SProperty *thisProp = child->locateProperty(container);
 
-    if(child->extra())
+    if(child->isExtraClassMember())
       {
       childInformation->functions().createPropertyInPlace(thisProp);
       }
@@ -230,7 +230,7 @@ void SDatabase::uninitiatePropertyFromMetaData(SPropertyContainer *container, co
 
     uninitiateProperty(thisProp);
 
-    if(child->extra())
+    if(child->isExtraClassMember())
       {
       const SPropertyInformation *info = thisProp->typeInformation();
       info->functions().destroyProperty(thisProp);

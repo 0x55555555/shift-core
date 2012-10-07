@@ -1,6 +1,8 @@
 #ifndef SPROCESSMANAGER_H
 #define SPROCESSMANAGER_H
 
+#if 0
+
 #include "sglobal.h"
 
 class SPropertyContainer;
@@ -21,5 +23,7 @@ private:
   SProcessManager();
   X_DISABLE_COPY(SProcessManager);
   };
+
+#endif
 
 #endif // SPROCESSMANAGER_H

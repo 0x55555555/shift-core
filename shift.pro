@@ -42,7 +42,8 @@ SOURCES += \
     sloader.cpp \
     shandler.cpp \
     sinterfaces.cpp \
-    spropertygroup.cpp
+    spropertygroup.cpp \
+    spropertyinstanceinformation.cpp
 
 HEADERS += \
     sglobal.h \
@@ -77,7 +78,9 @@ HEADERS += \
     shandlerimpl.h \
     spropertycontaineriterators.h \
     spropertymacros.h \
-    spropertychanges.h
+    spropertychanges.h \
+    spropertyinstanceinformation.h \
+    sproperty.inl
 
 
 

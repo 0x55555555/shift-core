@@ -15,122 +15,11 @@ class SPropertyContainer;
 class SPropertyInformation;
 class SPropertyGroup;
 
-class SPropertyInstanceInformationInitialiser
-  {
-public:
-  virtual void initialise(SPropertyInstanceInformation *) = 0;
-  };
-
 namespace XScript
 {
 class InterfaceBase;
 template <typename T> class Interface;
 }
-
-// Child information
-class SHIFT_EXPORT SPropertyInstanceInformation
-  {
-public:
-  typedef void (*ComputeFunction)( const SPropertyInstanceInformation *, SPropertyContainer * );
-  typedef void (*QueueComputeFunction)( const SPropertyInstanceInformation *, const SPropertyContainer *, SProperty **, xsize &numJobs );
-
-  typedef xuint16 DataKey;
-  typedef XHash<DataKey, QVariant> DataHash;
-
-  enum Mode
-    {
-    Internal,
-    InputOutput,
-    InternalInput,
-    Input,
-    Output,
-    Computed,
-    InternalComputed,
-    UserSettable,
-
-    NumberOfModes,
-
-    Default = InputOutput
-    };
-
-XProperties:
-  XProperty(const SPropertyInformation *, childInformation, setChildInformation);
-  XProperty(SPropertyInformation *, holdingTypeInformation, setHoldingTypeInformation);
-  XRefProperty(QString, name);
-  XProperty(xsize, location, setLocation);
-  XROProperty(ComputeFunction, compute);
-  XProperty(bool, computeLockedToMainThread, setComputeLockedToMainThread);
-  XProperty(QueueComputeFunction, queueCompute, setQueueCompute);
-  XROProperty(xsize *, affects);
-  // this index is internal to this instance information only
-  XProperty(xsize, index, setIndex);
-  XProperty(bool, extra, setExtra);
-
-  XROProperty(Mode, mode);
-
-  XProperty(bool, dynamic, setDynamic);
-  XRORefProperty(DataHash, data);
-
-  XROProperty(xptrdiff, defaultInput);
-
-  XPropertyMember(SPropertyInstanceInformation *, nextSibling);
-
-  XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
-  XProperty(SProperty *, dynamicNextSibling, setDynamicNextSibling)
-
-public:
-  SPropertyInstanceInformation();
-  static SPropertyInstanceInformation *allocate(xsize size);
-  static void destroy(SPropertyInstanceInformation *);
-
-  void setMode(Mode);
-  void setModeString(const QString &);
-  bool isDefaultMode() const;
-  const QString &modeString() const;
-
-  void setCompute(ComputeFunction fn);
-  void addAffects(const SPropertyInstanceInformation *info);
-  void setAffects(const SPropertyInstanceInformation *info);
-  void setAffects(const SPropertyInstanceInformation **info, xsize size);
-  void setAffects(xsize *affects);
-
-  virtual void setDefaultValue(const QString &) { xAssertFail(); }
-  void setDefaultInput(const SPropertyInstanceInformation *info);
-
-  virtual void initiateProperty(SProperty *X_UNUSED(propertyToInitiate)) const;
-  static DataKey newDataKey();
-
-  bool isComputed() const { return _compute != 0; }
-  bool affectsSiblings() const { return _affects != 0; }
-
-  void setData(DataKey, const QVariant &);
-
-  const SPropertyInstanceInformation *resolvePath(const QString &) const;
-
-  SProperty *locateProperty(SPropertyContainer *parent) const;
-  const SProperty *locateProperty(const SPropertyContainer *parent) const;
-
-  const SPropertyContainer *locateConstParent(const SProperty *prop) const;
-  SPropertyContainer *locateParent(SProperty *prop) const;
-
-  SPropertyInstanceInformation *nextSibling() { return _nextSibling; }
-  const SPropertyInstanceInformation *nextSibling() const { return _nextSibling; }
-
-  template <typename T> const SPropertyInstanceInformation *nextSibling() const;
-
-  X_ALIGNED_OPERATOR_NEW
-
-private:
-  void initiate(const SPropertyInformation *info,
-                const QString &name,
-                xsize index,
-                xsize s);
-
-  friend class SProperty;
-  friend class SPropertyContainer;
-  friend class SPropertyInformation;
-  static void defaultQueue(const SPropertyInstanceInformation *, const SPropertyContainer *, SProperty **, xsize &numJobs);
-  };
 
 class SPropertyInformationCreateData
   {
@@ -174,7 +63,6 @@ struct SPropertyInformationFunctions
 #ifdef S_PROPERTY_POST_CREATE
   PostCreateFunction postCreate;
 #endif
-  PostSetFunction postChildSet;
   };
 
 class SHIFT_EXPORT SPropertyInformation
@@ -246,7 +134,7 @@ public:
   SPropertyInstanceInformation *add(const SPropertyInformation *newChildType,
                                     xsize location,
                                     const QString &name,
-                                    bool extra);
+                                    bool notClassMember);
 
   SPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
 
@@ -342,28 +230,6 @@ private:
   friend class SDatabase;
 };
 
-inline const SPropertyInformation *SProperty::typeInformation() const
-  {
-  return _instanceInfo->childInformation();
-  }
-
 Q_DECLARE_METATYPE(const SPropertyInformation*);
-
-
-template <typename T> const SPropertyInstanceInformation *SPropertyInstanceInformation::nextSibling() const
-  {
-  const SPropertyInformation *info = T::staticTypeInformation();
-  const SPropertyInstanceInformation *next = _nextSibling;
-  while(next)
-    {
-    const SPropertyInformation *nextInfo = next->childInformation();
-    if(nextInfo->inheritsFromType(info))
-      {
-      return next;
-      }
-    next = next->nextSibling();
-    }
-  return 0;
-  }
 
 #endif // SPROPERTYINFORMATION_H

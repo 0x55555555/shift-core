@@ -2,6 +2,7 @@
 #define SPROPERTYCONTAINERITERATORS_H
 
 #include "spropertyinformation.h"
+#include "spropertyinstanceinformation.h"
 
 template <typename T, typename CONT> class SPropertyContainerBaseIterator
   {

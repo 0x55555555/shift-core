@@ -2,7 +2,6 @@
 #define SPROPERTY_H
 
 #include "sglobal.h"
-#include "schange.h"
 #include "spropertymacros.h"
 #include "XFlags"
 #include "XInterface.h"
@@ -191,7 +190,6 @@ public:
   static void assignProperty(const SProperty *, SProperty *);
   static void saveProperty(const SProperty *, SSaver & );
   static SProperty *loadProperty(SPropertyContainer *, SLoader &);
-  static void postChildSet(SPropertyContainer *, SProperty *) { xAssertFail(); }
 
   // should this properties value be saved, for example not when the value
   // is this property's value the default as it is when created.
@@ -207,6 +205,7 @@ public:
 
 private:
   X_DISABLE_COPY(SProperty);
+
   void setDirty();
   void internalSetName(const QString &name);
 

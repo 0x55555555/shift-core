@@ -3,8 +3,10 @@
 
 #include "sglobal.h"
 #include "sinterface.h"
+#include "XList"
 
 class SDatabase;
+class SChange;
 
 class SHIFT_EXPORT SHandler : public SInterfaceBase
   {
@@ -60,6 +62,7 @@ public:
   SBlock(SHandler *db) : _db(db)
     {
 #ifdef S_CENTRAL_CHANGE_HANDLER
+    xAssert(_db);
     _db->beginBlock();
 #endif
     }

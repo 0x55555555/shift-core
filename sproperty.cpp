@@ -1121,7 +1121,7 @@ QString SProperty::valueAsString() const
 
 void SProperty::internalSetName(const QString &name)
   {
-  ((InstanceInformation*)this->baseInstanceInformation())->_name = name;
+  ((InstanceInformation*)this->baseInstanceInformation())->name() = name;
   }
 
 void SProperty::postSet()
