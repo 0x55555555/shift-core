@@ -50,8 +50,10 @@ struct SPropertyInformationFunctions
   typedef void (*DestroyInstanceInformationFunction)(SPropertyInstanceInformation *data);
 
   CreateTypeInformationFunction createTypeInformation;
-  CreateInstanceInformationFunction createInstanceInformation;
-  DestroyInstanceInformationFunction destroyInstanceInformation;
+  CreateInstanceInformationFunction createStaticInstanceInformation;
+  CreateInstanceInformationFunction createDynamicInstanceInformation;
+  DestroyInstanceInformationFunction destroyStaticInstanceInformation;
+  DestroyInstanceInformationFunction destroyDynamicInstanceInformation;
   CreatePropertyFunction createProperty;
   CreatePropertyInPlaceFunction createPropertyInPlace;
   DestroyPropertyFunction destroyProperty;
@@ -85,16 +87,17 @@ XProperties:
 
   XProperty(const SPropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
-  XROProperty(SPropertyInstanceInformation *, firstChild);
-  XROProperty(SPropertyInstanceInformation *, lastChild);
+  XROProperty(SStaticPropertyInstanceInformation *, firstChild);
+  XROProperty(SStaticPropertyInstanceInformation *, lastChild);
   XProperty(xsize, size, setSize);
-  XProperty(xsize, instanceInformationSize, setInstanceInformationSize);
+  XProperty(xsize, dynamicInstanceInformationSize, setDynamicInstanceInformationSize);
+  XProperty(xsize, staticInstanceInformationSize, setStaticInstanceInformationSize);
 
   XRORefProperty(DataHash, data);
 
   XProperty(xsize, instances, setInstances);
 
-  XProperty(SPropertyInstanceInformation *, extendedParent, setExtendedParent);
+  XProperty(SStaticPropertyInstanceInformation *, extendedParent, setExtendedParent);
 
   XProperty(XScript::InterfaceBase *, apiInterface, setApiInterface);
 
@@ -115,11 +118,11 @@ public:
   bool inheritsFromType(const SPropertyInformation *type) const;
 
   // access the properties from offset of member
-  SPropertyInstanceInformation *child(xsize location);
-  const SPropertyInstanceInformation *child(xsize location) const;
+  SStaticPropertyInstanceInformation *child(xsize location);
+  const SStaticPropertyInstanceInformation *child(xsize location) const;
 
-  SPropertyInstanceInformation *childFromName(const QString &);
-  const SPropertyInstanceInformation *childFromName(const QString &) const;
+  SStaticPropertyInstanceInformation *childFromName(const QString &);
+  const SStaticPropertyInstanceInformation *childFromName(const QString &) const;
 
   // find the sproperty information that will be allocated dynamically (ie has no static parent)
   // offset is the offset in bytes back from this base to the allocated base.
@@ -129,14 +132,14 @@ public:
   void setData(DataKey, const QVariant &);
 
   // size of the property type, and its instance information
-  xsize dynamicSize() const { return size() + instanceInformationSize() + X_ALIGN_BYTE_COUNT; }
+  xsize dynamicSize() const { return size() + dynamicInstanceInformationSize() + X_ALIGN_BYTE_COUNT; }
 
-  SPropertyInstanceInformation *add(const SPropertyInformation *newChildType,
+  SStaticPropertyInstanceInformation *add(const SPropertyInformation *newChildType,
                                     xsize location,
                                     const QString &name,
                                     bool notClassMember);
 
-  SPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
+  SStaticPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
 
   const SInterfaceBaseFactory *interfaceFactory(xuint32 type) const;
   SPropertyInformation *extendContainedProperty(SPropertyInstanceInformation *inst);

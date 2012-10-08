@@ -85,13 +85,23 @@ template<typename T> struct PropertyHelper<T, false>
 
 template <typename T> struct InstanceInformationHelper
   {
-  static SPropertyInstanceInformation *create(void *allocation)
+  typedef typename T::DynamicInstanceInformation DyInst;
+  typedef typename T::StaticInstanceInformation StInst;
+  static SPropertyInstanceInformation *createDynamic(void *allocation)
     {
-    return new(allocation) typename T::InstanceInformation;
+    return new(allocation) typename DyInst;
     }
-  static void destroy(SPropertyInstanceInformation *allocation)
+  static SPropertyInstanceInformation *createStatic(void *allocation)
     {
-    ((T*)allocation)->~T();
+    return new(allocation) typename StInst;
+    }
+  static void destroyDynamic(SPropertyInstanceInformation *allocation)
+    {
+    ((DyInst*)allocation)->~DyInst();
+    }
+  static void destroyStatic(SPropertyInstanceInformation *allocation)
+    {
+    ((StInst*)allocation)->~StInst();
     }
   };
 
@@ -116,11 +126,11 @@ template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelpe
   };
 }
 
-template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType::InstanceInformation
+template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType::StaticInstanceInformation
   {
 public:
   using InstanceType::StaticInstanceInformation::setCompute;
-  typedef typename InstanceType::InstanceInformation::ComputeFunction Function;
+  typedef typename InstanceType::StaticInstanceInformation::ComputeFunction Function;
 
   template <void FUNC(PropType * )>
       void setCompute()
@@ -309,8 +319,10 @@ private:
     fns.createProperty = PropertyHelper<PropType>::create;
     fns.createPropertyInPlace = PropertyHelper<PropType>::createInPlace;
     fns.destroyProperty = PropertyHelper<PropType>::destroy;
-    fns.createInstanceInformation = InstanceInformationHelper<PropType>::create;
-    fns.destroyInstanceInformation = InstanceInformationHelper<PropType>::destroy;
+    fns.createStaticInstanceInformation = InstanceInformationHelper<PropType>::createStatic;
+    fns.createDynamicInstanceInformation = InstanceInformationHelper<PropType>::createDynamic;
+    fns.destroyStaticInstanceInformation = InstanceInformationHelper<PropType>::destroyStatic;
+    fns.destroyDynamicInstanceInformation = InstanceInformationHelper<PropType>::destroyDynamic;
 
     fns.save = PropType::saveProperty;
     fns.load = PropType::loadProperty;
@@ -328,7 +340,8 @@ private:
 
     info->setVersion(PropType::Version);
     info->setSize(sizeof(PropType));
-    info->setInstanceInformationSize(sizeof(typename PropType::InstanceInformation));
+    info->setDynamicInstanceInformationSize(sizeof(typename PropType::DynamicInstanceInformation));
+    info->setStaticInstanceInformationSize(sizeof(typename PropType::StaticInstanceInformation));
 
     PropType *offset = (PropType*)1;
     SProperty *propertyData = offset;

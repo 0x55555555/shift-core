@@ -14,8 +14,10 @@
   static const SPropertyInformation *staticTypeInformation(); \
   static const SPropertyInformation *bootstrapStaticTypeInformation();
 
-#define S_ADD_INSTANCE_INFORMATION(name) const InstanceInformation *instanceInformation() const \
-  { return static_cast<const InstanceInformation *>(baseInstanceInformation()); }
+#define S_ADD_INSTANCE_INFORMATION(name) const StaticInstanceInformation *staticInstanceInformation() const \
+    { return static_cast<const StaticInstanceInformation *>(staticBaseInstanceInformation()); } \
+  const DynamicInstanceInformation *dynamicInstanceInformation() const \
+    { return static_cast<const DynamicInstanceInformation *>(dynamicBaseInstanceInformation()); }
 
 #define S_ADD_STATIC_INFO(name, version) \
   public: enum { Version = version, IsAbstract = false };

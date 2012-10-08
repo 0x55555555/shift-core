@@ -42,7 +42,6 @@ public:
 XProperties:
   XProperty(const SPropertyInformation *, childInformation, setChildInformation);
   XRefProperty(QString, name);
-  XROProperty(xsize *, affects);
   XProperty(xsize, index, setIndex);
   XROProperty(Mode, mode);
 
@@ -56,15 +55,9 @@ public:
   bool isDefaultMode() const;
   const QString &modeString() const;
 
-  void addAffects(const SPropertyInstanceInformation *info);
-  void setAffects(const SPropertyInstanceInformation *info);
-  void setAffects(const SPropertyInstanceInformation **info, xsize size);
-  void setAffects(xsize *affects);
-
   virtual void setDefaultValue(const QString &);
 
   virtual void initiateProperty(SProperty *propertyToInitiate) const;
-  bool affectsSiblings() const { return _affects != 0; }
 
   const SPropertyInstanceInformation *resolvePath(const QString &) const;
 
@@ -73,8 +66,8 @@ public:
                 xsize index,
                 xsize s);
 
-  virtual const SStaticPropertyInstanceInformation* getStaticInfo();
-  virtual const SDynamicPropertyInstanceInformation* getDynamicInfo();
+  virtual const SStaticPropertyInstanceInformation* staticInfo() const;
+  virtual const SDynamicPropertyInstanceInformation* dynamicInfo() const;
 
   X_ALIGNED_OPERATOR_NEW
   };
@@ -86,6 +79,7 @@ private:
   XProperty(SPropertyInformation *, holdingTypeInformation, setHoldingTypeInformation);
   XProperty(xsize, location, setLocation);
   XROProperty(ComputeFunction, compute);
+  XROProperty(xsize *, affects);
   XProperty(bool, isExtraClassMember, setIsExtraClassMember);
   XROProperty(xptrdiff, defaultInput);
   XPropertyMember(SStaticPropertyInstanceInformation *, nextSibling);
@@ -104,9 +98,15 @@ private:
   void setCompute(ComputeFunction fn);
   bool isComputed() const { return _compute != 0; }
 
+  void addAffects(const SPropertyInstanceInformation *info);
+  void setAffects(const SPropertyInstanceInformation *info);
+  void setAffects(const SPropertyInstanceInformation **info, xsize size);
+  void setAffects(xsize *affects);
+  bool affectsSiblings() const { return _affects != 0; }
+
   void setDefaultInput(const SPropertyInstanceInformation *info);
 
-  virtual const SStaticPropertyInstanceInformation* getStaticInfo();
+  const SStaticPropertyInstanceInformation* staticInfo() const X_OVERRIDE;
   };
 
 class SDynamicPropertyInstanceInformation : public SPropertyInstanceInformation
@@ -116,7 +116,7 @@ public:
   XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
   XProperty(SProperty *, dynamicNextSibling, setDynamicNextSibling)
 
-  virtual const SDynamicPropertyInstanceInformation* getDynamicInfo();
+  const SDynamicPropertyInstanceInformation* dynamicInfo() const X_OVERRIDE;
   };
 
 template <typename T> const SStaticPropertyInstanceInformation *SStaticPropertyInstanceInformation::nextSibling() const

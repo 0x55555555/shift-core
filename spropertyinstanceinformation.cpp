@@ -316,22 +316,22 @@ const SPropertyInstanceInformation *SPropertyInstanceInformation::resolvePath(co
   return cur;
   }
 
-const SStaticPropertyInstanceInformation* SPropertyInstanceInformation::getStaticInfo()
+const SStaticPropertyInstanceInformation* SPropertyInstanceInformation::staticInfo() const
   {
   return 0;
   }
 
-const SDynamicPropertyInstanceInformation* SPropertyInstanceInformation::getDynamicInfo()
+const SDynamicPropertyInstanceInformation* SPropertyInstanceInformation::dynamicInfo() const
   {
   return 0;
   }
 
-const SStaticPropertyInstanceInformation* SStaticPropertyInstanceInformation::getStaticInfo()
+const SStaticPropertyInstanceInformation* SStaticPropertyInstanceInformation::staticInfo() const
   {
   return this;
   }
 
-const SDynamicPropertyInstanceInformation* SDynamicPropertyInstanceInformation::getDynamicInfo()
+const SDynamicPropertyInstanceInformation* SDynamicPropertyInstanceInformation::dynamicInfo() const
   {
   return this;
   }

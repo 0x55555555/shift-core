@@ -7,7 +7,7 @@
 template <typename T, typename CONT> class SPropertyContainerBaseIterator
   {
 public:
-  SPropertyContainerBaseIterator(CONT *c, const SPropertyInstanceInformation *p, T *dP)
+  SPropertyContainerBaseIterator(CONT *c, const SStaticPropertyInstanceInformation *p, T *dP)
     : _c(c), _from(p), _fromDynamic(dP)
     {
     }
@@ -16,7 +16,7 @@ public:
     if(_from)
       {
       SProperty *p = const_cast<SProperty *>(_from->locateProperty(_c));
-      xAssert(p->instanceInformation());
+      xAssert(p->baseInstanceInformation());
       xAssert(_from->childInformation() == p->typeInformation());
       return static_cast<T*>(p);
       }
@@ -26,7 +26,7 @@ public:
     {
     if(_from)
       {
-      const SPropertyInstanceInformation *nextStatic = _from->nextSibling();
+      const SStaticPropertyInstanceInformation *nextStatic = _from->nextSibling();
       _from = nextStatic;
       }
     else
@@ -39,7 +39,7 @@ public:
 
 protected:
   CONT *_c;
-  const SPropertyInstanceInformation *_from;
+  const SStaticPropertyInstanceInformation *_from;
   T *_fromDynamic;
   };
 
@@ -73,11 +73,11 @@ public:
 template <typename T, typename Cont, typename Iterator> class SPropertyContainerTypedIteratorWrapperFrom
   {
   Cont *_cont;
-  const SPropertyInstanceInformation *_from;
+  const SStaticPropertyInstanceInformation *_from;
   T *_fromDynamic;
-public:
 
-  SPropertyContainerTypedIteratorWrapperFrom(Cont *cont, const SPropertyInstanceInformation* firstChild, T* dynamicChild) : _cont(cont), _from(firstChild), _fromDynamic(dynamicChild) { }
+public:
+  SPropertyContainerTypedIteratorWrapperFrom(Cont *cont, const SStaticPropertyInstanceInformation* firstChild, T* dynamicChild) : _cont(cont), _from(firstChild), _fromDynamic(dynamicChild) { }
   Iterator begin() { return Iterator(_cont, _from, _fromDynamic); }
   Iterator end() { return Iterator(0, 0, 0); }
   };
@@ -238,11 +238,11 @@ inline WRAPPER_TYPE_FROM_BASE(const SProperty, const SPropertyContainer) SProper
 inline WRAPPER_TYPE_FROM_BASE(SProperty, SPropertyContainer) SPropertyContainer::walkerFrom(SProperty *prop)
   {
   xAssert(prop->parent() == this);
-  const SPropertyInstanceInformation *inst = 0;
+  const SStaticPropertyInstanceInformation *inst = 0;
   SProperty *dyProp = 0;
   if(!prop->isDynamic())
     {
-    inst = prop->instanceInformation();
+    inst = prop->staticBaseInstanceInformation();
     dyProp = firstDynamicChild();
     }
   else

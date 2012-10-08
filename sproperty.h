@@ -13,6 +13,8 @@ class SPropertyMetaData;
 class SHandler;
 class SDatabase;
 class SPropertyInstanceInformation;
+class SStaticPropertyInstanceInformation;
+class SDynamicPropertyInstanceInformation;
 class SPropertyInformation;
 template <typename T> class SPropertyInformationTyped;
 class SPropertyInformationCreateData;
@@ -26,7 +28,9 @@ class SPropertyNameChange;
 class SHIFT_EXPORT SProperty
   {
 public:
-  typedef SPropertyInstanceInformation InstanceInformation;
+  typedef SPropertyInstanceInformation BaseInstanceInformation;
+  typedef SStaticPropertyInstanceInformation StaticInstanceInformation;
+  typedef SDynamicPropertyInstanceInformation DynamicInstanceInformation;
 
   S_PROPERTY_ROOT(SProperty, 0)
 
@@ -81,7 +85,9 @@ public:
   template <typename T> bool inheritsFromType() const { return inheritsFromType(T::staticTypeInformation()); }
 
   const SPropertyInformation *typeInformation() const;
-  const SPropertyInstanceInformation *baseInstanceInformation() const { xAssert(_instanceInfo); return _instanceInfo; }
+  const BaseInstanceInformation *baseInstanceInformation() const { xAssert(_instanceInfo); return _instanceInfo; }
+  const StaticInstanceInformation *staticBaseInstanceInformation() const;
+  const DynamicInstanceInformation *dynamicBaseInstanceInformation() const;
 
   void postSet();
   void setDependantsDirty();
@@ -216,7 +222,7 @@ private:
   SProperty *_output;
   SProperty *_nextOutput;
 
-  const InstanceInformation *_instanceInfo;
+  const BaseInstanceInformation *_instanceInfo;
 
   enum Flags
     {
