@@ -315,3 +315,23 @@ const SPropertyInstanceInformation *SPropertyInstanceInformation::resolvePath(co
     }
   return cur;
   }
+
+const SStaticPropertyInstanceInformation* SPropertyInstanceInformation::getStaticInfo()
+  {
+  return 0;
+  }
+
+const SDynamicPropertyInstanceInformation* SPropertyInstanceInformation::getDynamicInfo()
+  {
+  return 0;
+  }
+
+const SStaticPropertyInstanceInformation* SStaticPropertyInstanceInformation::getStaticInfo()
+  {
+  return this;
+  }
+
+const SDynamicPropertyInstanceInformation* SDynamicPropertyInstanceInformation::getDynamicInfo()
+  {
+  return this;
+  }

@@ -164,21 +164,7 @@ public:
   static SPropertyInformation *derive(const SPropertyInformation *obj);
   static void initiate(SPropertyInformation *info, const SPropertyInformation *from);
 
-  template <typename T> const SPropertyInstanceInformation *firstChild() const
-    {
-    const SPropertyInformation *info = T::staticTypeInformation();
-    const SPropertyInstanceInformation *first = firstChild();
-    while(first)
-      {
-      const SPropertyInformation *firstInfo = first->childInformation();
-      if(firstInfo->inheritsFromType(info))
-        {
-        return first;
-        }
-      first = first->nextSibling();
-      }
-    return 0;
-    }
+  template <typename T> const SPropertyInstanceInformation *firstChild() const;
 
   template <typename Cont, typename Member> class Walker
     {

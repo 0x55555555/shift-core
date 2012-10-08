@@ -119,7 +119,7 @@ template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelpe
 template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType::InstanceInformation
   {
 public:
-  using InstanceType::InstanceInformation::setCompute;
+  using InstanceType::StaticInstanceInformation::setCompute;
   typedef typename InstanceType::InstanceInformation::ComputeFunction Function;
 
   template <void FUNC(PropType * )>
