@@ -47,7 +47,7 @@ XProperties:
   XROProperty(bool, isDynamic);
 
 public:
-  SPropertyInstanceInformation();
+  SPropertyInstanceInformation(bool dynamic);
   static SPropertyInstanceInformation *allocate(xsize size);
   static void destroy(SPropertyInstanceInformation *);
 
@@ -75,7 +75,6 @@ public:
 
 class SEmbeddedPropertyInstanceInformation : public SPropertyInstanceInformation
   {
-private:
   // Static Instance Members
   XProperty(SPropertyInformation *, holdingTypeInformation, setHoldingTypeInformation);
   XProperty(xsize, location, setLocation);
@@ -84,6 +83,11 @@ private:
   XProperty(bool, isExtraClassMember, setIsExtraClassMember);
   XROProperty(xptrdiff, defaultInput);
   XPropertyMember(SEmbeddedPropertyInstanceInformation *, nextSibling);
+
+public:
+  SEmbeddedPropertyInstanceInformation() : SPropertyInstanceInformation(false)
+    {
+    }
 
   SEmbeddedPropertyInstanceInformation *nextSibling() { return _nextSibling; }
   const SEmbeddedPropertyInstanceInformation *nextSibling() const { return _nextSibling; }
@@ -110,10 +114,14 @@ private:
 
 class SDynamicPropertyInstanceInformation : public SPropertyInstanceInformation
   {
-public:
   // Dynamic Instance
   XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
   XProperty(SProperty *, dynamicNextSibling, setDynamicNextSibling)
+
+public:
+  SDynamicPropertyInstanceInformation() : SPropertyInstanceInformation(true)
+    {
+    }
   };
 
 template <typename T> const SEmbeddedPropertyInstanceInformation *SEmbeddedPropertyInstanceInformation::nextSibling() const

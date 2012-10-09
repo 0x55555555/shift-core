@@ -3,7 +3,7 @@
 #include "styperegistry.h"
 #include "sdatabase.h"
 
-SPropertyInstanceInformation::SPropertyInstanceInformation()
+SPropertyInstanceInformation::SPropertyInstanceInformation(bool dynamic)
   {
   _holdingTypeInformation = 0;
   _compute = 0;
@@ -12,7 +12,7 @@ SPropertyInstanceInformation::SPropertyInstanceInformation()
   _affects = 0;
   _mode = Default;
   _isExtraClassMember = false;
-  _dynamic = false;
+  _isDynamic = dynamic;
   _dynamicParent = 0;
   _dynamicNextSibling = 0;
   _nextSibling = 0;

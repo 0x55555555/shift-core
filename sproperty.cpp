@@ -859,9 +859,9 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
   if(cont)
     {
     SProperty *parent = cont->parent();
-    const SStaticPropertyInstanceInformation *staticInfo = parent->staticBaseInstanceInformation();
     if(!parent->input() &&
-        (staticInfo && !staticInfo->isComputed() ) &&
+        (parent->isDynamic() ||
+         !parent->embeddedBaseInstanceInformation()->isComputed() ) &&
         !parent->_flags.hasFlag(SProperty::ParentHasInput))
       {
       xForeach(auto child, cont->walker())
@@ -884,7 +884,8 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
     {
     SPropertyContainer *parent = cont->parent();
     if(!parent->output() &&
-        !parent->instanceInformation()->affectsSiblings() &&
+       (parent->isDynamic() ||
+        !parent->embeddedBaseInstanceInformation()->affectsSiblings() ) &&
         !parent->_flags.hasFlag(SProperty::ParentHasOutput))
       {
       xForeach(auto child, cont->walker())
@@ -1013,7 +1014,7 @@ QString SProperty::path(const SProperty *from) const
 
 QString SProperty::mode() const
   {
-  return instanceInformation()->modeString();
+  return baseInstanceInformation()->modeString();
   }
 
 bool SProperty::isDescendedFrom(const SProperty *in) const
@@ -1132,7 +1133,7 @@ QString SProperty::valueAsString() const
 
 void SProperty::internalSetName(const QString &name)
   {
-  ((InstanceInformation*)this->baseInstanceInformation())->name() = name;
+  ((BaseInstanceInformation*)this->baseInstanceInformation())->name() = name;
   }
 
 void SProperty::postSet()
@@ -1183,13 +1184,23 @@ void SProperty::update() const
   // this is a const function, but because we delay computation we may need to assign here
   prop->_flags.clearFlag(Dirty);
 
-  const SPropertyInstanceInformation *child = baseInstanceInformation();
-  if(child && child->compute())
+
+
+  if(!isDynamic())
     {
-    SPropertyContainer *par = const_cast<SProperty*>(this)->embeddedParent();
-    xAssert(par);
-    //SProcessManager::preCompute(child, parent());
-    child->compute()(child, par);
+    const EmbeddedInstanceInformation *child = embeddedBaseInstanceInformation();
+    EmbeddedInstanceInformation::ComputeFunction compute = child->compute();
+    if(compute)
+      {
+      SPropertyContainer *par = prop->embeddedParent();
+      xAssert(par);
+
+      compute(child, par);
+      }
+    else if(input())
+      {
+      prop->assign(input());
+      }
     }
   else if(input())
     {

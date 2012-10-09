@@ -161,7 +161,7 @@ SProperty *SPropertyContainer::findChild(const QString &name)
 
 SProperty *SPropertyContainer::internalFindChild(const QString &name)
   {
-  const SPropertyInstanceInformation *inst = typeInformation()->childFromName(name);
+  const SEmbeddedPropertyInstanceInformation *inst = typeInformation()->childFromName(name);
   if(inst)
     {
     return inst->locateProperty(this);
@@ -390,7 +390,8 @@ bool SPropertyContainer::shouldSavePropertyValue(const SProperty *p)
 void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
   {
   // xAssert(newProp->_entity == 0); may be true because of post init
-  SPropertyInstanceInformation *newPropInstInfo = const_cast<SProperty::InstanceInformation*>(newProp->_instanceInfo);
+  SDynamicPropertyInstanceInformation *newPropInstInfo =
+      const_cast<SDynamicPropertyInstanceInformation*>(newProp->dynamicBaseInstanceInformation());
   xAssert(newPropInstInfo->dynamicParent() == 0);
   xAssert(newPropInstInfo->dynamicNextSibling() == 0);
 
@@ -400,9 +401,11 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
     SProperty *prop = _dynamicChild;
     while(prop)
       {
-      SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(prop->_instanceInfo);
+      SDynamicPropertyInstanceInformation *propInstInfo =
+          const_cast<SDynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
 
-      if((index == (propIndex+1) && index > _containedProperties) || !propInstInfo->dynamicNextSibling())
+      if((index == (propIndex+1) && index > _containedProperties) ||
+         !propInstInfo->dynamicNextSibling())
         {
         newPropInstInfo->setIndex(propIndex + 1);
         newPropInstInfo->setDynamicParent(this);
@@ -450,7 +453,7 @@ void SPropertyContainer::internalSetupProperty(SProperty *newProp)
     newProp->_flags.setFlag(ParentHasInput);
     }
 
-  if(output() || _flags.hasFlag(ParentHasOutput) || instanceInformation()->affectsSiblings())
+  if(output() || _flags.hasFlag(ParentHasOutput)) // || instanceInformation()->affectsSiblings())
     {
     newProp->_flags.setFlag(ParentHasOutput);
     }
@@ -463,11 +466,16 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
   xAssert(oldProp->parent() == this);
   bool removed = false;
 
+  SDynamicPropertyInstanceInformation *oldPropInstInfo =
+      const_cast<SDynamicPropertyInstanceInformation*>(oldProp->dynamicBaseInstanceInformation());
+
+
   if(oldProp == _dynamicChild)
     {
     xAssert(_containedProperties == 0);
 
-    SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
+    SDynamicPropertyInstanceInformation *propInstInfo =
+        const_cast<SDynamicPropertyInstanceInformation*>(oldProp->dynamicBaseInstanceInformation());
 
     _dynamicChild = propInstInfo->dynamicNextSibling();
 
@@ -480,13 +488,12 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
     SProperty *prop = _dynamicChild;
     while(prop)
       {
-      SPropertyInstanceInformation *propInstInfo = const_cast<SProperty::InstanceInformation*>(prop->_instanceInfo);
+      SDynamicPropertyInstanceInformation *propInstInfo =
+          const_cast<SDynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
 
       if(oldProp == propInstInfo->dynamicNextSibling())
         {
         xAssert((propIndex+1) >= _containedProperties);
-
-        SPropertyInstanceInformation *oldPropInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
 
         removed = true;
         oldPropInstInfo->setIndex(X_SIZE_SENTINEL);
@@ -502,7 +509,8 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
   internalUnsetupProperty(oldProp);
 
   xAssert(removed);
-  SPropertyInstanceInformation *oldPropInstInfo = const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
+  SPropertyInstanceInformation *oldPropInstInfo =
+      const_cast<SProperty::InstanceInformation*>(oldProp->_instanceInfo);
   // not dynamic or has a parent
   xAssert(!oldPropInstInfo->dynamic() || oldPropInstInfo->dynamicParent());
   oldPropInstInfo->setDynamicParent(0);

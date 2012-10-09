@@ -204,8 +204,14 @@ public:
     Iterator end() { return Iterator(0); }
     };
 
-  Walker<SPropertyInformation, SPropertyInstanceInformation> childWalker() { return Walker<SPropertyInformation, SPropertyInstanceInformation>(this); }
-  Walker<const SPropertyInformation, const SPropertyInstanceInformation> childWalker() const { return Walker<const SPropertyInformation, const SPropertyInstanceInformation>(this); }
+  Walker<SPropertyInformation, SEmbeddedPropertyInstanceInformation> childWalker()
+    {
+    return Walker<SPropertyInformation, SEmbeddedPropertyInstanceInformation>(this);
+    }
+  Walker<const SPropertyInformation, const SEmbeddedPropertyInstanceInformation> childWalker() const
+    {
+    return Walker<const SPropertyInformation, const SEmbeddedPropertyInstanceInformation>(this);
+    }
 
 private:
   X_DISABLE_COPY(SPropertyInformation);
