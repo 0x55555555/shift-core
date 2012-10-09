@@ -151,19 +151,19 @@ protected:
 template <typename T, typename DERIVED> class SPODProperty : public SPODPropertyBase<T, DERIVED>
   {
 public:
-  class StaticInstanceInformation : public SProperty::StaticInstanceInformation
+  class EmbeddedInstanceInformation : public SProperty::EmbeddedInstanceInformation
     {
   XProperties:
     XByRefProperty(T, defaultValue, setDefault);
 
   public:
-    StaticInstanceInformation(const T& d) : _defaultValue(d)
+    EmbeddedInstanceInformation(const T& d) : _defaultValue(d)
       {
       }
 
     virtual void initiateProperty(SProperty *propertyToInitiate) const
       {
-      SProperty::StaticInstanceInformation::initiateProperty(propertyToInitiate);
+      SProperty::EmbeddedInstanceInformation::initiateProperty(propertyToInitiate);
       propertyToInitiate->uncheckedCastTo<DERIVED>()->_value = defaultValue();
       }
 
@@ -227,8 +227,8 @@ public:
 
     if(SProperty::shouldSavePropertyValue(p))
       {
-      if(ptr->dynamicBaseInstanceInformation() ||
-         ptr->value() != ptr->staticInstanceInformation()->defaultValue())
+      if(ptr->isDynamic() ||
+         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
         {
         return true;
         }
@@ -319,11 +319,11 @@ private:
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, defaultDefault, typeID) \
 class EXPORT_MODE name : public SPODProperty<type, name> { \
-public: class StaticInstanceInformation : \
-  public SPODProperty<type, name>::StaticInstanceInformation \
+public: class EmbeddedInstanceInformation : \
+  public SPODProperty<type, name>::EmbeddedInstanceInformation \
     { public: \
-    StaticInstanceInformation() \
-    : SPODProperty<type, name>::StaticInstanceInformation(defaultDefault) { } }; \
+    EmbeddedInstanceInformation() \
+    : SPODProperty<type, name>::EmbeddedInstanceInformation(defaultDefault) { } }; \
   enum { TypeId = typeID }; \
   typedef type PODType; \
   S_PROPERTY(name, SProperty, 0); \
@@ -365,12 +365,13 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, SStringVec
 class SHIFT_EXPORT StringProperty : public StringPropertyBase
   {
 public:
-  class StaticInstanceInformation : public StringPropertyBase::StaticInstanceInformation
+  class EmbeddedInstanceInformation : public StringPropertyBase::EmbeddedInstanceInformation
     {
   public:
-    StaticInstanceInformation()
+    EmbeddedInstanceInformation()
       {
       }
+
     void setDefaultValue(const QString &val)
       {
       setDefault(val);

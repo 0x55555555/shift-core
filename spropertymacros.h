@@ -14,8 +14,8 @@
   static const SPropertyInformation *staticTypeInformation(); \
   static const SPropertyInformation *bootstrapStaticTypeInformation();
 
-#define S_ADD_INSTANCE_INFORMATION(name) const StaticInstanceInformation *staticInstanceInformation() const \
-    { return static_cast<const StaticInstanceInformation *>(staticBaseInstanceInformation()); } \
+#define S_ADD_INSTANCE_INFORMATION(name) const EmbeddedInstanceInformation *embeddedInstanceInformation() const \
+    { return static_cast<const EmbeddedInstanceInformation *>(embeddedBaseInstanceInformation()); } \
   const DynamicInstanceInformation *dynamicInstanceInformation() const \
     { return static_cast<const DynamicInstanceInformation *>(dynamicBaseInstanceInformation()); }
 

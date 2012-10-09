@@ -8,7 +8,7 @@ class SProperty;
 class SPropertyContainer;
 class SPropertyInformation;
 class SPropertyInstanceInformation;
-class SStaticPropertyInstanceInformation;
+class SEmbeddedPropertyInstanceInformation;
 class SDynamicPropertyInstanceInformation;
 
 class SPropertyInstanceInformationInitialiser
@@ -44,6 +44,7 @@ XProperties:
   XRefProperty(QString, name);
   XProperty(xsize, index, setIndex);
   XROProperty(Mode, mode);
+  XROProperty(bool, isDynamic);
 
 public:
   SPropertyInstanceInformation();
@@ -66,13 +67,13 @@ public:
                 xsize index,
                 xsize s);
 
-  virtual const SStaticPropertyInstanceInformation* staticInfo() const;
-  virtual const SDynamicPropertyInstanceInformation* dynamicInfo() const;
+  const SEmbeddedPropertyInstanceInformation* embeddedInfo() const;
+  const SDynamicPropertyInstanceInformation* dynamicInfo() const;
 
   X_ALIGNED_OPERATOR_NEW
   };
 
-class SStaticPropertyInstanceInformation : public SPropertyInstanceInformation
+class SEmbeddedPropertyInstanceInformation : public SPropertyInstanceInformation
   {
 private:
   // Static Instance Members
@@ -82,12 +83,12 @@ private:
   XROProperty(xsize *, affects);
   XProperty(bool, isExtraClassMember, setIsExtraClassMember);
   XROProperty(xptrdiff, defaultInput);
-  XPropertyMember(SStaticPropertyInstanceInformation *, nextSibling);
+  XPropertyMember(SEmbeddedPropertyInstanceInformation *, nextSibling);
 
-  SStaticPropertyInstanceInformation *nextSibling() { return _nextSibling; }
-  const SStaticPropertyInstanceInformation *nextSibling() const { return _nextSibling; }
+  SEmbeddedPropertyInstanceInformation *nextSibling() { return _nextSibling; }
+  const SEmbeddedPropertyInstanceInformation *nextSibling() const { return _nextSibling; }
 
-  template <typename T> const SStaticPropertyInstanceInformation *nextSibling() const;
+  template <typename T> const SEmbeddedPropertyInstanceInformation *nextSibling() const;
 
   SProperty *locateProperty(SPropertyContainer *parent) const;
   const SProperty *locateProperty(const SPropertyContainer *parent) const;
@@ -105,8 +106,6 @@ private:
   bool affectsSiblings() const { return _affects != 0; }
 
   void setDefaultInput(const SPropertyInstanceInformation *info);
-
-  const SStaticPropertyInstanceInformation* staticInfo() const X_OVERRIDE;
   };
 
 class SDynamicPropertyInstanceInformation : public SPropertyInstanceInformation
@@ -115,11 +114,9 @@ public:
   // Dynamic Instance
   XProperty(SPropertyContainer *, dynamicParent, setDynamicParent)
   XProperty(SProperty *, dynamicNextSibling, setDynamicNextSibling)
-
-  const SDynamicPropertyInstanceInformation* dynamicInfo() const X_OVERRIDE;
   };
 
-template <typename T> const SStaticPropertyInstanceInformation *SStaticPropertyInstanceInformation::nextSibling() const
+template <typename T> const SEmbeddedPropertyInstanceInformation *SEmbeddedPropertyInstanceInformation::nextSibling() const
   {
   const SPropertyInformation *info = T::staticTypeInformation();
   const SPropertyInstanceInformation *next = _nextSibling;
@@ -134,7 +131,19 @@ template <typename T> const SStaticPropertyInstanceInformation *SStaticPropertyI
     }
   return 0;
   }
-  
+
+const SEmbeddedPropertyInstanceInformation* SPropertyInstanceInformation::embeddedInfo() const
+  {
+  xAssert(!isDynamic());
+  return static_cast<const SEmbeddedPropertyInstanceInformation*>(this);
+  }
+
+const SDynamicPropertyInstanceInformation* SPropertyInstanceInformation::dynamicInfo() const
+  {
+  xAssert(isDynamic());
+  return static_cast<const SDynamicPropertyInstanceInformation*>(this);
+  }
+
 template <typename T> const SPropertyInstanceInformation *SPropertyInformation::firstChild() const
   {
   const SPropertyInformation *info = T::staticTypeInformation();

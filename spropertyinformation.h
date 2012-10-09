@@ -87,17 +87,17 @@ XProperties:
 
   XProperty(const SPropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
-  XROProperty(SStaticPropertyInstanceInformation *, firstChild);
-  XROProperty(SStaticPropertyInstanceInformation *, lastChild);
+  XROProperty(SEmbeddedPropertyInstanceInformation *, firstChild);
+  XROProperty(SEmbeddedPropertyInstanceInformation *, lastChild);
   XProperty(xsize, size, setSize);
   XProperty(xsize, dynamicInstanceInformationSize, setDynamicInstanceInformationSize);
-  XProperty(xsize, staticInstanceInformationSize, setStaticInstanceInformationSize);
+  XProperty(xsize, embeddedInstanceInformationSize, setEmbeddedInstanceInformationSize);
 
   XRORefProperty(DataHash, data);
 
   XProperty(xsize, instances, setInstances);
 
-  XProperty(SStaticPropertyInstanceInformation *, extendedParent, setExtendedParent);
+  XProperty(SEmbeddedPropertyInstanceInformation *, extendedParent, setExtendedParent);
 
   XProperty(XScript::InterfaceBase *, apiInterface, setApiInterface);
 
@@ -118,11 +118,11 @@ public:
   bool inheritsFromType(const SPropertyInformation *type) const;
 
   // access the properties from offset of member
-  SStaticPropertyInstanceInformation *child(xsize location);
-  const SStaticPropertyInstanceInformation *child(xsize location) const;
+  SEmbeddedPropertyInstanceInformation *child(xsize location);
+  const SEmbeddedPropertyInstanceInformation *child(xsize location) const;
 
-  SStaticPropertyInstanceInformation *childFromName(const QString &);
-  const SStaticPropertyInstanceInformation *childFromName(const QString &) const;
+  SEmbeddedPropertyInstanceInformation *childFromName(const QString &);
+  const SEmbeddedPropertyInstanceInformation *childFromName(const QString &) const;
 
   // find the sproperty information that will be allocated dynamically (ie has no static parent)
   // offset is the offset in bytes back from this base to the allocated base.
@@ -134,12 +134,12 @@ public:
   // size of the property type, and its instance information
   xsize dynamicSize() const { return size() + dynamicInstanceInformationSize() + X_ALIGN_BYTE_COUNT; }
 
-  SStaticPropertyInstanceInformation *add(const SPropertyInformation *newChildType,
+  SEmbeddedPropertyInstanceInformation *add(const SPropertyInformation *newChildType,
                                     xsize location,
                                     const QString &name,
                                     bool notClassMember);
 
-  SStaticPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
+  SEmbeddedPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
 
   const SInterfaceBaseFactory *interfaceFactory(xuint32 type) const;
   SPropertyInformation *extendContainedProperty(SPropertyInstanceInformation *inst);

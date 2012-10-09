@@ -86,7 +86,7 @@ template<typename T> struct PropertyHelper<T, false>
 template <typename T> struct InstanceInformationHelper
   {
   typedef typename T::DynamicInstanceInformation DyInst;
-  typedef typename T::StaticInstanceInformation StInst;
+  typedef typename T::EmbeddedInstanceInformation StInst;
   static SPropertyInstanceInformation *createDynamic(void *allocation)
     {
     return new(allocation) typename DyInst;
@@ -126,11 +126,11 @@ template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelpe
   };
 }
 
-template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType::StaticInstanceInformation
+template <typename PropType, typename InstanceType> class SPropertyInstanceInformationTyped : public InstanceType::EmbeddedInstanceInformation
   {
 public:
-  using InstanceType::StaticInstanceInformation::setCompute;
-  typedef typename InstanceType::StaticInstanceInformation::ComputeFunction Function;
+  using InstanceType::EmbeddedInstanceInformation::setCompute;
+  typedef typename InstanceType::EmbeddedInstanceInformation::ComputeFunction Function;
 
   template <void FUNC(PropType * )>
       void setCompute()
@@ -341,7 +341,7 @@ private:
     info->setVersion(PropType::Version);
     info->setSize(sizeof(PropType));
     info->setDynamicInstanceInformationSize(sizeof(typename PropType::DynamicInstanceInformation));
-    info->setStaticInstanceInformationSize(sizeof(typename PropType::StaticInstanceInformation));
+    info->setEmbeddedInstanceInformationSize(sizeof(typename PropType::EmbeddedInstanceInformation));
 
     PropType *offset = (PropType*)1;
     SProperty *propertyData = offset;
