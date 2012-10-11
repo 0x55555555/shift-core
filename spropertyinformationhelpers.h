@@ -89,17 +89,17 @@ template <typename T> struct InstanceInformationHelper
   typedef typename T::EmbeddedInstanceInformation StInst;
   static SPropertyInstanceInformation *createDynamic(void *allocation)
     {
-    return new(allocation) typename DyInst;
+    return new(allocation) DyInst;
     }
-  static SPropertyInstanceInformation *createStatic(void *allocation)
+  static SPropertyInstanceInformation *createEmbedded(void *allocation)
     {
-    return new(allocation) typename StInst;
+    return new(allocation) StInst;
     }
   static void destroyDynamic(SPropertyInstanceInformation *allocation)
     {
     ((DyInst*)allocation)->~DyInst();
     }
-  static void destroyStatic(SPropertyInstanceInformation *allocation)
+  static void destroyEmbedded(SPropertyInstanceInformation *allocation)
     {
     ((StInst*)allocation)->~StInst();
     }
@@ -319,9 +319,9 @@ private:
     fns.createProperty = PropertyHelper<PropType>::create;
     fns.createPropertyInPlace = PropertyHelper<PropType>::createInPlace;
     fns.destroyProperty = PropertyHelper<PropType>::destroy;
-    fns.createStaticInstanceInformation = InstanceInformationHelper<PropType>::createStatic;
+    fns.createEmbeddedInstanceInformation = InstanceInformationHelper<PropType>::createEmbedded;
     fns.createDynamicInstanceInformation = InstanceInformationHelper<PropType>::createDynamic;
-    fns.destroyStaticInstanceInformation = InstanceInformationHelper<PropType>::destroyStatic;
+    fns.destroyEmbeddedInstanceInformation = InstanceInformationHelper<PropType>::destroyEmbedded;
     fns.destroyDynamicInstanceInformation = InstanceInformationHelper<PropType>::destroyDynamic;
 
     fns.save = PropType::saveProperty;

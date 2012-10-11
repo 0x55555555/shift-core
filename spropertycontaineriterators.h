@@ -46,17 +46,17 @@ protected:
 template <typename T, typename CONT> class SPropertyContainerIterator : public SPropertyContainerBaseIterator<T, CONT>
   {
 public:
-  SPropertyContainerIterator(CONT *c, const SPropertyInstanceInformation *p, T *dP)
+  SPropertyContainerIterator(CONT *c, const SEmbeddedPropertyInstanceInformation *p, T *dP)
     : SPropertyContainerBaseIterator<T, CONT>(c, p, dP)
     {
     }
 
   SPropertyContainerBaseIterator<T,CONT>& operator++()
     {
-    const SPropertyInstanceInformation *&from = SPropertyContainerBaseIterator<T, CONT>::_from;
+    const SEmbeddedPropertyInstanceInformation *&from = SPropertyContainerBaseIterator<T, CONT>::_from;
     if(from)
       {
-      const SPropertyInstanceInformation *nextStatic = from->nextSibling<T>();
+      const SEmbeddedPropertyInstanceInformation *nextStatic = from->nextSibling<T>();
       from = nextStatic;
       }
     else
@@ -106,11 +106,11 @@ template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SProp
 template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContainer::walkerFrom(T *prop)
   {
   xAssert(prop->parent() == this);
-  const SPropertyInstanceInformation *inst = 0;
+  const SEmbeddedPropertyInstanceInformation *inst = 0;
   T *dyProp = 0;
   if(!prop->isDynamic())
     {
-    inst = prop->instanceInformation();
+    inst = prop->embeddedInstanceInformation();
     dyProp = firstDynamicChild<T>();
     }
   else
@@ -129,11 +129,11 @@ template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContaine
 template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SPropertyContainer::walkerFrom(const T *prop) const
   {
   xAssert(prop->parent() == this);
-  const SPropertyInstanceInformation *inst = 0;
+  const SEmbeddedPropertyInstanceInformation *inst = 0;
   const T *dyProp = 0;
   if(!prop->isDynamic())
     {
-    inst = prop->instanceInformation();
+    inst = prop->embeddedInstanceInformation();
     dyProp = firstDynamicChild<T>();
     }
   else
@@ -152,11 +152,11 @@ template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SProp
 template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContainer::walkerFrom(SProperty *prop)
   {
   xAssert(prop->parent() == this);
-  SPropertyInstanceInformation *inst = 0;
+  SEmbeddedPropertyInstanceInformation *inst = 0;
   const T *dyProp = 0;
   if(!prop->isDynamic())
     {
-    inst = prop->instanceInformation();
+    inst = prop->embeddedInstanceInformation();
     const SPropertyInformation* type = T::staticTypeInformation();
     while(inst && !inst->childInformation()->inheritsFromType(type))
       {
@@ -186,11 +186,11 @@ template <typename T> WRAPPER_TYPE_FROM(T, SPropertyContainer) SPropertyContaine
 template <typename T> WRAPPER_TYPE_FROM(const T, const SPropertyContainer) SPropertyContainer::walkerFrom(const SProperty *prop) const
   {
   xAssert(prop->parent() == this);
-  const SPropertyInstanceInformation *inst = 0;
+  const SEmbeddedPropertyInstanceInformation *inst = 0;
   const T *dyProp = 0;
   if(!prop->isDynamic())
     {
-    inst = prop->instanceInformation();
+    inst = prop->embeddedInstanceInformation();
     const SPropertyInformation* type = T::staticTypeInformation();
     while(inst && !inst->childInformation()->inheritsFromType(type))
       {

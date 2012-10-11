@@ -5,27 +5,8 @@
 
 SPropertyInstanceInformation::SPropertyInstanceInformation(bool dynamic)
   {
-  _holdingTypeInformation = 0;
-  _compute = 0;
-  _location = 0;
-  _computeLockedToMainThread = false;
-  _affects = 0;
   _mode = Default;
-  _isExtraClassMember = false;
   _isDynamic = dynamic;
-  _dynamicParent = 0;
-  _dynamicNextSibling = 0;
-  _nextSibling = 0;
-  _defaultInput = 0;
-  }
-
-SPropertyInstanceInformation *SPropertyInstanceInformation::allocate(xsize size)
-  {
-  xAssert(STypeRegistry::allocator());
-  void *ptr = STypeRegistry::allocator()->alloc(size);
-
-  xAssert(ptr);
-  return (SPropertyInstanceInformation*)ptr;
   }
 
 void SPropertyInstanceInformation::destroy(SPropertyInstanceInformation *d)
@@ -51,28 +32,6 @@ const QString &SPropertyInstanceInformation::modeString() const
   return g_modeStrings[_mode];
   }
 
-void SPropertyInstanceInformation::setMode(Mode m)
-  {
-  if(_compute)
-    {
-    if(m == Internal)
-      {
-      _mode = InternalComputed;
-      }
-    else
-      {
-      xAssertFail();
-      }
-    }
-  else
-    {
-    if(!_compute)
-      {
-      _mode = m;
-      }
-    }
-  }
-
 void SPropertyInstanceInformation::setModeString(const QString &s)
   {
   for(xsize i = 0; i < NumberOfModes; ++i)
@@ -87,12 +46,96 @@ void SPropertyInstanceInformation::setModeString(const QString &s)
   _mode = Default;
   }
 
+void SPropertyInstanceInformation::setInvalidIndex()
+  {
+  setIndex(X_UINT16_SENTINEL);
+  }
+
+SPropertyInstanceInformation::Mode SPropertyInstanceInformation::mode() const
+  {
+  return Mode(_mode);
+  }
+
+void SPropertyInstanceInformation::setMode(Mode m)
+  {
+  _mode = m;
+  }
+
 bool SPropertyInstanceInformation::isDefaultMode() const
   {
   return _mode == Default;
   }
 
-void SPropertyInstanceInformation::setCompute(ComputeFunction fn)
+SEmbeddedPropertyInstanceInformation::SEmbeddedPropertyInstanceInformation()
+    : SPropertyInstanceInformation(false),
+      _holdingTypeInformation(0),
+      _location(0),
+      _defaultInput(0),
+      _compute(0),
+      _affects(0),
+      _nextSibling(0),
+      _isExtraClassMember(false)
+  {
+  }
+
+SEmbeddedPropertyInstanceInformation *SEmbeddedPropertyInstanceInformation::allocate(xsize size)
+  {
+  xAssert(STypeRegistry::allocator());
+  void *ptr = STypeRegistry::allocator()->alloc(size);
+
+  xAssert(ptr);
+  return (SEmbeddedPropertyInstanceInformation*)ptr;
+  }
+
+void SEmbeddedPropertyInstanceInformation::initiateProperty(SProperty *propertyToInitiate) const
+  {
+  if(defaultInput())
+    {
+    xuint8 *data = (xuint8*)propertyToInitiate;
+
+    const xuint8 *inputPropertyData = data + defaultInput();
+
+    const SProperty *inputProperty = (SProperty*)inputPropertyData;
+
+    xAssert(inputProperty->isDirty());
+    xAssert(propertyToInitiate->isDirty());
+    inputProperty->connect(propertyToInitiate);
+    }
+  }
+
+void SEmbeddedPropertyInstanceInformation::setMode(Mode m)
+  {
+  if(_compute)
+    {
+    if(m == Internal)
+      {
+      _mode = InternalComputed;
+      }
+    else
+      {
+      xAssertFail();
+      }
+    }
+  else
+    {
+    SPropertyInstanceInformation::setMode(m);
+    }
+  }
+
+void SEmbeddedPropertyInstanceInformation::initiate(const SPropertyInformation *info,
+                 const QString &n,
+                 xsize index,
+                 xsize location)
+  {
+  setChildInformation(info);
+  name() = n;
+  xAssert(location < X_UINT16_SENTINEL);
+  setLocation(location);
+  xAssert(index < X_UINT16_SENTINEL);
+  setIndex(index);
+  }
+
+void SEmbeddedPropertyInstanceInformation::setCompute(ComputeFunction fn)
   {
   _compute = fn;
   if(_compute)
@@ -101,7 +144,7 @@ void SPropertyInstanceInformation::setCompute(ComputeFunction fn)
     }
   }
 
-void SPropertyInstanceInformation::addAffects(const SPropertyInstanceInformation *info)
+void SEmbeddedPropertyInstanceInformation::addAffects(const SEmbeddedPropertyInstanceInformation *info)
   {
   xsize *oldAffects = _affects;
   xsize affectsSize = 0;
@@ -129,7 +172,7 @@ void SPropertyInstanceInformation::addAffects(const SPropertyInstanceInformation
   _affects[affectsSize+1] = 0;
   }
 
-void SPropertyInstanceInformation::setAffects(const SPropertyInstanceInformation *info)
+void SEmbeddedPropertyInstanceInformation::setAffects(const SEmbeddedPropertyInstanceInformation *info)
   {
   xAssert(!_affects);
   xAssert(info);
@@ -137,7 +180,7 @@ void SPropertyInstanceInformation::setAffects(const SPropertyInstanceInformation
   addAffects(info);
   }
 
-void SPropertyInstanceInformation::setAffects(const SPropertyInstanceInformation **info, xsize size)
+void SEmbeddedPropertyInstanceInformation::setAffects(const SEmbeddedPropertyInstanceInformation **info, xsize size)
   {
   xAssert(!_affects);
   xAssert(info);
@@ -152,107 +195,17 @@ void SPropertyInstanceInformation::setAffects(const SPropertyInstanceInformation
   _affects[size] = 0;
   }
 
-void SPropertyInstanceInformation::setAffects(xsize *affects)
+void SEmbeddedPropertyInstanceInformation::setAffects(xsize *affects)
   {
   xAssert(!_affects);
   _affects = affects;
   }
 
-void SPropertyInstanceInformation::setDefaultValue(const QString &)
-  {
-  xAssertFail();
-  }
-
-void SPropertyInstanceInformation::setDefaultInput(const SPropertyInstanceInformation *info)
-  {
-  // find the offset to the holding type information
-  xsize targetOffset = 0;
-  const SPropertyInformation *targetBase = info->holdingTypeInformation()->findAllocatableBase(targetOffset);
-  (void)targetBase;
-  // add the instance location
-  targetOffset += info->location();
-
-  // find the offset to the holding type information
-  xsize sourceOffset = 0;
-  const SPropertyInformation *sourceBase = holdingTypeInformation()->findAllocatableBase(sourceOffset);
-  (void)sourceBase;
-  // add the instance location
-  sourceOffset += location();
-
-  // cannot add a default input between to separate allocatable types.
-  xAssert(targetBase == sourceBase);
-
-  _defaultInput = (xptrdiff)targetOffset - (xptrdiff)sourceOffset;
-
-  xAssert(sourceOffset < sourceBase->size());
-  xAssert(targetOffset < sourceBase->size());
-  xAssert((sourceOffset + _defaultInput) < sourceBase->size());
-  xAssert((targetOffset - _defaultInput) < sourceBase->size());
-  xAssert(_defaultInput < (xptrdiff)sourceBase->size());
-  }
-
-void SPropertyInstanceInformation::initiateProperty(SProperty *propertyToInitiate) const
-  {
-  if(defaultInput())
-    {
-    xuint8 *data = (xuint8*)propertyToInitiate;
-
-    const xuint8 *inputPropertyData = data + defaultInput();
-
-    const SProperty *inputProperty = (SProperty*)inputPropertyData;
-
-    xAssert(inputProperty->isDirty());
-    xAssert(propertyToInitiate->isDirty());
-    inputProperty->connect(propertyToInitiate);
-    }
-  }
-
-void SPropertyInstanceInformation::initiate(const SPropertyInformation *info,
-                 const QString &name,
-                 xsize index,
-                 xsize location)
-  {
-  _childInformation = info;
-  _name = name;
-  _location = location;
-  _index = index;
-  }
-SProperty *SPropertyInstanceInformation::locateProperty(SPropertyContainer *parent) const
-  {
-  xuint8* parentOffset = reinterpret_cast<xuint8*>(parent);
-  xuint8* childOffset = parentOffset + location();
-  SProperty *child = reinterpret_cast<SProperty*>(childOffset);
-
-  return child;
-  }
-
-const SProperty *SPropertyInstanceInformation::locateProperty(const SPropertyContainer *parent) const
-  {
-  const xuint8* parentOffset = reinterpret_cast<const xuint8*>(parent);
-  const xuint8* childOffset = parentOffset + location();
-  const SProperty *child = reinterpret_cast<const SProperty*>(childOffset);
-  return child;
-  }
-
-const SPropertyContainer *SPropertyInstanceInformation::locateConstParent(const SProperty *prop) const
-  {
-  return locateParent(const_cast<SProperty*>(prop));
-  }
-
-SPropertyContainer *SPropertyInstanceInformation::locateParent(SProperty *prop) const
-  {
-  xuint8* data = (xuint8*)prop;
-  data -= location();
-
-  SPropertyContainer *parent = (SPropertyContainer*)data;
-  return parent;
-  }
-
-const SPropertyInstanceInformation *SPropertyInstanceInformation::resolvePath(const QString &path) const
+const SEmbeddedPropertyInstanceInformation *SEmbeddedPropertyInstanceInformation::resolvePath(const QString &path) const
   {
   SProfileFunction
 
-  const SPropertyInstanceInformation *cur = this;
+  const SEmbeddedPropertyInstanceInformation *cur = this;
   const SPropertyInformation *curInfo = cur->childInformation();
 
   QString name;
@@ -314,4 +267,77 @@ const SPropertyInstanceInformation *SPropertyInstanceInformation::resolvePath(co
       }
     }
   return cur;
+  }
+
+void SEmbeddedPropertyInstanceInformation::setDefaultValue(const QString &)
+  {
+  xAssertFail();
+  }
+
+void SEmbeddedPropertyInstanceInformation::setDefaultInput(const SEmbeddedPropertyInstanceInformation *info)
+  {
+  // find the offset to the holding type information
+  xsize targetOffset = 0;
+  const SPropertyInformation *targetBase = info->holdingTypeInformation()->findAllocatableBase(targetOffset);
+  (void)targetBase;
+  // add the instance location
+  targetOffset += info->location();
+
+  // find the offset to the holding type information
+  xsize sourceOffset = 0;
+  const SPropertyInformation *sourceBase = holdingTypeInformation()->findAllocatableBase(sourceOffset);
+  (void)sourceBase;
+  // add the instance location
+  sourceOffset += location();
+
+  // cannot add a default input between to separate allocatable types.
+  xAssert(targetBase == sourceBase);
+
+  xptrdiff inp = (xptrdiff)targetOffset - (xptrdiff)sourceOffset;
+  xAssert(inp < X_INT16_MAX && inp > X_INT16_MIN)
+  _defaultInput = inp;
+
+  xAssert(sourceOffset < sourceBase->size());
+  xAssert(targetOffset < sourceBase->size());
+  xAssert((sourceOffset + _defaultInput) < sourceBase->size());
+  xAssert((targetOffset - _defaultInput) < sourceBase->size());
+  xAssert(_defaultInput < (xptrdiff)sourceBase->size());
+  }
+
+SProperty *SEmbeddedPropertyInstanceInformation::locateProperty(SPropertyContainer *parent) const
+  {
+  xuint8* parentOffset = reinterpret_cast<xuint8*>(parent);
+  xuint8* childOffset = parentOffset + location();
+  SProperty *child = reinterpret_cast<SProperty*>(childOffset);
+
+  return child;
+  }
+
+const SProperty *SEmbeddedPropertyInstanceInformation::locateProperty(const SPropertyContainer *parent) const
+  {
+  const xuint8* parentOffset = reinterpret_cast<const xuint8*>(parent);
+  const xuint8* childOffset = parentOffset + location();
+  const SProperty *child = reinterpret_cast<const SProperty*>(childOffset);
+  return child;
+  }
+
+const SPropertyContainer *SEmbeddedPropertyInstanceInformation::locateConstParent(const SProperty *prop) const
+  {
+  return locateParent(const_cast<SProperty*>(prop));
+  }
+
+SPropertyContainer *SEmbeddedPropertyInstanceInformation::locateParent(SProperty *prop) const
+  {
+  xuint8* data = (xuint8*)prop;
+  data -= location();
+
+  SPropertyContainer *parent = (SPropertyContainer*)data;
+  return parent;
+  }
+
+SDynamicPropertyInstanceInformation::SDynamicPropertyInstanceInformation()
+    : SPropertyInstanceInformation(true),
+      _parent(0),
+      _nextSibling(0)
+  {
   }

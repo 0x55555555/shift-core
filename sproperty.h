@@ -36,7 +36,10 @@ public:
 
 public:
   SProperty();
+
+#ifdef S_PROPERTY_USER_DATA
   ~SProperty();
+#endif
 
   void assign(const SProperty *propToAssign);
 

@@ -50,9 +50,9 @@ struct SPropertyInformationFunctions
   typedef void (*DestroyInstanceInformationFunction)(SPropertyInstanceInformation *data);
 
   CreateTypeInformationFunction createTypeInformation;
-  CreateInstanceInformationFunction createStaticInstanceInformation;
+  CreateInstanceInformationFunction createEmbeddedInstanceInformation;
   CreateInstanceInformationFunction createDynamicInstanceInformation;
-  DestroyInstanceInformationFunction destroyStaticInstanceInformation;
+  DestroyInstanceInformationFunction destroyEmbeddedInstanceInformation;
   DestroyInstanceInformationFunction destroyDynamicInstanceInformation;
   CreatePropertyFunction createProperty;
   CreatePropertyInPlaceFunction createPropertyInPlace;
@@ -142,7 +142,7 @@ public:
   SEmbeddedPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
 
   const SInterfaceBaseFactory *interfaceFactory(xuint32 type) const;
-  SPropertyInformation *extendContainedProperty(SPropertyInstanceInformation *inst);
+  SPropertyInformation *extendContainedProperty(SEmbeddedPropertyInstanceInformation *inst);
 
   template <typename T> void addInterfaceFactory(T *factory)
     {
@@ -167,7 +167,7 @@ public:
   static SPropertyInformation *derive(const SPropertyInformation *obj);
   static void initiate(SPropertyInformation *info, const SPropertyInformation *from);
 
-  template <typename T> const SPropertyInstanceInformation *firstChild() const;
+  template <typename T> const SEmbeddedPropertyInstanceInformation *firstChild() const;
 
   template <typename Cont, typename Member> class Walker
     {

@@ -86,9 +86,10 @@ void SProperty::setDependantsDirty()
     o->setDirty();
     }
 
-  const SEmbeddedPropertyInstanceInformation *child = embeddedBaseInstanceInformation();
+  const SPropertyInstanceInformation *childBase = baseInstanceInformation();
   if(!isDynamic())
     {
+    const SEmbeddedPropertyInstanceInformation *child = childBase->embeddedInfo();
     const xsize *affectsLocations = child->affects();
     if(affectsLocations)
       {
@@ -188,9 +189,9 @@ SProperty& SProperty::operator =(const SProperty &)
   return *this;
   }
 
+#ifdef S_PROPERTY_USER_DATA
 SProperty::~SProperty()
   {
-#ifdef S_PROPERTY_USER_DATA
   UserData *ud = _userData;
   while(ud)
     {
@@ -201,14 +202,8 @@ SProperty::~SProperty()
       }
     ud = next;
     }
-#endif
-
-  if(isDynamic())
-    {
-    xAssertFail();
-    ((DynamicInstanceInformation*)dynamicInstanceInformation())->~DynamicInstanceInformation();
-    }
   }
+#endif
 
 void SProperty::setName(const QString &in)
   {
@@ -626,13 +621,13 @@ void SProperty::setParent(SPropertyContainer *newParent)
 
 SPropertyContainer *SProperty::parent()
   {
-  const SEmbeddedPropertyInstanceInformation *inst = embeddedBaseInstanceInformation();
-  if(inst)
+  const SPropertyInstanceInformation *inst = baseInstanceInformation();
+  if(!inst->isDynamic())
     {
-    return inst->locateParent(this);
+    return inst->embeddedInfo()->locateParent(this);
     }
 
-  return dynamicInstanceInformation()->dynamicParent();
+  return inst->dynamicInfo()->parent();
   }
 
 const SPropertyContainer *SProperty::parent() const
@@ -707,6 +702,7 @@ bool SProperty::isComputed() const
     const SEmbeddedPropertyInstanceInformation *staticInfo = embeddedBaseInstanceInformation();
     return staticInfo->compute() != 0;
     }
+  return false;
   }
 
 void SProperty::disconnect() const

@@ -282,9 +282,12 @@ void SDatabase::postInitiateProperty(SProperty *prop)
       }
     }
 
-  const SPropertyInstanceInformation *inst = prop->baseInstanceInformation();
-  xAssert(inst);
-  inst->initiateProperty(prop);
+  if(!prop->isDynamic())
+    {
+    const SEmbeddedPropertyInstanceInformation *inst = prop->embeddedBaseInstanceInformation();
+    xAssert(inst);
+    inst->initiateProperty(prop);
+    }
 
 #ifdef S_PROPERTY_POST_CREATE
   const SPropertyInformation *info = prop->typeInformation();
@@ -316,6 +319,21 @@ void SDatabase::uninitiateProperty(SProperty *prop)
 
     uninitiatePropertyFromMetaData(container, metaData);
     }
+
+  SPropertyInformationFunctions::DestroyInstanceInformationFunction destroy = 0;
+  if(prop->isDynamic())
+    {
+    destroy = prop->typeInformation()->functions().destroyDynamicInstanceInformation;
+    }
+  else
+    {
+    destroy = prop->typeInformation()->functions().destroyEmbeddedInstanceInformation;
+    }
+
+  SPropertyInstanceInformation *instanceInfo =
+      const_cast<SPropertyInstanceInformation*>(prop->baseInstanceInformation());
+
+  destroy(instanceInfo);
   }
 
 QChar SDatabase::pathSeparator()

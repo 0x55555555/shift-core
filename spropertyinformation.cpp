@@ -44,7 +44,7 @@ void SPropertyInformation::destroy(SPropertyInformation *d)
   xForeach(auto inst, d->childWalker())
     {
     delete [] inst->affects();
-    inst->~SPropertyInstanceInformation();
+    inst->~SEmbeddedPropertyInstanceInformation();
     SPropertyInstanceInformation::destroy(inst);
     }
   d->_firstChild = 0;
@@ -63,7 +63,8 @@ void SPropertyInformation::initiate(SPropertyInformation *info, const SPropertyI
 
   info->setSize(from->size());
   info->setPropertyDataOffset(from->propertyDataOffset());
-  info->setInstanceInformationSize(from->instanceInformationSize());
+  info->setDynamicInstanceInformationSize(from->dynamicInstanceInformationSize());
+  info->setEmbeddedInstanceInformationSize(from->embeddedInstanceInformationSize());
 
   info->_instances = 0;
   info->_extendedParent = 0;
@@ -95,7 +96,7 @@ SPropertyInformation *SPropertyInformation::derive(const SPropertyInformation *f
   return copy;
   }
 
-SPropertyInstanceInformation *SPropertyInformation::add(const SPropertyInformation *newChildType, const QString &name)
+SEmbeddedPropertyInstanceInformation *SPropertyInformation::add(const SPropertyInformation *newChildType, const QString &name)
   {
   xsize backwardsOffset = 0;
   SPropertyInformation *allocatable = findAllocatableBase(backwardsOffset);
@@ -118,7 +119,7 @@ SPropertyInstanceInformation *SPropertyInformation::add(const SPropertyInformati
   xAssert(propertyDataLocation > backwardsOffset);
   xsize location = propertyDataLocation - backwardsOffset;
 
-  SPropertyInstanceInformation *def = add(newChildType, location, name, true);
+  SEmbeddedPropertyInstanceInformation *def = add(newChildType, location, name, true);
 
 #ifdef X_DEBUG
   const SProperty *prop = def->locateProperty((const SPropertyContainer*)0);
@@ -128,14 +129,14 @@ SPropertyInstanceInformation *SPropertyInformation::add(const SPropertyInformati
   return def;
   }
 
-SPropertyInstanceInformation *SPropertyInformation::add(const SPropertyInformation *newChildType, xsize location, const QString &name, bool notClassMember)
+SEmbeddedPropertyInstanceInformation *SPropertyInformation::add(const SPropertyInformation *newChildType, xsize location, const QString &name, bool notClassMember)
   {
   xAssert(newChildType);
   xAssert(!childFromName(name));
 
-  SPropertyInstanceInformation* def = SPropertyInstanceInformation::allocate(newChildType->instanceInformationSize());
+  SEmbeddedPropertyInstanceInformation* def = SEmbeddedPropertyInstanceInformation::allocate(newChildType->embeddedInstanceInformationSize());
 
-  newChildType->functions().createInstanceInformation(def);
+  newChildType->functions().createEmbeddedInstanceInformation(def);
 
   def->initiate(newChildType, name, _childCount, location);
 
@@ -183,7 +184,7 @@ const SInterfaceBaseFactory *SPropertyInformation::interfaceFactory(xuint32 type
   return fac;
   }
 
-SPropertyInformation *SPropertyInformation::extendContainedProperty(SPropertyInstanceInformation *inst)
+SPropertyInformation *SPropertyInformation::extendContainedProperty(SEmbeddedPropertyInstanceInformation *inst)
   {
   const SPropertyInformation *oldInst = inst->childInformation();
   SPropertyInformation *info = SPropertyInformation::derive(oldInst);
@@ -223,7 +224,7 @@ SPropertyInformation *SPropertyInformation::createTypeInformationInternal(const 
   return createdInfo;
   }
 
-SPropertyInstanceInformation *SPropertyInformation::child(xsize location)
+SEmbeddedPropertyInstanceInformation *SPropertyInformation::child(xsize location)
   {
   xForeach(auto i, childWalker())
     {
@@ -235,7 +236,7 @@ SPropertyInstanceInformation *SPropertyInformation::child(xsize location)
   return 0;
   }
 
-const SPropertyInstanceInformation *SPropertyInformation::child(xsize location) const
+const SEmbeddedPropertyInstanceInformation *SPropertyInformation::child(xsize location) const
   {
   xForeach(auto i, childWalker())
     {
@@ -247,7 +248,7 @@ const SPropertyInstanceInformation *SPropertyInformation::child(xsize location) 
   return 0;
   }
 
-const SPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in) const
+const SEmbeddedPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in) const
   {
   xForeach(auto i, childWalker())
     {
@@ -259,7 +260,7 @@ const SPropertyInstanceInformation *SPropertyInformation::childFromName(const QS
   return 0;
   }
 
-SPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in)
+SEmbeddedPropertyInstanceInformation *SPropertyInformation::childFromName(const QString &in)
   {
   xForeach(auto i, childWalker())
     {
@@ -275,7 +276,7 @@ const SPropertyInformation *SPropertyInformation::findAllocatableBase(xsize &off
   {
   offset = 0;
 
-  const SPropertyInstanceInformation *allocateOnInfo = extendedParent();
+  const SEmbeddedPropertyInstanceInformation *allocateOnInfo = extendedParent();
   if(!allocateOnInfo)
     {
     return this;
@@ -303,7 +304,7 @@ SPropertyInformation *SPropertyInformation::findAllocatableBase(xsize &offset)
   {
   offset = 0;
 
-  const SPropertyInstanceInformation *allocateOnInfo = extendedParent();
+  const SEmbeddedPropertyInstanceInformation *allocateOnInfo = extendedParent();
   if(!allocateOnInfo)
     {
     return this;
