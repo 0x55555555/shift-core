@@ -151,19 +151,19 @@ protected:
 template <typename T, typename DERIVED> class SPODProperty : public SPODPropertyBase<T, DERIVED>
   {
 public:
-  class InstanceInformation : public SProperty::InstanceInformation
+  class EmbeddedInstanceInformation : public SProperty::EmbeddedInstanceInformation
     {
   XProperties:
     XByRefProperty(T, defaultValue, setDefault);
 
   public:
-    InstanceInformation(const T& d) : _defaultValue(d)
+    EmbeddedInstanceInformation(const T& d) : _defaultValue(d)
       {
       }
 
     virtual void initiateProperty(SProperty *propertyToInitiate) const
       {
-      SProperty::InstanceInformation::initiateProperty(propertyToInitiate);
+      SProperty::EmbeddedInstanceInformation::initiateProperty(propertyToInitiate);
       propertyToInitiate->uncheckedCastTo<DERIVED>()->_value = defaultValue();
       }
 
@@ -227,7 +227,8 @@ public:
 
     if(SProperty::shouldSavePropertyValue(p))
       {
-      if(ptr->value() != ptr->instanceInformation()->defaultValue())
+      if(ptr->isDynamic() ||
+         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
         {
         return true;
         }
@@ -318,9 +319,11 @@ private:
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, defaultDefault, typeID) \
 class EXPORT_MODE name : public SPODProperty<type, name> { \
-public: class InstanceInformation : public SPODProperty<type, name>::InstanceInformation \
+public: class EmbeddedInstanceInformation : \
+  public SPODProperty<type, name>::EmbeddedInstanceInformation \
     { public: \
-    InstanceInformation() : SPODProperty<type, name>::InstanceInformation(defaultDefault) { } }; \
+    EmbeddedInstanceInformation() \
+    : SPODProperty<type, name>::EmbeddedInstanceInformation(defaultDefault) { } }; \
   enum { TypeId = typeID }; \
   typedef type PODType; \
   S_PROPERTY(name, SProperty, 0); \
@@ -362,12 +365,13 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, SStringVec
 class SHIFT_EXPORT StringProperty : public StringPropertyBase
   {
 public:
-  class InstanceInformation : public StringPropertyBase::InstanceInformation
+  class EmbeddedInstanceInformation : public StringPropertyBase::EmbeddedInstanceInformation
     {
   public:
-    InstanceInformation()
+    EmbeddedInstanceInformation()
       {
       }
+
     void setDefaultValue(const QString &val)
       {
       setDefault(val);

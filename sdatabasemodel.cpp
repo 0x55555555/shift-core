@@ -398,7 +398,7 @@ QVariant SDatabaseModel::data( const QModelIndex &index, int role ) const
     }
   else if(role == PropertyModeRole)
     {
-    const SPropertyInstanceInformation *inst = prop->instanceInformation();
+    const SPropertyInstanceInformation *inst = prop->baseInstanceInformation();
     xAssert(inst);
 
     return inst->modeString();

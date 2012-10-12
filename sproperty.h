@@ -13,6 +13,8 @@ class SPropertyMetaData;
 class SHandler;
 class SDatabase;
 class SPropertyInstanceInformation;
+class SEmbeddedPropertyInstanceInformation;
+class SDynamicPropertyInstanceInformation;
 class SPropertyInformation;
 template <typename T> class SPropertyInformationTyped;
 class SPropertyInformationCreateData;
@@ -26,13 +28,18 @@ class SPropertyNameChange;
 class SHIFT_EXPORT SProperty
   {
 public:
-  typedef SPropertyInstanceInformation InstanceInformation;
+  typedef SPropertyInstanceInformation BaseInstanceInformation;
+  typedef SEmbeddedPropertyInstanceInformation EmbeddedInstanceInformation;
+  typedef SDynamicPropertyInstanceInformation DynamicInstanceInformation;
 
   S_PROPERTY_ROOT(SProperty, 0)
 
 public:
   SProperty();
+
+#ifdef S_PROPERTY_USER_DATA
   ~SProperty();
+#endif
 
   void assign(const SProperty *propToAssign);
 
@@ -47,9 +54,9 @@ public:
   const SPropertyContainer *embeddedParent() const;
   SPropertyContainer *embeddedParent();
 
-  SProperty *input() const {return _input;}
-  SProperty *output() const {return _output;}
-  SProperty *nextOutput() const {return _nextOutput;}
+  SProperty *input() const { return _input; }
+  SProperty *output() const { return _output; }
+  SProperty *nextOutput() const { return _nextOutput; }
 
   template <typename T> T *output() const;
 
@@ -80,8 +87,10 @@ public:
   bool inheritsFromType(const SPropertyInformation *type) const;
   template <typename T> bool inheritsFromType() const { return inheritsFromType(T::staticTypeInformation()); }
 
-  const SPropertyInformation *typeInformation() const;
-  const SPropertyInstanceInformation *baseInstanceInformation() const { xAssert(_instanceInfo); return _instanceInfo; }
+  inline const SPropertyInformation *typeInformation() const;
+  inline const BaseInstanceInformation *baseInstanceInformation() const;
+  inline const EmbeddedInstanceInformation *embeddedBaseInstanceInformation() const;
+  inline const DynamicInstanceInformation *dynamicBaseInstanceInformation() const;
 
   void postSet();
   void setDependantsDirty();
@@ -100,7 +109,7 @@ public:
   void update() const;
   void updateParent() const;
 
-  bool isDynamic() const;
+  inline bool isDynamic() const;
 
   // find a path from this to that
   QString pathTo(const SProperty *that) const;
@@ -194,6 +203,7 @@ public:
   // should this properties value be saved, for example not when the value
   // is this property's value the default as it is when created.
   static bool shouldSavePropertyValue(const SProperty *);
+
   // should the property definition itself be saved, note this function must be true if the above is true
   // but the above can be false when this is true.
   static bool shouldSaveProperty(const SProperty *);
@@ -216,7 +226,7 @@ private:
   SProperty *_output;
   SProperty *_nextOutput;
 
-  const InstanceInformation *_instanceInfo;
+  const BaseInstanceInformation *_instanceInfo;
 
   enum Flags
     {

@@ -21,6 +21,7 @@ void SEntity::createTypeInformation(SPropertyInformationTyped<SEntity> *info,
     auto *api = info->apiInterface();
 
     static XScript::ClassDef<0,0,7> cls = {
+      {
       api->method<SProperty* (const SPropertyInformation *, const QString &), &SEntity::addChild>("addChild"),
 
       api->method<void (STreeObserver* obs), &SEntity::addTreeObserver>("addTreeObserver"),
@@ -29,7 +30,8 @@ void SEntity::createTypeInformation(SPropertyInformationTyped<SEntity> *info,
 
       api->method<void (STreeObserver* obs), &SEntity::removeTreeObserver>("removeTreeObserver"),
       api->method<void (SDirtyObserver* obs), &SEntity::removeDirtyObserver>("removeDirtyObserver"),
-      api->method<void (SConnectionObserver* obs), &SEntity::removeConnectionObserver>("removeConnectionObserver"),
+      api->method<void (SConnectionObserver* obs), &SEntity::removeConnectionObserver>("removeConnectionObserver")
+      }
     };
 
     api->buildInterface(cls);

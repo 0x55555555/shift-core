@@ -50,8 +50,10 @@ struct SPropertyInformationFunctions
   typedef void (*DestroyInstanceInformationFunction)(SPropertyInstanceInformation *data);
 
   CreateTypeInformationFunction createTypeInformation;
-  CreateInstanceInformationFunction createInstanceInformation;
-  DestroyInstanceInformationFunction destroyInstanceInformation;
+  CreateInstanceInformationFunction createEmbeddedInstanceInformation;
+  CreateInstanceInformationFunction createDynamicInstanceInformation;
+  DestroyInstanceInformationFunction destroyEmbeddedInstanceInformation;
+  DestroyInstanceInformationFunction destroyDynamicInstanceInformation;
   CreatePropertyFunction createProperty;
   CreatePropertyInPlaceFunction createPropertyInPlace;
   DestroyPropertyFunction destroyProperty;
@@ -85,16 +87,17 @@ XProperties:
 
   XProperty(const SPropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
-  XROProperty(SPropertyInstanceInformation *, firstChild);
-  XROProperty(SPropertyInstanceInformation *, lastChild);
+  XROProperty(SEmbeddedPropertyInstanceInformation *, firstChild);
+  XROProperty(SEmbeddedPropertyInstanceInformation *, lastChild);
   XProperty(xsize, size, setSize);
-  XProperty(xsize, instanceInformationSize, setInstanceInformationSize);
+  XProperty(xsize, dynamicInstanceInformationSize, setDynamicInstanceInformationSize);
+  XProperty(xsize, embeddedInstanceInformationSize, setEmbeddedInstanceInformationSize);
 
   XRORefProperty(DataHash, data);
 
   XProperty(xsize, instances, setInstances);
 
-  XProperty(SPropertyInstanceInformation *, extendedParent, setExtendedParent);
+  XProperty(SEmbeddedPropertyInstanceInformation *, extendedParent, setExtendedParent);
 
   XProperty(XScript::InterfaceBase *, apiInterface, setApiInterface);
 
@@ -115,11 +118,11 @@ public:
   bool inheritsFromType(const SPropertyInformation *type) const;
 
   // access the properties from offset of member
-  SPropertyInstanceInformation *child(xsize location);
-  const SPropertyInstanceInformation *child(xsize location) const;
+  SEmbeddedPropertyInstanceInformation *child(xsize location);
+  const SEmbeddedPropertyInstanceInformation *child(xsize location) const;
 
-  SPropertyInstanceInformation *childFromName(const QString &);
-  const SPropertyInstanceInformation *childFromName(const QString &) const;
+  SEmbeddedPropertyInstanceInformation *childFromName(const QString &);
+  const SEmbeddedPropertyInstanceInformation *childFromName(const QString &) const;
 
   // find the sproperty information that will be allocated dynamically (ie has no static parent)
   // offset is the offset in bytes back from this base to the allocated base.
@@ -129,17 +132,17 @@ public:
   void setData(DataKey, const QVariant &);
 
   // size of the property type, and its instance information
-  xsize dynamicSize() const { return size() + instanceInformationSize() + X_ALIGN_BYTE_COUNT; }
+  xsize dynamicSize() const { return size() + dynamicInstanceInformationSize() + X_ALIGN_BYTE_COUNT; }
 
-  SPropertyInstanceInformation *add(const SPropertyInformation *newChildType,
+  SEmbeddedPropertyInstanceInformation *add(const SPropertyInformation *newChildType,
                                     xsize location,
                                     const QString &name,
                                     bool notClassMember);
 
-  SPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
+  SEmbeddedPropertyInstanceInformation *add(const SPropertyInformation *newChildType, const QString &name);
 
   const SInterfaceBaseFactory *interfaceFactory(xuint32 type) const;
-  SPropertyInformation *extendContainedProperty(SPropertyInstanceInformation *inst);
+  SPropertyInformation *extendContainedProperty(SEmbeddedPropertyInstanceInformation *inst);
 
   template <typename T> void addInterfaceFactory(T *factory)
     {
@@ -164,21 +167,7 @@ public:
   static SPropertyInformation *derive(const SPropertyInformation *obj);
   static void initiate(SPropertyInformation *info, const SPropertyInformation *from);
 
-  template <typename T> const SPropertyInstanceInformation *firstChild() const
-    {
-    const SPropertyInformation *info = T::staticTypeInformation();
-    const SPropertyInstanceInformation *first = firstChild();
-    while(first)
-      {
-      const SPropertyInformation *firstInfo = first->childInformation();
-      if(firstInfo->inheritsFromType(info))
-        {
-        return first;
-        }
-      first = first->nextSibling();
-      }
-    return 0;
-    }
+  template <typename T> const SEmbeddedPropertyInstanceInformation *firstChild() const;
 
   template <typename Cont, typename Member> class Walker
     {
@@ -215,8 +204,14 @@ public:
     Iterator end() { return Iterator(0); }
     };
 
-  Walker<SPropertyInformation, SPropertyInstanceInformation> childWalker() { return Walker<SPropertyInformation, SPropertyInstanceInformation>(this); }
-  Walker<const SPropertyInformation, const SPropertyInstanceInformation> childWalker() const { return Walker<const SPropertyInformation, const SPropertyInstanceInformation>(this); }
+  Walker<SPropertyInformation, SEmbeddedPropertyInstanceInformation> childWalker()
+    {
+    return Walker<SPropertyInformation, SEmbeddedPropertyInstanceInformation>(this);
+    }
+  Walker<const SPropertyInformation, const SEmbeddedPropertyInstanceInformation> childWalker() const
+    {
+    return Walker<const SPropertyInformation, const SEmbeddedPropertyInstanceInformation>(this);
+    }
 
 private:
   X_DISABLE_COPY(SPropertyInformation);

@@ -86,22 +86,24 @@ void SProperty::setDependantsDirty()
     o->setDirty();
     }
 
-  const SPropertyInstanceInformation *child = baseInstanceInformation();
-  xAssert(child);
-
-  const xsize *affectsLocations = child->affects();
-  if(affectsLocations)
+  const SPropertyInstanceInformation *childBase = baseInstanceInformation();
+  if(!isDynamic())
     {
-    xuint8* parentLocation = (xuint8*)this;
-    parentLocation -= child->location();
-
-    for(;*affectsLocations; ++affectsLocations)
+    const SEmbeddedPropertyInstanceInformation *child = childBase->embeddedInfo();
+    const xsize *affectsLocations = child->affects();
+    if(affectsLocations)
       {
-      xuint8* affectedLocation = parentLocation + *affectsLocations;
-      SProperty *affectsProp = (SProperty *)affectedLocation;
+      xuint8* parentLocation = (xuint8*)this;
+      parentLocation -= child->location();
 
-      xAssert(affectsProp);
-      affectsProp->setDirty();
+      for(;*affectsLocations; ++affectsLocations)
+        {
+        xuint8* affectedLocation = parentLocation + *affectsLocations;
+        SProperty *affectsProp = (SProperty *)affectedLocation;
+
+        xAssert(affectsProp);
+        affectsProp->setDirty();
+        }
       }
     }
 
@@ -187,9 +189,9 @@ SProperty& SProperty::operator =(const SProperty &)
   return *this;
   }
 
+#ifdef S_PROPERTY_USER_DATA
 SProperty::~SProperty()
   {
-#ifdef S_PROPERTY_USER_DATA
   UserData *ud = _userData;
   while(ud)
     {
@@ -200,19 +202,8 @@ SProperty::~SProperty()
       }
     ud = next;
     }
+  }
 #endif
-
-  if(isDynamic())
-    {
-    ((InstanceInformation*)instanceInformation())->~InstanceInformation();
-    }
-  }
-
-bool SProperty::isDynamic() const
-  {
-  SProfileFunction
-  return instanceInformation()->dynamic();
-  }
 
 void SProperty::setName(const QString &in)
   {
@@ -272,7 +263,7 @@ void SProperty::saveProperty(const SProperty *p, SSaver &l)
     writeValue(l, dyn ? 1 : 0);
     l.endAttribute("dynamic");
 
-    const SPropertyInstanceInformation *instInfo = p->instanceInformation();
+    const SPropertyInstanceInformation *instInfo = p->baseInstanceInformation();
 
     if(!instInfo->isDefaultMode())
       {
@@ -283,6 +274,7 @@ void SProperty::saveProperty(const SProperty *p, SSaver &l)
       l.endAttribute("mode");
       }
 
+#if 0
     xsize *affects = instInfo->affects();
     if(affects)
       {
@@ -314,6 +306,7 @@ void SProperty::saveProperty(const SProperty *p, SSaver &l)
       writeValue(l, affectsString);
       l.endAttribute("affects");
       }
+#endif
     }
 
   if(p->input())
@@ -329,14 +322,14 @@ SProperty *SProperty::loadProperty(SPropertyContainer *parent, SLoader &l)
   class Initialiser : public SPropertyInstanceInformationInitialiser
     {
   public:
-    Initialiser() : affects(0) { }
+    //Initialiser() : affects(0) { }
     void initialise(SPropertyInstanceInformation *inst)
       {
-      inst->setAffects(affects);
+      //inst->setAffects(affects);
       inst->setModeString(mode);
       }
 
-    xsize *affects;
+    //xsize *affects;
     QString mode;
     };
 
@@ -360,6 +353,7 @@ SProperty *SProperty::loadProperty(SPropertyContainer *parent, SLoader &l)
   readValue(l, initialiser.mode);
   l.endAttribute("mode");
 
+#if 0
   l.beginAttribute("affects");
   QString affectsString;
   readValue(l, affectsString);
@@ -428,6 +422,7 @@ SProperty *SProperty::loadProperty(SPropertyContainer *parent, SLoader &l)
 
     xAssert(affectsCount == numAffects);
     }
+#endif
 
   l.beginAttribute("version");
   xuint32 version=0;
@@ -532,7 +527,7 @@ bool SProperty::shouldSaveProperty(const SProperty *p)
 
   if(p->hasInput())
     {
-    xsize inputLocation = p->instanceInformation()->defaultInput();
+    xsize inputLocation = p->embeddedBaseInstanceInformation()->defaultInput();
     if(inputLocation != 0)
       {
       const xuint8 *inputPropertyData = (xuint8*)p + inputLocation;
@@ -626,13 +621,13 @@ void SProperty::setParent(SPropertyContainer *newParent)
 
 SPropertyContainer *SProperty::parent()
   {
-  const SPropertyInstanceInformation *inst = instanceInformation();
-  if(!inst->dynamic())
+  const SPropertyInstanceInformation *inst = baseInstanceInformation();
+  if(!inst->isDynamic())
     {
-    return inst->locateParent(this);
+    return inst->embeddedInfo()->locateParent(this);
     }
 
-  return inst->dynamicParent();
+  return inst->dynamicInfo()->parent();
   }
 
 const SPropertyContainer *SProperty::parent() const
@@ -642,16 +637,16 @@ const SPropertyContainer *SProperty::parent() const
 
 SPropertyContainer *SProperty::embeddedParent()
   {
-  const SPropertyInstanceInformation *inst = instanceInformation();
-  xAssert(!inst->dynamic());
+  const SEmbeddedPropertyInstanceInformation *inst = embeddedBaseInstanceInformation();
+  xAssert(inst);
 
   return inst->locateParent(this);
   }
 
 const SPropertyContainer *SProperty::embeddedParent() const
   {
-  const SPropertyInstanceInformation *inst = instanceInformation();
-  xAssert(!inst->dynamic());
+  const SEmbeddedPropertyInstanceInformation *inst = embeddedBaseInstanceInformation();
+  xAssert(inst);
 
   return inst->locateConstParent(this);
   }
@@ -702,7 +697,12 @@ void SProperty::disconnect(SProperty *prop) const
 
 bool SProperty::isComputed() const
   {
-  return baseInstanceInformation()->compute() != 0;
+  if(!isDynamic())
+    {
+    const SEmbeddedPropertyInstanceInformation *staticInfo = embeddedBaseInstanceInformation();
+    return staticInfo->compute() != 0;
+    }
+  return false;
   }
 
 void SProperty::disconnect() const
@@ -729,19 +729,25 @@ QVector<SProperty *> SProperty::affects()
   {
   QVector<SProperty *> ret;
 
-  const SPropertyInstanceInformation *info = instanceInformation();
+  const SEmbeddedPropertyInstanceInformation *info = embeddedBaseInstanceInformation();
+  if(!info)
+    {
+    return ret;
+    }
+
   xsize *affects = info->affects();
   if(!affects)
     {
     return ret;
     }
 
-  const SPropertyInformation *parentInfo = parent()->typeInformation();
+  SPropertyContainer *par = parent();
+  const SPropertyInformation *parentInfo = par->typeInformation();
   while(*affects)
     {
-    const SPropertyInstanceInformation *affected = parentInfo->child(*affects);
+    const SEmbeddedPropertyInstanceInformation *affected = parentInfo->child(*affects);
 
-    ret << affected->locateProperty(parent());
+    ret << affected->locateProperty(par);
     affects++;
     }
 
@@ -850,7 +856,8 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
     {
     SProperty *parent = cont->parent();
     if(!parent->input() &&
-        !parent->instanceInformation()->isComputed() &&
+        (parent->isDynamic() ||
+         !parent->embeddedBaseInstanceInformation()->isComputed() ) &&
         !parent->_flags.hasFlag(SProperty::ParentHasInput))
       {
       xForeach(auto child, cont->walker())
@@ -873,7 +880,8 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
     {
     SPropertyContainer *parent = cont->parent();
     if(!parent->output() &&
-        !parent->instanceInformation()->affectsSiblings() &&
+       (parent->isDynamic() ||
+        !parent->embeddedBaseInstanceInformation()->affectsSiblings() ) &&
         !parent->_flags.hasFlag(SProperty::ParentHasOutput))
       {
       xForeach(auto child, cont->walker())
@@ -1002,7 +1010,7 @@ QString SProperty::path(const SProperty *from) const
 
 QString SProperty::mode() const
   {
-  return instanceInformation()->modeString();
+  return baseInstanceInformation()->modeString();
   }
 
 bool SProperty::isDescendedFrom(const SProperty *in) const
@@ -1121,7 +1129,7 @@ QString SProperty::valueAsString() const
 
 void SProperty::internalSetName(const QString &name)
   {
-  ((InstanceInformation*)this->baseInstanceInformation())->name() = name;
+  ((BaseInstanceInformation*)this->baseInstanceInformation())->name() = name;
   }
 
 void SProperty::postSet()
@@ -1172,13 +1180,23 @@ void SProperty::update() const
   // this is a const function, but because we delay computation we may need to assign here
   prop->_flags.clearFlag(Dirty);
 
-  const SPropertyInstanceInformation *child = baseInstanceInformation();
-  if(child && child->compute())
+
+
+  if(!isDynamic())
     {
-    SPropertyContainer *par = const_cast<SProperty*>(this)->embeddedParent();
-    xAssert(par);
-    //SProcessManager::preCompute(child, parent());
-    child->compute()(child, par);
+    const EmbeddedInstanceInformation *child = embeddedBaseInstanceInformation();
+    EmbeddedInstanceInformation::ComputeFunction compute = child->compute();
+    if(compute)
+      {
+      SPropertyContainer *par = prop->embeddedParent();
+      xAssert(par);
+
+      compute(child, par);
+      }
+    else if(input())
+      {
+      prop->assign(input());
+      }
     }
   else if(input())
     {

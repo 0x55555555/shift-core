@@ -43,7 +43,7 @@ private:
   void deleteDynamicProperty(SProperty *);
   void deleteProperty(SProperty *);
 
-  InstanceInformation _instanceInfoData;
+  DynamicInstanceInformation _instanceInfoData;
 
   void initiateProperty(SProperty *);
   void postInitiateProperty(SProperty *);

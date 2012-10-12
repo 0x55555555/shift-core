@@ -138,11 +138,9 @@ SProperty *SDatabase::createDynamicProperty(const SPropertyInformation *type, SP
   xAssertIsAligned(alignedPtr);
 
   SPropertyInstanceInformation *instanceInfoMem = (SPropertyInstanceInformation *)(alignedPtr);
-  SPropertyInstanceInformation *instanceInfo = type->functions().createInstanceInformation(instanceInfoMem);
+  SPropertyInstanceInformation *instanceInfo = type->functions().createDynamicInstanceInformation(instanceInfoMem);
 
-  instanceInfo->setDynamic(true);
   prop->_instanceInfo = instanceInfo;
-
 
   if(init)
     {
@@ -167,16 +165,18 @@ SProperty *SDatabase::createDynamicProperty(const SPropertyInformation *type, SP
   }
 
 void SDatabase::deleteProperty(SProperty *prop)
-{
-  const SPropertyInstanceInformation *inst = prop->instanceInformation();
-  const SPropertyInformation *info = inst->childInformation();
-
+  {
   xAssert(!prop->_flags.hasFlag(PreGetting));
   uninitiateProperty(prop);
 
-  if(inst->isExtraClassMember())
+  if(!prop->isDynamic())
     {
-    info->functions().destroyProperty(prop);
+    const SEmbeddedPropertyInstanceInformation *inst = prop->embeddedBaseInstanceInformation();
+    if(inst->isExtraClassMember())
+      {
+      const SPropertyInformation *info = inst->childInformation();
+      info->functions().destroyProperty(prop);
+      }
     }
   }
 
@@ -192,7 +192,6 @@ void SDatabase::deleteDynamicProperty(SProperty *prop)
 void SDatabase::initiateInheritedDatabaseType(const SPropertyInformation *info)
   {
   _instanceInfoData.setChildInformation(info);
-  _instanceInfoData.setDynamic(true);
   initiatePropertyFromMetaData(this, info);
   }
 
@@ -259,7 +258,7 @@ void SDatabase::initiateProperty(SProperty *prop)
     }
 
 
-  if(prop->instanceInformation()->name() == "width")
+  if(prop->baseInstanceInformation()->name() == "width")
   {
     xAssert(prop->isDirty());
   }
@@ -283,9 +282,12 @@ void SDatabase::postInitiateProperty(SProperty *prop)
       }
     }
 
-  const SPropertyInstanceInformation *inst = prop->instanceInformation();
-  xAssert(inst);
-  inst->initiateProperty(prop);
+  if(!prop->isDynamic())
+    {
+    const SEmbeddedPropertyInstanceInformation *inst = prop->embeddedBaseInstanceInformation();
+    xAssert(inst);
+    inst->initiateProperty(prop);
+    }
 
 #ifdef S_PROPERTY_POST_CREATE
   const SPropertyInformation *info = prop->typeInformation();
@@ -316,6 +318,16 @@ void SDatabase::uninitiateProperty(SProperty *prop)
     xAssert(metaData);
 
     uninitiatePropertyFromMetaData(container, metaData);
+    }
+
+  const SPropertyInstanceInformation* inst = prop->baseInstanceInformation();
+  if(inst->isDynamic())
+    {
+    SPropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
+      inst->childInformation()->functions().destroyDynamicInstanceInformation;
+
+    SPropertyInstanceInformation *instanceInfo = const_cast<SPropertyInstanceInformation*>(inst);
+    destroy(instanceInfo);
     }
   }
 
