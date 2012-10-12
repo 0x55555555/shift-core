@@ -44,7 +44,12 @@ void SPropertyInformation::destroy(SPropertyInformation *d)
   xForeach(auto inst, d->childWalker())
     {
     delete [] inst->affects();
-    inst->~SEmbeddedPropertyInstanceInformation();
+
+    SPropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
+      inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
+
+    destroy(inst);
+
     SPropertyInstanceInformation::destroy(inst);
     }
   d->_firstChild = 0;

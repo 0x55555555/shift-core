@@ -320,20 +320,15 @@ void SDatabase::uninitiateProperty(SProperty *prop)
     uninitiatePropertyFromMetaData(container, metaData);
     }
 
-  SPropertyInformationFunctions::DestroyInstanceInformationFunction destroy = 0;
-  if(prop->isDynamic())
+  const SPropertyInstanceInformation* inst = prop->baseInstanceInformation();
+  if(inst->isDynamic())
     {
-    destroy = prop->typeInformation()->functions().destroyDynamicInstanceInformation;
-    }
-  else
-    {
-    destroy = prop->typeInformation()->functions().destroyEmbeddedInstanceInformation;
-    }
+    SPropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
+      inst->childInformation()->functions().destroyDynamicInstanceInformation;
 
-  SPropertyInstanceInformation *instanceInfo =
-      const_cast<SPropertyInstanceInformation*>(prop->baseInstanceInformation());
-
-  destroy(instanceInfo);
+    SPropertyInstanceInformation *instanceInfo = const_cast<SPropertyInstanceInformation*>(inst);
+    destroy(instanceInfo);
+    }
   }
 
 QChar SDatabase::pathSeparator()
