@@ -79,6 +79,7 @@ template<typename T> struct PropertyHelper<T, false>
     }
   static void destroy(SProperty *ptr)
     {
+    (void)ptr;
     ((T*)ptr)->~T();
     }
   };
