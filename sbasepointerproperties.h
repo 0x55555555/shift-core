@@ -36,6 +36,7 @@ public:
     }
 
   SProperty *pointed() { preGet(); return input(); }
+  SProperty *operator()() { preGet(); return pointed(); }
   const SProperty *pointed() const { preGet(); return input(); }
   const SProperty *operator()() const { preGet(); return pointed(); }
 
