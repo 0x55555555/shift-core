@@ -283,6 +283,7 @@ public:
     ChildTreeExtraData &d = i.data();
     d._currentParent = property()->parent();
     d._root = d._currentParent;
+    xAssert(property()->entity() == property());
     i.setProperty(property()->entity());
     }
 
