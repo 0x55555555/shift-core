@@ -854,11 +854,10 @@ void SProperty::ConnectionChange::clearParentHasInputConnection(SProperty *prop)
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    SProperty *parent = cont->parent();
-    if(!parent->input() &&
-        (parent->isDynamic() ||
-         !parent->embeddedBaseInstanceInformation()->isComputed() ) &&
-        !parent->_flags.hasFlag(SProperty::ParentHasInput))
+    if(!cont->input() &&
+        (cont->isDynamic() ||
+         !cont->embeddedBaseInstanceInformation()->isComputed() ) &&
+        !cont->_flags.hasFlag(SProperty::ParentHasInput))
       {
       xForeach(auto child, cont->walker())
         {
@@ -878,11 +877,10 @@ void SProperty::ConnectionChange::clearParentHasOutputConnection(SProperty *prop
   SPropertyContainer *cont = prop->castTo<SPropertyContainer>();
   if(cont)
     {
-    SPropertyContainer *parent = cont->parent();
-    if(!parent->output() &&
-       (parent->isDynamic() ||
-        !parent->embeddedBaseInstanceInformation()->affectsSiblings() ) &&
-        !parent->_flags.hasFlag(SProperty::ParentHasOutput))
+    if(!cont->output() &&
+       (cont->isDynamic() ||
+        !cont->embeddedBaseInstanceInformation()->affectsSiblings() ) &&
+        !cont->_flags.hasFlag(SProperty::ParentHasOutput))
       {
       xForeach(auto child, cont->walker())
         {
