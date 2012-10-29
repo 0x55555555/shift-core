@@ -193,6 +193,8 @@ void SDatabase::initiateInheritedDatabaseType(const SPropertyInformation *info)
   {
   _instanceInfoData.setChildInformation(info);
   initiatePropertyFromMetaData(this, info);
+
+  postInitiateProperty(this);
   }
 
 void SDatabase::initiatePropertyFromMetaData(SPropertyContainer *container, const SPropertyInformation *mD)
