@@ -43,7 +43,8 @@ SOURCES += \
     shandler.cpp \
     sinterfaces.cpp \
     spropertygroup.cpp \
-    spropertyinstanceinformation.cpp
+    spropertyinstanceinformation.cpp \
+    sexternalpointer.cpp
 
 HEADERS += \
     sglobal.h \
@@ -80,7 +81,8 @@ HEADERS += \
     spropertymacros.h \
     spropertychanges.h \
     spropertyinstanceinformation.h \
-    sproperty.inl
+    sproperty.inl \
+    sexternalpointer.h
 
 
 
