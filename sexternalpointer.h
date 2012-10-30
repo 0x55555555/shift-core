@@ -8,7 +8,7 @@
 
 class ExternalPointer;
 
-class ExternalPointerInstanceInformation : public SEmbeddedPropertyInstanceInformation
+class SHIFT_EXPORT ExternalPointerInstanceInformation : public SEmbeddedPropertyInstanceInformation
   {
 public:
   enum ResolveResult
@@ -32,7 +32,7 @@ public:
 
   };
 
-class ExternalPointer : public SProperty
+class SHIFT_EXPORT ExternalPointer : public SProperty
   {
 public:
   typedef ExternalPointerInstanceInformation EmbeddedInstanceInformation;
@@ -75,7 +75,7 @@ public:
   };
 
 class SUuidEntity;
-class ExternalUuidPointer : public ExternalPointer
+class SHIFT_EXPORT ExternalUuidPointer : public ExternalPointer
   {
   S_PROPERTY(ExternalUuidPointer, ExternalPointer, 0)
 
@@ -84,20 +84,22 @@ public:
 
 private:
   QUuid _id;
+  friend class SUuidEntity;
   };
 
-class SUuidEntity : public SEntity
+class SHIFT_EXPORT SUuidEntity : public SEntity
   {
-  S_ENTITY(SUuidEntity, SEntity)
+  S_ENTITY(SUuidEntity, SEntity, 0)
 
 public:
 
 private:
   QUuid _id;
+  friend class ExternalUuidPointer;
   };
 
 S_PROPERTY_INTERFACE(ExternalPointer)
-S_PROPERTY_INTERFACE(ExternalUUIDPointer)
+S_PROPERTY_INTERFACE(ExternalUuidPointer)
 S_PROPERTY_INTERFACE(SUuidEntity)
 
 #endif // SEXTERNALPOINTER_H

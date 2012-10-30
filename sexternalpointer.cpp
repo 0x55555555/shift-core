@@ -65,9 +65,9 @@ void ExternalUuidPointer::setPointed(const SUuidEntity *entity)
   setInput(entity);
   }
 
-S_IMPLEMENT_PROPERTY(ExternalPointer, Shift)
+S_IMPLEMENT_PROPERTY(SUuidEntity, Shift)
 
-void SUuidEntity::createTypeInformation(SPropertyInformationTyped<ExternalUUIDPointer> *,
+void SUuidEntity::createTypeInformation(SPropertyInformationTyped<SUuidEntity> *,
                                             const SPropertyInformationCreateData &)
   {
   }
