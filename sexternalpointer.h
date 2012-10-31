@@ -82,6 +82,9 @@ class SHIFT_EXPORT ExternalUuidPointer : public ExternalPointer
 public:
   void setPointed(const SUuidEntity *entity);
 
+  static void saveProperty(const SProperty *, SSaver & );
+  static SProperty *loadProperty(SPropertyContainer *, SLoader &);
+
 private:
   QUuid _id;
   friend class SUuidEntity;
@@ -92,6 +95,7 @@ class SHIFT_EXPORT SUuidEntity : public SEntity
   S_ENTITY(SUuidEntity, SEntity, 0)
 
 public:
+  SUuidEntity();
 
 private:
   QUuid _id;

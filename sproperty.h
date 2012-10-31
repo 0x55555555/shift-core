@@ -213,6 +213,9 @@ public:
 
   X_ALIGNED_OPERATOR_NEW
 
+protected:
+  static void saveProperty(const SProperty *, SSaver &, bool writeInput);
+
 private:
   X_DISABLE_COPY(SProperty);
 

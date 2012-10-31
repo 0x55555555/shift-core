@@ -239,6 +239,11 @@ void SProperty::assignProperty(const SProperty *, SProperty *)
 
 void SProperty::saveProperty(const SProperty *p, SSaver &l)
   {
+  saveProperty(p, l, true);
+  }
+
+void SProperty::saveProperty(const SProperty *p, SSaver &l, bool writeInput)
+  {
   SProfileFunction
   const SPropertyInformation *type = p->typeInformation();
 
@@ -309,7 +314,7 @@ void SProperty::saveProperty(const SProperty *p, SSaver &l)
 #endif
     }
 
-  if(p->input())
+  if(writeInput && p->input())
     {
     l.beginAttribute("input");
     writeValue(l, p->input()->path(p));
