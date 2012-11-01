@@ -29,10 +29,10 @@ SProperty *ExternalPointer::resolve(ResolveResult *resultOpt)
   EmbeddedInstanceInformation::ResolveExternalPointer resFn = inst->resolveFunction();
   xAssert(resFn);
 
-  SProperty *prop = resFn(this, inst, resultOpt);
+  const SProperty *prop = resFn(this, inst, resultOpt);
   setInput(prop);
 
-  return prop;
+  return input();
   }
 
 const SProperty *ExternalPointer::resolve(ResolveResult *resultOpt) const

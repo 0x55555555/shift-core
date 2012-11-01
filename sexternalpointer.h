@@ -19,9 +19,9 @@ public:
     Success
     };
 
-  typedef SProperty *(*ResolveExternalPointer)(const ExternalPointer *,
-                                               const ExternalPointerInstanceInformation *inst,
-                                               ResolveResult *res);
+  typedef const SProperty *(*ResolveExternalPointer)(const ExternalPointer *,
+                                                     const ExternalPointerInstanceInformation *inst,
+                                                     ResolveResult *res);
 
 
 XProperties:
@@ -85,6 +85,8 @@ public:
   static void saveProperty(const SProperty *, SSaver & );
   static SProperty *loadProperty(SPropertyContainer *, SLoader &);
 
+  const QUuid &uuid() const { return _id; }
+
 private:
   QUuid _id;
   friend class SUuidEntity;
@@ -96,6 +98,8 @@ class SHIFT_EXPORT SUuidEntity : public SEntity
 
 public:
   SUuidEntity();
+
+  const QUuid &uuid() const { return _id; }
 
 private:
   QUuid _id;
