@@ -101,6 +101,9 @@ public:
 
   const QUuid &uuid() const { return _id; }
 
+  static void saveProperty(const SProperty *, SSaver & );
+  static SProperty *loadProperty(SPropertyContainer *, SLoader &);
+
 private:
   QUuid _id;
   friend class ExternalUuidPointer;

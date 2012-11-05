@@ -362,7 +362,6 @@ void SJSONLoader::readFromDevice(QIODevice *device, SPropertyContainer *parent)
   _root = 0;
   }
 
-
 const SPropertyInformation *SJSONLoader::type() const
   {
   SProfileFunction

@@ -96,8 +96,16 @@ SProperty *ExternalUuidPointer::loadProperty(SPropertyContainer *parent, SLoader
 
 void ExternalUuidPointer::setPointed(const SUuidEntity *entity)
   {
-  _id = entity->_id;
-  setInput(entity);
+  if(entity)
+    {
+    _id = entity->_id;
+    setInput(entity);
+    }
+  else
+    {
+    _id = QUuid();
+    setInput(0);
+    }
   }
 
 S_IMPLEMENT_PROPERTY(SUuidEntity, Shift)
@@ -110,4 +118,37 @@ void SUuidEntity::createTypeInformation(SPropertyInformationTyped<SUuidEntity> *
 SUuidEntity::SUuidEntity()
   {
   _id = QUuid::createUuid();
+  }
+
+void SUuidEntity::saveProperty(const SProperty *p, SSaver &s)
+  {
+  xAssert(p);
+  const SUuidEntity *ent = p->uncheckedCastTo<SUuidEntity>();
+
+  s.beginAttribute("uuid");
+  writeValue(s, ent->_id.toString());
+  s.endAttribute("uuid");
+
+  SEntity::saveProperty(p, s);
+
+  }
+
+SProperty *SUuidEntity::loadProperty(SPropertyContainer *p, SLoader &l)
+  {
+  QString uuid;
+
+  l.beginAttribute("uuid");
+  readValue(l, uuid);
+  l.endAttribute("uuid");
+
+  SProperty *prop = SEntity::loadProperty(p, l);
+
+  xAssert(prop);
+  if(prop)
+    {
+    SUuidEntity *ent = prop->uncheckedCastTo<SUuidEntity>();
+    ent->_id = uuid;
+    }
+
+  return prop;
   }
