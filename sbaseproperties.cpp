@@ -17,6 +17,20 @@ QTextStream &operator>>(QTextStream &s, xuint8 &v)
   return s;
   }
 
+
+SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &v)
+  {
+  QString str;
+  s >> str;
+  v = str;
+  return s;
+  }
+
+SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v)
+  {
+  return s << v.toString();
+  }
+
 namespace Utils
 {
 void readEscapedQuotedString(QTextStream &s, QString &str)
@@ -117,8 +131,16 @@ IMPLEMENT_POD_SHIFT_PROPERTY(QuaternionProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(StringPropertyBase);
 IMPLEMENT_POD_SHIFT_PROPERTY(ColourProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(ByteArrayProperty);
+IMPLEMENT_POD_SHIFT_PROPERTY(UuidPropertyBase);
 
 IMPLEMENT_POD_SHIFT_PROPERTY(StringArrayProperty);
+
+S_IMPLEMENT_PROPERTY(UuidProperty, Shift)
+
+void UuidProperty::createTypeInformation(SPropertyInformationTyped<UuidProperty> *,
+                                           const SPropertyInformationCreateData &)
+  {
+  }
 
 S_IMPLEMENT_PROPERTY(StringProperty, Shift)
 
@@ -733,6 +755,11 @@ void StringPropertyBase::assignProperty(const SProperty *f, SProperty *t)
   }
 
 void ByteArrayProperty::assignProperty(const SProperty *, SProperty *)
+  {
+  xAssertFail();
+  }
+
+void UuidPropertyBase::assignProperty(const SProperty *, SProperty *)
   {
   xAssertFail();
   }

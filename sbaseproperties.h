@@ -18,6 +18,7 @@
 #include "spropertychanges.h"
 #include "spropertyinstanceinformation.h"
 #include "QByteArray"
+#include "QUuid"
 
 typedef QVector<QString> SStringVector;
 Q_DECLARE_METATYPE(SStringVector)
@@ -27,6 +28,9 @@ SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, xuint8 &v);
 
 SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, SStringVector &);
 SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const SStringVector &v);
+
+SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &);
+SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
 
 
 template <typename T>
@@ -327,7 +331,6 @@ public: class EmbeddedInstanceInformation : \
   enum { TypeId = typeID }; \
   typedef type PODType; \
   S_PROPERTY(name, SProperty, 0); \
-  name(); \
   name &operator=(const type &in) { \
     assign(in); \
     return *this; } \
@@ -342,8 +345,7 @@ S_PROPERTY_INTERFACE(name)
   void name::createTypeInformation(SPropertyInformationTyped<name> *info, \
       const SPropertyInformationCreateData &data) { \
     if(data.registerInterfaces) { \
-    info->addStaticInterface(new PODPropertyVariantInterface<name, name::PODType>()); } } \
-  name::name() { }
+    info->addStaticInterface(new PODPropertyVariantInterface<name, name::PODType>()); } }
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 0, 100);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, IntProperty, xint32, 0, 101);
@@ -359,6 +361,7 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, QuaternionProperty, XQuaternion, XQuaternion()
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringPropertyBase, QString, "", 111);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, XColour, XColour(0.0f, 0.0f, 0.0f, 1.0f), 112);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ByteArrayProperty, QByteArray, QByteArray(), 113);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, QUuid(), 115);
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, SStringVector(), 114);
 
@@ -368,10 +371,6 @@ public:
   class EmbeddedInstanceInformation : public StringPropertyBase::EmbeddedInstanceInformation
     {
   public:
-    EmbeddedInstanceInformation()
-      {
-      }
-
     void setDefaultValue(const QString &val)
       {
       setDefault(val);
@@ -384,6 +383,22 @@ public:
     assign(in);
     return *this;
     }
+  };
+
+class SHIFT_EXPORT UuidProperty : public UuidPropertyBase
+  {
+public:
+  class EmbeddedInstanceInformation : public UuidPropertyBase::EmbeddedInstanceInformation
+    {
+  public:
+    virtual void initiateProperty(SProperty *propertyToInitiate) const
+      {
+      SProperty::EmbeddedInstanceInformation::initiateProperty(propertyToInitiate);
+      propertyToInitiate->uncheckedCastTo<UuidProperty>()->_value = QUuid::createUuid();
+      }
+    };
+
+  S_PROPERTY(UuidProperty, UuidPropertyBase, 0);
   };
 
 template <typename T> class FlagsProperty : public IntProperty
@@ -404,12 +419,11 @@ class SHIFT_EXPORT FilenameProperty : public StringProperty
   S_PROPERTY(FilenameProperty, StringProperty, 0);
 
 public:
-  FilenameProperty()
-    {
-    }
   };
 
 S_PROPERTY_INTERFACE(FilenameProperty)
+S_PROPERTY_INTERFACE(UuidProperty)
+Q_DECLARE_METATYPE(QUuid)
 
 #define EnumProperty IntProperty
 

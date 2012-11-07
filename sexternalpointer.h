@@ -3,8 +3,8 @@
 
 #include "sproperty.h"
 #include "sentity.h"
+#include "sbaseproperties.h"
 #include "spropertyinstanceinformation.h"
-#include "QUuid"
 
 class ExternalPointer;
 
@@ -97,15 +97,10 @@ class SHIFT_EXPORT SUuidEntity : public SEntity
   S_ENTITY(SUuidEntity, SEntity, 0)
 
 public:
-  SUuidEntity();
-
-  const QUuid &uuid() const { return _id; }
-
-  static void saveProperty(const SProperty *, SSaver & );
-  static SProperty *loadProperty(SPropertyContainer *, SLoader &);
+    const QUuid &uuid() const { return _uuid(); }
 
 private:
-  QUuid _id;
+  UuidProperty _uuid;
   friend class ExternalUuidPointer;
   };
 
