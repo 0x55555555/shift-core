@@ -367,7 +367,8 @@ const SPropertyInformation *SJSONLoader::type() const
   SProfileFunction
   xAssert(_root);
 
-  const SPropertyInformation *info = STypeRegistry::findType(_currentAttributes.value(TYPE_KEY));
+  QByteArray typeName = _currentAttributes.value(TYPE_KEY);
+  const SPropertyInformation *info = STypeRegistry::findType(typeName);
   xAssert(info);
   return info;
   }
