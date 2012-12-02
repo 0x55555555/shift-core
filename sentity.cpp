@@ -7,6 +7,10 @@
 
 S_IMPLEMENT_PROPERTY(SEntity, Shift)
 
+void SEntity::findResourceRequirements(SResourceDescription& rsc)
+  {
+  }
+
 void SEntity::createTypeInformation(SPropertyInformationTyped<SEntity> *info,
                                     const SPropertyInformationCreateData &data)
   {

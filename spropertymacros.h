@@ -10,7 +10,8 @@
 
 #define S_REGISTER_TYPE_FUNCTION(name) \
   public: static void createTypeInformation(SPropertyInformationTyped<name> *info, \
-    const SPropertyInformationCreateData &data); \
+    const SPropertyInformationCreateData &data); \  
+void SEntity::findResourceRequirements(SResourceDescription& rsc) \
   static const SPropertyInformation *staticTypeInformation(); \
   static const SPropertyInformation *bootstrapStaticTypeInformation();
 

@@ -25,6 +25,18 @@ class SPropertyDataChange;
 class SPropertyConnectionChange;
 class SPropertyNameChange;
 
+class SResourceDescription
+  {
+  xsize size;
+  xuint8 alignment;
+  };
+
+class SResourceDescription
+  {
+  xsize size;
+  xuint8 alignment;
+  };
+
 class SHIFT_EXPORT SProperty
   {
 public:
