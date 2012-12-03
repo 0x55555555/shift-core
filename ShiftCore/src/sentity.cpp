@@ -1,0 +1,268 @@
+#include "shift/sentity.h"
+#include "shift/sdatabase.h"
+#include "shift/TypeInformation/styperegistry.h"
+#include "shift/TypeInformation/sinterfaces.h"
+#include "shift/TypeInformation/spropertyinformationhelpers.h"
+#include "QStringList"
+
+namespace Shift
+{
+
+S_IMPLEMENT_PROPERTY(Entity, Shift)
+
+void Entity::findTypeInformationResourceRequirements(SResourceDescription& rsc)
+  {
+  rsc += &Entity::children;
+  }
+
+void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
+                                    const PropertyInformationCreateData &data)
+  {
+  if(data.registerAttributes)
+    {
+    auto *childInst = info->add(&Entity::children, "children");
+    childInst->setMode(PropertyInstanceInformation::Internal);
+    }
+
+  if(data.registerInterfaces)
+    {
+    XScript::Interface<Entity> *api = info->apiInterface();
+
+    static XScript::ClassDef<0,0,7> cls = {
+      {
+      api->method<Property* (const PropertyInformation *, const QString &), &Entity::addChild>("addChild"),
+
+      api->method<void (TreeObserver*), &Entity::addTreeObserver>("addTreeObserver"),
+      api->method<void (DirtyObserver*), &Entity::addDirtyObserver>("addDirtyObserver"),
+      api->method<void (ConnectionObserver*), &Entity::addConnectionObserver>("addConnectionObserver"),
+
+      api->method<void (TreeObserver*), &Entity::removeTreeObserver>("removeTreeObserver"),
+      api->method<void (DirtyObserver*), &Entity::removeDirtyObserver>("removeDirtyObserver"),
+      api->method<void (ConnectionObserver*), &Entity::removeConnectionObserver>("removeConnectionObserver")
+      }
+    };
+
+    api->buildInterface(cls);
+
+    info->addStaticInterface(new SBasicPositionInterface);
+    }
+  }
+
+template <typename T> void xRemoveAll(QVector<T>& vec, const T &ptr)
+  {
+  for(int i = 0; i < vec.size(); ++i)
+    {
+    if(vec[i] == ptr)
+      {
+      vec.remove(i--);
+      }
+    }
+  }
+
+Entity::~Entity()
+  {
+  for(int o = 0; o < _observers.size(); ++o)
+    {
+    Observer* observer = _observers[o].getObserver();
+    QVector<Entity*>& ents = observer->_entities;
+    xRemoveAll(ents, this);
+    }
+  _observers.clear();
+  }
+
+void Entity::reparent(Entity *ent)
+  {
+  xAssert(parent() && parentEntity());
+
+  parent()->moveProperty(&ent->children, this);
+  }
+
+Property *Entity::addChild(const PropertyInformation *info, const QString& name)
+  {
+  SBlock b(handler());
+  Property *ent = children.add(info, name);
+  xAssert(ent);
+  return ent;
+  }
+
+Property *Entity::addProperty(const PropertyInformation *info, const QString& name, PropertyInstanceInformationInitialiser *inst)
+  {
+  SBlock b(handler());
+  Property *p = PropertyContainer::addProperty(info, X_SIZE_SENTINEL, name, inst);
+  xAssert(p);
+  return p;
+  }
+
+const Entity *Entity::parentEntity() const
+  {
+  const PropertyContainer *par = parent();
+  if(par)
+    {
+    return par->entity();
+    }
+  return 0;
+  }
+
+Entity *Entity::parentEntity()
+  {
+  PropertyContainer *par = parent();
+  if(par)
+    {
+    return par->entity();
+    }
+  return 0;
+  }
+
+Entity *Entity::findChildEntity(const QString &n)
+  {
+  Property *prop = children.findChild(n);
+  if(!prop)
+    {
+    return 0;
+    }
+  return prop->castTo<Entity>();
+  }
+
+const Entity *Entity::findChildEntity(const QString &n) const
+  {
+  const Property *prop = children.findChild(n);
+  if(!prop)
+    {
+    return 0;
+    }
+  return prop->castTo<Entity>();
+  }
+
+void Entity::saveProperty(const Property *p, Saver &l)
+  {
+  PropertyContainer::saveProperty(p, l);
+  }
+
+Property *Entity::loadProperty(PropertyContainer *p, Loader &l)
+  {
+  return PropertyContainer::loadProperty(p, l);
+  }
+
+Observer *Entity::ObserverStruct::getObserver()
+  {
+  if(mode == ObserverStruct::Tree)
+    {
+    return (TreeObserver*)observer;
+    }
+  else if(mode == ObserverStruct::Dirty)
+    {
+    return (DirtyObserver*)observer;
+    }
+  else if(mode == ObserverStruct::Connection)
+    {
+    return (ConnectionObserver*)observer;
+    }
+  return 0;
+  }
+
+void Entity::addDirtyObserver(DirtyObserver *in)
+  {
+  ObserverStruct s;
+  s.mode = ObserverStruct::Dirty;
+  s.observer = in;
+  in->_entities << this;
+  _observers << s;
+  }
+
+void Entity::addTreeObserver(TreeObserver *in)
+  {
+  xAssert(in);
+  ObserverStruct s;
+  s.mode = ObserverStruct::Tree;
+  s.observer = in;
+  in->_entities << this;
+  _observers << s;
+  }
+
+void Entity::addConnectionObserver(ConnectionObserver *in)
+  {
+  ObserverStruct s;
+  s.mode = ObserverStruct::Connection;
+  s.observer = in;
+  in->_entities << this;
+  _observers << s;
+  }
+
+void Entity::removeDirtyObserver(DirtyObserver *in)
+  {
+  removeObserver(in);
+  }
+
+void Entity::removeTreeObserver(TreeObserver *in)
+  {
+  removeObserver(in);
+  }
+
+void Entity::removeConnectionObserver(ConnectionObserver *in)
+  {
+  removeObserver(in);
+  }
+
+void Entity::removeObserver(Observer *in)
+  {
+  for(int x=0; x<_observers.size(); ++x)
+    {
+    Observer *obs = _observers[x].getObserver();
+    if(obs == in)
+      {
+      xRemoveAll(obs->_entities, this);
+      _observers.removeAt(x);
+      --x;
+      }
+    }
+  }
+
+void Entity::informDirtyObservers(Property *prop)
+  {
+  SProfileFunction
+  Q_FOREACH(const ObserverStruct &obs, _observers)
+    {
+    if(obs.mode == ObserverStruct::Dirty)
+      {
+      DirtyObserver *observer = ((DirtyObserver*)obs.observer);
+      observer->onPropertyDirtied(prop);
+      handler()->currentBlockObserverList() << observer;
+      }
+    }
+  }
+
+void Entity::informTreeObservers(const Change *event, bool backwards)
+  {
+  SProfileFunction
+  Q_FOREACH(const ObserverStruct &obs, _observers)
+    {
+    if(obs.mode == ObserverStruct::Tree)
+      {
+      TreeObserver *observer = ((TreeObserver*)obs.observer);
+      observer->onTreeChange(event, backwards);
+      handler()->currentBlockObserverList() << observer;
+      }
+    }
+
+  Entity *parentEnt = parentEntity();
+  if(parentEnt)
+    {
+    parentEnt->informTreeObservers(event, backwards);
+    }
+  }
+
+void Entity::informConnectionObservers(const Change *event, bool backwards)
+  {
+  SProfileFunction
+  Q_FOREACH(const ObserverStruct &obs, _observers)
+    {
+    if(obs.mode == ObserverStruct::Connection)
+      {
+      ConnectionObserver *observer = ((ConnectionObserver*)obs.observer);
+      observer->onConnectionChange(event, backwards);
+      handler()->currentBlockObserverList() << observer;
+      }
+    }
+  }
+
+}
