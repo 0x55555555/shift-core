@@ -17,12 +17,12 @@ public:
     return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->castTo<T>();
     }
 
-  Property *add(const PropertyInformation *info, const QString &name, PropertyInstanceInformationInitialiser *init)
+  Property *add(const PropertyInformation *info, const PropertyNameArg &name, PropertyInstanceInformationInitialiser *init)
     {
     return addProperty(info, X_SIZE_SENTINEL, name, init);
     }
 
-  Property *add(const PropertyInformation *info, const QString &name=QString())
+  Property *add(const PropertyInformation *info, const PropertyNameArg &name=PropertyNameArg())
     {
     return addProperty(info, X_SIZE_SENTINEL, name, 0);
     }

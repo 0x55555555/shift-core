@@ -9,11 +9,11 @@ namespace Shift
 
 struct TypeData
   {
-  QVector <const PropertyGroup *> groups;
-  QVector <const PropertyInformation *> types;
-  QList <TypeRegistry::Observer *> observers;
+  Eks::Vector<const PropertyGroup *> groups;
+  Eks::Vector<const PropertyInformation *> types;
+  Eks::Vector<TypeRegistry::Observer *> observers;
 
-  XAllocatorBase *allocator;
+  Eks::AllocatorBase *allocator;
   };
 
 static TypeData *_internalTypes = 0;;
@@ -28,7 +28,7 @@ void TypeRegistry::initiate()
 
   _internalTypes = new TypeData();
 
-  _internalTypes->allocator = new XBucketAllocator();
+  _internalTypes->allocator = new Eks::BucketAllocator();
 
   addPropertyGroup(Shift::propertyGroup());
 
@@ -47,7 +47,7 @@ void TypeRegistry::terminate()
   delete _internalTypes;
   }
 
-XAllocatorBase *TypeRegistry::allocator()
+Eks::AllocatorBase *TypeRegistry::allocator()
   {
   xAssert(_internalTypes->allocator);
   return _internalTypes->allocator;
@@ -59,12 +59,12 @@ void TypeRegistry::addPropertyGroup(PropertyGroup &g)
   g.bootstrap();
   }
 
-const QVector <const PropertyGroup *> &TypeRegistry::groups()
+const Eks::Vector<const PropertyGroup *> &TypeRegistry::groups()
   {
   return _internalTypes->groups;
   }
 
-const QVector <const PropertyInformation *> &TypeRegistry::types()
+const Eks::Vector<const PropertyInformation *> &TypeRegistry::types()
   {
   return _internalTypes->types;
   }
@@ -98,12 +98,12 @@ void TypeRegistry::internalAddType(const PropertyInformation *t)
     }
   }
 
-const PropertyInformation *TypeRegistry::findType(const QString &in)
+const PropertyInformation *TypeRegistry::findType(const PropertyNameArg &in)
   {
   SProfileFunction
   Q_FOREACH(const PropertyInformation *info, _internalTypes->types)
     {
-    if(info->typeName() == in)
+    if(in == info->typeName())
       {
       return info;
       }

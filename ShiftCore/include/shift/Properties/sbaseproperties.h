@@ -12,23 +12,20 @@
 #include "shift/Changes/shandler.h"
 #include "shift/Changes/spropertychanges.h"
 
-#include "XVector2D"
-#include "XVector3D"
-#include "XVector4D"
+#include "XStringBuffer"
+#include "XMathVector"
 #include "XColour"
 #include "XQuaternion"
 #include "QByteArray"
-
-/*bool operator!=(const XQuaternion &a, const XQuaternion &b)
-  {
-  return true;
-  }*/
 
 namespace Shift
 {
 
 
-typedef QVector<QString> SStringVector;
+typedef Eks::Vector<Eks::String> SStringVector;
+
+#if X_QT_INTEROP
+
 Q_DECLARE_METATYPE(SStringVector)
 
 SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, xuint8 v);
@@ -37,6 +34,7 @@ SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, xuint8 &v);
 SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, SStringVector &);
 SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const SStringVector &v);
 
+#endif
 
 template <typename T>
 class PODInterface
@@ -47,14 +45,16 @@ template <typename PROP, typename POD> class PODPropertyVariantInterface : publi
   {
 public:
   PODPropertyVariantInterface() : PropertyVariantInterface(true) { }
-  virtual QString asString(const Property *p) const
+#if X_QT_INTEROP
+  virtual Eks::String asString(const Property *p) const
     {
+    xAssertFail(); // this is bad code.
     QString d;
       {
       QTextStream s(&d);
       s << p->uncheckedCastTo<PROP>()->value();
       }
-    return d;
+    return Eks::String(d);
     }
   virtual QVariant asVariant(const Property *p) const
     {
@@ -65,6 +65,7 @@ public:
     {
     p->uncheckedCastTo<PROP>()->assign(v.value<POD>());
     }
+#endif
   };
 
 template <typename T, typename DERIVED> class PODPropertyBase : public Property
@@ -176,11 +177,12 @@ public:
       propertyToInitiate->uncheckedCastTo<DERIVED>()->_value = defaultValue();
       }
 
-    virtual void setDefaultValueFromString(const QString &val)
+    virtual void setDefaultValueFromString(const Eks::String &val)
       {
-      QString cpyVal(val);
-      QTextStream s(&cpyVal);
-      s >> _defaultValue;
+      Eks::String::Buffer s(&val);
+      Eks::String::IStream stream(&s);
+      xAssertFail();
+      //stream >> _defaultValue;
       }
 
     void setDefaultValue(const T &val)
@@ -361,12 +363,12 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, UnsignedIntProperty, xuint32, 0, 103);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, LongUnsignedIntProperty, xuint64, 0, 104);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, FloatProperty, float, 0.0f, 105);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, DoubleProperty, double, 0.0, 106);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector2DProperty, XVector2D, XVector2D(0.0f, 0.0f), 107);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector3DProperty, XVector3D, XVector3D(0.0f, 0.0f, 0.0f), 108);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector4DProperty, XVector4D, XVector4D(0.0f, 0.0f, 0.0f, 0.0f), 109);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, QuaternionProperty, XQuaternion, XQuaternion(), 110);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringPropertyBase, QString, "", 111);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, XColour, XColour(0.0f, 0.0f, 0.0f, 1.0f), 112);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector2DProperty, Eks::Vector2D, Eks::Vector2D(0.0f, 0.0f), 107);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector3DProperty, Eks::Vector3D, Eks::Vector3D(0.0f, 0.0f, 0.0f), 108);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector4DProperty, Eks::Vector4D, Eks::Vector4D(0.0f, 0.0f, 0.0f, 0.0f), 109);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, QuaternionProperty, Eks::Quaternion, Eks::Quaternion::Identity(), 110);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringPropertyBase, Eks::String, "", 111);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, Eks::Colour, Eks::Colour(0.0f, 0.0f, 0.0f, 1.0f), 112);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ByteArrayProperty, QByteArray, QByteArray(), 113);
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, SStringVector(), 114);
@@ -381,14 +383,14 @@ public:
       {
       }
 
-    void setDefaultValue(const QString &val)
+    void setDefaultValue(const Eks::String &val)
       {
       setDefault(val);
       }
     };
 
   S_PROPERTY(StringProperty, StringPropertyBase, 0);
-  StringProperty &operator=(const QString &in)
+  StringProperty &operator=(const Eks::String &in)
     {
     assign(in);
     return *this;
@@ -423,15 +425,6 @@ public:
 template <> class PODInterface <bool> { public: typedef BoolProperty Type; \
   static void assign(BoolProperty* s, const bool &val) { s->assign(val); } \
   static const xuint8 &value(const BoolProperty* s) { return s->value(); } };
-
-template <> class PODInterface <QStringList>
-  {
-public:
-  typedef StringArrayProperty Type;
-
-  static void assign(StringArrayProperty* s, const QStringList &val) { s->assign(val.toVector()); }
-  static QStringList value(const StringArrayProperty* s) { return QStringList::fromVector(s->value()); }
-  };
 }
 
 #include "shift/sdatabase.h"

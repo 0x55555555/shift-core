@@ -5,17 +5,17 @@
 #include "shift/Utilities/sentityweakpointer.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/sbaseproperties.h"
-#include "QCheckBox"
-#include "QToolButton"
-#include "QSpinBox"
-#include "QLineEdit"
-#include "QTextEdit"
+#include "QtWidgets/QCheckBox"
+#include "QtWidgets/QToolButton"
+#include "QtWidgets/QSpinBox"
+#include "QtWidgets/QLineEdit"
+#include "QtWidgets/QTextEdit"
+#include "QtWidgets/QFileDialog"
+#include "QtWidgets/QHBoxLayout"
 #include "XFloatWidget"
 #include "XVector2DWidget"
 #include "XVector3DWidget"
 #include "XColourWidget"
-#include "QFileDialog"
-#include "QHBoxLayout"
 #include "XProperty"
 
 namespace Shift
@@ -216,7 +216,7 @@ public:
     }
 
   Q_SLOT virtual void guiChanged( ) { propertyValue()->assign(text()); }
-  void syncGUI() { setText(propertyValue()->value()); }
+  void syncGUI() { setText(propertyValue()->value().toQString()); }
   };
 
 class SHIFT_EXPORT LongString : public SUIBase<QTextEdit, StringProperty>
@@ -227,16 +227,17 @@ public:
     {
     connect( this, SIGNAL(textChanged()), this, SLOT(guiChanged()) );
     syncGUI();
-    setAcceptRichText( FALSE );
+    setAcceptRichText( false );
     setReadOnly(readOnly);
     }
 
   Q_SLOT virtual void guiChanged( ) { propertyValue()->assign(toPlainText());}
   void syncGUI()
     {
-    if(toPlainText() != propertyValue()->value())
+    QString newValue = propertyValue()->value().toQString();
+    if(toPlainText() != newValue)
       {
-      setText( propertyValue()->value() );
+      setText(newValue);
       }
     }
   };
@@ -247,12 +248,12 @@ class SHIFT_EXPORT Vector2D : public SUIBase<XVector2DWidget, Vector2DProperty>
 public:
   Vector2D(Property *prop, bool readOnly, QWidget *parent) : SUIBase<XVector2DWidget, Vector2DProperty>(parent, prop)
     {
-    connect( this, SIGNAL(valueChanged(XVector2D)), this, SLOT(guiChanged(XVector2D)));
+    connect( this, SIGNAL(valueChanged(Eks::Vector2D)), this, SLOT(guiChanged(Eks::Vector2D)));
     setReadOnly(readOnly);
     }
 
 private Q_SLOTS:
-  void guiChanged( XVector2D val ) { propertyValue()->assign(val); }
+  void guiChanged( Eks::Vector2D val ) { propertyValue()->assign(val); }
 
 private:
   void syncGUI() { setValue( propertyValue()->value() ); }
@@ -271,7 +272,7 @@ public:
     }
 
 private Q_SLOTS:
-  void guiChanged( XVector3D val ) { propertyValue()->assign(val); }
+  void guiChanged( Eks::Vector3D val ) { propertyValue()->assign(val); }
 
 private:
   void syncGUI() { setValue( propertyValue()->value() ); }
@@ -288,7 +289,7 @@ public:
     syncGUI();
     }
 private Q_SLOTS:
-  virtual void guiChanged( const XColour &col ) { propertyValue()->assign(col); }
+  virtual void guiChanged( const Eks::Colour &col ) { propertyValue()->assign(col); }
 
 private:
   void syncGUI() { setColour( propertyValue()->value() ); }
@@ -307,7 +308,7 @@ public:
     _layout->addWidget( _label );
     _layout->addWidget( _button );
 
-    _label->setReadOnly( TRUE );
+    _label->setReadOnly( true );
     _label->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
     _button->setText( "..." );
 
@@ -318,7 +319,7 @@ private Q_SLOTS:
   virtual void guiChanged( )
     {
     //QSettings settings;
-    QString file( QFileDialog::getOpenFileName( 0, "Select File for " + propertyValue()->name() ) );
+    QString file( QFileDialog::getOpenFileName( 0, "Select File for " + propertyValue()->name().toQString() ) );
 
     propertyValue()->assign(file);
 
@@ -327,7 +328,7 @@ private Q_SLOTS:
     }
   virtual void syncGUI()
     {
-    _label->setText(propertyValue()->value());
+    _label->setText(propertyValue()->value().toQString());
     }
 private:
   QHBoxLayout *_layout;
@@ -345,7 +346,7 @@ private:
       /** create a vectorProperty */
       APrivateVector2DProperty( AProperty *d )
               : _stack( new QStackedWidget( this ) ),
-              _vec( new XVector2DWidget( d->value().toVector2D() ) ),
+              _vec( new Eks::Vector2DWidget( d->value().toVector2D() ) ),
               _sca( new XFloatWidget( d->value().toVector2D().x() ) )
           {
           setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Fixed );
@@ -373,7 +374,7 @@ private:
 
           connect( _button, SIGNAL(clicked(bool)), this, SLOT(toggleMode(bool)) );
           connect( data, SIGNAL(onPropertyChange(AProperty*)), this, SLOT(propertyChanged(AProperty*)) );
-          connect( _vec, SIGNAL(valueChanged(XVector2D)), this, SLOT(guiChanged(XVector2D)));
+          connect( _vec, SIGNAL(valueChanged(Eks::Vector2D)), this, SLOT(guiChanged(Eks::Vector2D)));
           connect( _sca, SIGNAL(valueChanged(double)), this, SLOT(guiChanged(double)));
           }
       virtual QSize sizeHint() const
@@ -397,10 +398,10 @@ private:
               _button->setIcon( QIcon( ":/app/open.svg") );
               }
           }
-      void guiChanged( XVector2D val )
+      void guiChanged( Eks::Vector2D val )
           { *data = val; }
       void guiChanged( double val )
-          { *data = XVector2D( val, val ); }
+          { *data = Eks::Vector2D( val, val ); }
       void propertyChanged( AProperty *in )
           {
           _vec->setValue( in->value().toVector2D() );
@@ -410,7 +411,7 @@ private:
       QToolButton *_button;
       AProperty *data;
       QStackedWidget *_stack;
-      XVector2DWidget *_vec;
+      Eks::Vector2DWidget *_vec;
       XFloatWidget *_sca;
       };
 
@@ -451,7 +452,7 @@ private:
 
           connect( _button, SIGNAL(clicked(bool)), this, SLOT(toggleMode(bool)) );
           connect( data, SIGNAL(onPropertyChange(AProperty*)), this, SLOT(propertyChanged(AProperty*)) );
-          connect( _vec, SIGNAL(valueChanged(XVector4D)), this, SLOT(guiChanged(XVector4D)));
+          connect( _vec, SIGNAL(valueChanged(Eks::Vector4D)), this, SLOT(guiChanged(Eks::Vector4D)));
           connect( _sca, SIGNAL(valueChanged(double)), this, SLOT(guiChanged(double)));
           }
       virtual QSize sizeHint() const
@@ -475,10 +476,10 @@ private:
               _button->setIcon( QIcon( ":/app/open.svg") );
               }
           }
-      void guiChanged( XVector4D val )
+      void guiChanged( Eks::Vector4D val )
           { *data = val; }
       void guiChanged( double val )
-          { *data = XVector4D( val, val, val, val ); }
+          { *data = Eks::Vector4D( val, val, val, val ); }
       void propertyChanged( AProperty *in )
           {
           _vec->setValue( in->value().toVector4D() );

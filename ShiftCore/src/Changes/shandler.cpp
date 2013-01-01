@@ -35,7 +35,7 @@ Handler *Handler::findHandler(PropertyContainer *parent, Property *prop)
   return parent->handler();
   }
 
-XAllocatorBase *Handler::changeAllocator()
+Eks::AllocatorBase *Handler::changeAllocator()
   {
   return _database->persistantAllocator();
   }
@@ -51,8 +51,8 @@ void Handler::endBlock(bool cancel)
   xAssert(_blockLevel > 0);
   _blockLevel--;
 
-  xsize previousPoint = _blockSize.last();
-  _blockSize.pop_back();
+  xsize previousPoint = _blockSize.back();
+  _blockSize.popBack();
   if(cancel)
     {
     undoTo(previousPoint);
@@ -76,7 +76,7 @@ void Handler::undoTo(xsize p)
     xAssert(result);
 
     // todo dont need this here, when undo fully implemented.B
-    _done.pop_back();
+    _done.popBack();
     }
   }
 

@@ -2,8 +2,8 @@
 #include "shift/Properties/spropertycontaineriterators.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
-#include "QPushButton"
-#include "QStyleOptionViewItem"
+#include "QtWidgets/QPushButton"
+#include "QtWidgets/QStyleOptionViewItem"
 
 namespace Shift
 {
@@ -13,7 +13,7 @@ Q_DECLARE_METATYPE(QModelIndex)
 #define SDataModelProfileFunction XProfileFunctionBase(ShiftDataModelProfileScope)
 #define SDataModelProfileScopedBlock(mess) XProfileScopedBlockBase(ShiftDataModelProfileScope, mess)
 
-DatabaseDelegate::DatabaseDelegate(QObject *parent) : QItemDelegate(parent), _currentWidget(0)
+DatabaseDelegate::DatabaseDelegate(QObject *parent) : QStyledItemDelegate(parent), _currentWidget(0)
   {
   }
 
@@ -57,7 +57,7 @@ QSize DatabaseDelegate::sizeHint(const QStyleOptionViewItem &option, const QMode
         return _currentWidget->sizeHint();
       }
     }
-  return QItemDelegate::sizeHint(option, index);
+  return QStyledItemDelegate::sizeHint(option, index);
   }
 
 void DatabaseDelegate::currentItemDestroyed()
@@ -80,16 +80,14 @@ DatabaseModel::DatabaseModel(Database *db, Entity *ent, Options options) : _db(d
     _root->addTreeObserver(this);
     }
 
-  QHash<int, QByteArray> roles;
-  roles[Qt::DisplayRole] = "name";
-  roles[PropertyPositionRole] = "propertyPosition";
-  roles[PropertyColourRole] = "propertyColour";
-  roles[PropertyInputRole] = "propertyInput";
-  roles[PropertyModeRole] = "propertyMode";
-  roles[IsEntityRole] = "isEntity";
-  roles[EntityInputPositionRole] = "entityInputPosition";
-  roles[EntityOutputPositionRole] = "entityOutputPosition";
-  setRoleNames(roles);
+  _roles[Qt::DisplayRole] = "name";
+  _roles[PropertyPositionRole] = "propertyPosition";
+  _roles[PropertyColourRole] = "propertyColour";
+  _roles[PropertyInputRole] = "propertyInput";
+  _roles[PropertyModeRole] = "propertyMode";
+  _roles[IsEntityRole] = "isEntity";
+  _roles[EntityInputPositionRole] = "entityInputPosition";
+  _roles[EntityOutputPositionRole] = "entityOutputPosition";
   }
 
 DatabaseModel::~DatabaseModel()
@@ -346,7 +344,7 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
       }
     else
       {
-      QString name = prop->name();
+      QString name = prop->name().toQString();
       xAssert(!name.isEmpty());
       return name;
       }
@@ -404,7 +402,7 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
     const PropertyInstanceInformation *inst = prop->baseInstanceInformation();
     xAssert(inst);
 
-    return inst->modeString();
+    return inst->modeString().toQString();
     }
   else if(role == IsEntityRole)
     {
@@ -464,7 +462,7 @@ bool DatabaseModel::setData(const QModelIndex &index, const QVariant &val, int r
       if(interface)
         {
         QVector3D vec = val.value<QVector3D>();
-        interface->setPosition(prop, XVector3D(vec.x(), vec.y(), vec.z()));
+        interface->setPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
         return true;
         }
       }
@@ -474,7 +472,7 @@ bool DatabaseModel::setData(const QModelIndex &index, const QVariant &val, int r
       if(interface)
         {
         QVector3D vec = val.value<QVector3D>();
-        interface->setInputsPosition(prop, XVector3D(vec.x(), vec.y(), vec.z()));
+        interface->setInputsPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
         return true;
         }
       }
@@ -484,7 +482,7 @@ bool DatabaseModel::setData(const QModelIndex &index, const QVariant &val, int r
       if(interface)
         {
         QVector3D vec = val.value<QVector3D>();
-        interface->setOutputsPosition(prop, XVector3D(vec.x(), vec.y(), vec.z()));
+        interface->setOutputsPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
         return true;
         }
       }
@@ -533,6 +531,11 @@ QVariant DatabaseModel::headerData(int section, Qt::Orientation orientation, int
       }
     }
   return QVariant();
+  }
+
+QHash<int, QByteArray> DatabaseModel::roleNames() const
+  {
+  return _roles;
   }
 
 Qt::ItemFlags DatabaseModel::flags(const QModelIndex &index) const

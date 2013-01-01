@@ -28,9 +28,10 @@ public:
   QVector<Property *> load(const QString &type, QIODevice *device, PropertyContainer *loadRoot);
   void save(const QString &type, QIODevice *device, Entity *saveRoot, bool readable, bool includeRoot);
 
-  static QChar pathSeparator();
+  static const Eks::Char *pathSeparator();
+  static const Eks::Char *escapedPathSeparator();
 
-  XAllocatorBase *persistantAllocator()
+  Eks::AllocatorBase *persistantAllocator()
     {
     return _memory;
     }
@@ -54,7 +55,7 @@ private:
   void uninitiateProperty(Property *thisProp);
   void uninitiatePropertyFromMetaData(PropertyContainer *container, const PropertyInformation *mD);
 
-  XAllocatorBase *_memory;
+  Eks::AllocatorBase *_memory;
 
   bool _stateStorageEnabled;
 

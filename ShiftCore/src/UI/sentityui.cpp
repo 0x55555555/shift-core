@@ -3,9 +3,9 @@
 #include "shift/Properties/spropertycontaineriterators.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/sentity.h"
-#include "QFormLayout"
-#include "QWidget"
-#include "QString"
+#include "QtWidgets/QFormLayout"
+#include "QtWidgets/QWidget"
+#include "QtCore/QString"
 
 namespace Shift
 {
@@ -57,7 +57,7 @@ QWidget *EntityUI::createControlWidget(Entity *ent, QWidget *parent, bool *added
       QWidget *widget = createControlWidget(child);
       if(widget)
         {
-        layout->addRow(child->name(), widget);
+        layout->addRow(child->name().toQString(), widget);
         if(added)
           {
           *added = true;
@@ -94,7 +94,7 @@ int EntityUI::addWidgetCreator(WidgetCreator fn)
 
 void EntityUI::setUIType(const PropertyInformation *type, int widgetType)
   {
-  if(widgetType >= 0 && widgetType < _types.size())
+  if((xsize)widgetType >= 0 && (xsize)widgetType < _types.size())
     {
     _uiTypes[type] = widgetType;
     }

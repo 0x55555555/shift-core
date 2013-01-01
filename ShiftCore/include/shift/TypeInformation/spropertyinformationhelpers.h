@@ -46,7 +46,7 @@ template <> struct ApiHelper<Property>
 public:
   static void create(PropertyInformation *info)
     {
-    XScript::Interface<Property> *templ = XScript::Interface<Property>::create(info->typeName());
+    XScript::Interface<Property> *templ = XScript::Interface<Property>::create(info->typeName().data());
     info->setApiInterface(templ);
     }
   };

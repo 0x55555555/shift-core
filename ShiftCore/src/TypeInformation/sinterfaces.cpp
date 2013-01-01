@@ -15,7 +15,7 @@ SBasicPositionInterface::SBasicPositionInterface() : PropertyPositionInterface(t
   {
   }
 
-XVector3D SBasicPositionInterface::positionGeneric(const Property * p, const QString &name) const
+Eks::Vector3D SBasicPositionInterface::positionGeneric(const Property * p, const PropertyNameArg &name) const
   {
   const Entity *ent = p->uncheckedCastTo<Entity>();
   const Vector3DProperty *prop = ent->findChild<Vector3DProperty>(name);
@@ -24,10 +24,10 @@ XVector3D SBasicPositionInterface::positionGeneric(const Property * p, const QSt
     return prop->value();
     }
   xAssert(!ent->findChild(name));
-  return XVector3D::Zero();
+  return Eks::Vector3D::Zero();
   }
 
-void SBasicPositionInterface::setPositionGeneric(Property * p, const XVector3D &val, const QString &name) const
+void SBasicPositionInterface::setPositionGeneric(Property * p, const Eks::Vector3D &val, const PropertyNameArg &name) const
   {
   class Initialiser : public PropertyInstanceInformationInitialiser
     {
@@ -50,32 +50,32 @@ void SBasicPositionInterface::setPositionGeneric(Property * p, const XVector3D &
   prop->assign(val);
   }
 
-XVector3D SBasicPositionInterface::position(const Property *p) const
+Eks::Vector3D SBasicPositionInterface::position(const Property *p) const
   {
   return positionGeneric(p, g_positionName);
   }
 
-void SBasicPositionInterface::setPosition(Property *p, const XVector3D &val) const
+void SBasicPositionInterface::setPosition(Property *p, const Eks::Vector3D &val) const
   {
   setPositionGeneric(p, val, g_positionName);
   }
 
-XVector3D SBasicPositionInterface::inputsPosition(const Property *p) const
+Eks::Vector3D SBasicPositionInterface::inputsPosition(const Property *p) const
   {
   return positionGeneric(p, g_inputsPositionName);
   }
 
-void SBasicPositionInterface::setInputsPosition(Property *p, const XVector3D &val) const
+void SBasicPositionInterface::setInputsPosition(Property *p, const Eks::Vector3D &val) const
   {
   setPositionGeneric(p, val, g_inputsPositionName);
   }
 
-XVector3D SBasicPositionInterface::outputsPosition(const Property *p) const
+Eks::Vector3D SBasicPositionInterface::outputsPosition(const Property *p) const
   {
   return positionGeneric(p, g_outputsPositionName);
   }
 
-void SBasicPositionInterface::setOutputsPosition(Property *p, const XVector3D &val) const
+void SBasicPositionInterface::setOutputsPosition(Property *p, const Eks::Vector3D &val) const
   {
   setPositionGeneric(p, val, g_outputsPositionName);
   }
@@ -84,12 +84,12 @@ SBasicColourInterface::SBasicColourInterface() : PropertyColourInterface(true)
   {
   }
 
-XColour SBasicColourInterface::colour(const Property *t) const
+Eks::Colour SBasicColourInterface::colour(const Property *t) const
   {
   return colour(t->typeInformation());
   }
 
-XColour SBasicColourInterface::colour(const PropertyInformation *t) const
+Eks::Colour SBasicColourInterface::colour(const PropertyInformation *t) const
   {
   if(t->inheritsFromType<Pointer>())
     {
@@ -109,7 +109,7 @@ XColour SBasicColourInterface::colour(const PropertyInformation *t) const
 
   QColor col = QColor::fromHsl(hueI, satI, ligI);
 
-  return XColour(col);
+  return Eks::Colour(col);
   }
 
 }

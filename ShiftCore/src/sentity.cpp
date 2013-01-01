@@ -10,11 +10,6 @@ namespace Shift
 
 S_IMPLEMENT_PROPERTY(Entity, Shift)
 
-void Entity::findTypeInformationResourceRequirements(SResourceDescription& rsc)
-  {
-  rsc += &Entity::children;
-  }
-
 void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
                                     const PropertyInformationCreateData &data)
   {
@@ -30,7 +25,7 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
 
     static XScript::ClassDef<0,0,7> cls = {
       {
-      api->method<Property* (const PropertyInformation *, const QString &), &Entity::addChild>("addChild"),
+      api->method<Property* (const PropertyInformation *, const PropertyNameArg &), &Entity::addChild>("addChild"),
 
       api->method<void (TreeObserver*), &Entity::addTreeObserver>("addTreeObserver"),
       api->method<void (DirtyObserver*), &Entity::addDirtyObserver>("addDirtyObserver"),
@@ -48,23 +43,23 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
     }
   }
 
-template <typename T> void xRemoveAll(QVector<T>& vec, const T &ptr)
+template <typename T> void xRemoveAll(Eks::Vector<T>& vec, const T &ptr)
   {
-  for(int i = 0; i < vec.size(); ++i)
+  for(xsize i = 0; i < vec.size(); ++i)
     {
     if(vec[i] == ptr)
       {
-      vec.remove(i--);
+      vec.removeAt(i--);
       }
     }
   }
 
 Entity::~Entity()
   {
-  for(int o = 0; o < _observers.size(); ++o)
+  for(xsize o = 0; o < _observers.size(); ++o)
     {
     Observer* observer = _observers[o].getObserver();
-    QVector<Entity*>& ents = observer->_entities;
+    Eks::Vector<Entity*>& ents = observer->_entities;
     xRemoveAll(ents, this);
     }
   _observers.clear();
@@ -77,7 +72,7 @@ void Entity::reparent(Entity *ent)
   parent()->moveProperty(&ent->children, this);
   }
 
-Property *Entity::addChild(const PropertyInformation *info, const QString& name)
+Property *Entity::addChild(const PropertyInformation *info, const PropertyNameArg& name)
   {
   SBlock b(handler());
   Property *ent = children.add(info, name);
@@ -85,7 +80,7 @@ Property *Entity::addChild(const PropertyInformation *info, const QString& name)
   return ent;
   }
 
-Property *Entity::addProperty(const PropertyInformation *info, const QString& name, PropertyInstanceInformationInitialiser *inst)
+Property *Entity::addProperty(const PropertyInformation *info, const PropertyNameArg& name, PropertyInstanceInformationInitialiser *inst)
   {
   SBlock b(handler());
   Property *p = PropertyContainer::addProperty(info, X_SIZE_SENTINEL, name, inst);
@@ -113,7 +108,7 @@ Entity *Entity::parentEntity()
   return 0;
   }
 
-Entity *Entity::findChildEntity(const QString &n)
+Entity *Entity::findChildEntity(const PropertyNameArg &n)
   {
   Property *prop = children.findChild(n);
   if(!prop)
@@ -123,7 +118,7 @@ Entity *Entity::findChildEntity(const QString &n)
   return prop->castTo<Entity>();
   }
 
-const Entity *Entity::findChildEntity(const QString &n) const
+const Entity *Entity::findChildEntity(const PropertyNameArg &n) const
   {
   const Property *prop = children.findChild(n);
   if(!prop)
@@ -205,7 +200,7 @@ void Entity::removeConnectionObserver(ConnectionObserver *in)
 
 void Entity::removeObserver(Observer *in)
   {
-  for(int x=0; x<_observers.size(); ++x)
+  for(xsize x=0; x<_observers.size(); ++x)
     {
     Observer *obs = _observers[x].getObserver();
     if(obs == in)

@@ -6,7 +6,7 @@
 #include "shift/UI/sentityui.h"
 #include "shift/Changes/sobserver.h"
 #include "QAbstractItemModel"
-#include "QItemDelegate"
+#include "QtWidgets/QStyledItemDelegate"
 #include "XFlags"
 
 namespace Shift
@@ -14,7 +14,7 @@ namespace Shift
 
 class Database;
 
-class SHIFT_EXPORT DatabaseDelegate : public QItemDelegate
+class SHIFT_EXPORT DatabaseDelegate : public QStyledItemDelegate
   {
   Q_OBJECT
 
@@ -86,6 +86,8 @@ public:
   void setOptions(Options options);
   Options options() const;
 
+  QHash<int, QByteArray> roleNames() const X_OVERRIDE;
+
   virtual Qt::ItemFlags flags(const QModelIndex &index) const;
 
   void setRoot(Entity *ent);
@@ -94,6 +96,7 @@ public:
 private:
   Database *_db;
   EntityWeakPointer _root;
+  QHash<int, QByteArray> _roles;
   Options _options;
   const PropertyContainer::TreeChange *_currentTreeChange;
   };

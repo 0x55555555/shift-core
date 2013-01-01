@@ -6,7 +6,6 @@
 #include "shift/Properties/spropertycontainer.h"
 #include "shift/Properties/sbaseproperties.h"
 #include "shift/Serialisation/sloader.h"
-#include "XList"
 #include "Eigen/Core"
 
 namespace Shift
@@ -73,7 +72,7 @@ public:
     return mData.data();
     }
 
-  void set(xsize width, xsize height, const XVector<T> &val)
+  void set(xsize width, xsize height, const Eks::Vector<T> &val)
     {
     EigenArray result = mData;
     result.resize(height, width);
@@ -195,21 +194,21 @@ class SHIFT_EXPORT UIntArrayProperty : public ArrayProperty<xuint32, UIntArrayPr
 public:
   };
 
-class SHIFT_EXPORT Vector2ArrayProperty : public ArrayProperty<XVector2D, Vector2ArrayProperty>
+class SHIFT_EXPORT Vector2ArrayProperty : public ArrayProperty<Eks::Vector2D, Vector2ArrayProperty>
   {
   S_PROPERTY(Vector2ArrayProperty, Property, 0)
 public:
   };
 
 
-class SHIFT_EXPORT Vector3ArrayProperty : public ArrayProperty<XVector3D, Vector3ArrayProperty>
+class SHIFT_EXPORT Vector3ArrayProperty : public ArrayProperty<Eks::Vector3D, Vector3ArrayProperty>
   {
   S_PROPERTY(Vector3ArrayProperty, Property, 0)
 public:
   };
 
 
-class SHIFT_EXPORT Vector4ArrayProperty : public ArrayProperty<XVector4D, Vector4ArrayProperty>
+class SHIFT_EXPORT Vector4ArrayProperty : public ArrayProperty<Eks::Vector4D, Vector4ArrayProperty>
   {
   S_PROPERTY(Vector4ArrayProperty, Property, 0)
 public:

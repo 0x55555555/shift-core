@@ -74,8 +74,8 @@ class SHIFT_EXPORT PropertyInformation
   {
 public:
   typedef xuint16 DataKey;
-  typedef XHash<DataKey, QVariant> DataHash;
-  typedef XHash<xuint32, InterfaceBaseFactory *> InterfaceHash;
+  typedef Eks::UnorderedMap<DataKey, QVariant> DataHash;
+  typedef Eks::UnorderedMap<xuint32, InterfaceBaseFactory *> InterfaceHash;
 
   typedef PropertyInformationFunctions Functions;
 
@@ -86,7 +86,7 @@ XProperties:
 
   XProperty(xuint32, version, setVersion);
 
-  XByRefProperty(QString, typeName, setTypeName);
+  XByRefProperty(PropertyName, typeName, setTypeName);
 
   XProperty(const PropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
@@ -143,8 +143,8 @@ public:
   template <typename T> const EmbeddedPropertyInstanceInformation *firstChild(xsize *i) const;
   template <typename T> const EmbeddedPropertyInstanceInformation *nextChild(xsize *i) const;
 
-  EmbeddedPropertyInstanceInformation *childFromName(const QString &);
-  const EmbeddedPropertyInstanceInformation *childFromName(const QString &) const;
+  EmbeddedPropertyInstanceInformation *childFromName(const PropertyNameArg &);
+  const EmbeddedPropertyInstanceInformation *childFromName(const PropertyNameArg &) const;
 
   // find the sproperty information that will be allocated dynamically (ie has no static parent)
   // offset is the offset in bytes back from this base to the allocated base.

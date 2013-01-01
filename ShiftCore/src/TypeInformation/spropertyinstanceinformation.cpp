@@ -18,7 +18,7 @@ void PropertyInstanceInformation::destroy(PropertyInstanceInformation *d)
   TypeRegistry::allocator()->free(d);
   }
 
-QString g_modeStrings[] = {
+Eks::String g_modeStrings[] = {
   /* Internal      */ "internal",
   /* InputOutput   */ "inputoutput",
   /* InternalInput */ "internalinput",
@@ -29,13 +29,13 @@ QString g_modeStrings[] = {
   /* UserSettable  */ "usersettable"
 };
 
-const QString &PropertyInstanceInformation::modeString() const
+const Eks::String &PropertyInstanceInformation::modeString() const
   {
   xAssert(_mode < NumberOfModes);
   return g_modeStrings[_mode];
   }
 
-void PropertyInstanceInformation::setModeString(const QString &s)
+void PropertyInstanceInformation::setModeString(const Eks::String &s)
   {
   for(xsize i = 0; i < NumberOfModes; ++i)
     {
@@ -203,31 +203,31 @@ void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects)
   _affects = affects;
   }
 
-const EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::resolvePath(const QString &path) const
+const EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::resolvePath(const Eks::String &path) const
   {
   SProfileFunction
 
   const EmbeddedPropertyInstanceInformation *cur = this;
   const PropertyInformation *curInfo = cur->childInformation();
 
-  QString name;
+  Eks::String name;
   bool escape = false;
   for(int i = 0, s = path.size(); i < s; ++i)
     {
-    QChar c = path[i];
+    Eks::Char c = path[i];
 
-    if(c == QChar('\\'))
+    if(c == Eks::Char('\\'))
       {
       escape = true;
       }
     else
       {
-      if(!escape && c != Database::pathSeparator())
+      if(!escape && c != Database::pathSeparator()[0])
         {
         name.append(c);
         }
 
-      if(!escape && (c == Database::pathSeparator() || i == (s-1)))
+      if(!escape && (c == Database::pathSeparator()[0] || i == (s-1)))
         {
         if(name == "..")
           {

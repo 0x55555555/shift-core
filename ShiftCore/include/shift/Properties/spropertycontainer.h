@@ -137,7 +137,7 @@ public:
   Property *nextDynamicSibling(const Property *p);
   const Property *nextDynamicSibling(const Property *p) const;
 
-  template <typename T> const T *findChild(const QString &name) const
+  template <typename T> const T *findChild(const PropertyNameArg &name) const
     {
     const Property *prop = findChild(name);
     if(prop)
@@ -147,7 +147,7 @@ public:
     return 0;
     }
 
-  template <typename T> T *findChild(const QString &name)
+  template <typename T> T *findChild(const PropertyNameArg &name)
     {
     Property *prop = findChild(name);
     if(prop)
@@ -157,8 +157,8 @@ public:
     return 0;
     }
 
-  const Property *findChild(const QString &name) const;
-  Property *findChild(const QString &name);
+  const Property *findChild(const PropertyNameArg &name) const;
+  Property *findChild(const PropertyNameArg &name);
 
   bool isEmpty() const { return _containedProperties != 0; }
 
@@ -200,7 +200,7 @@ protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
   // you cannot add another contained property once dynamic properties have been added, this bool
   // should really be left alone and not exposed in sub classes
-  Property *addProperty(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const QString& name=QString(), PropertyInstanceInformationInitialiser *inst=0);
+  Property *addProperty(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const PropertyNameArg& name=PropertyNameArg(), PropertyInstanceInformationInitialiser *inst=0);
   void removeProperty(Property *);
 
   void clear();
@@ -209,14 +209,14 @@ protected:
   void internalClear(Database *db);
 
 private:
-  Property *internalFindChild(const QString &name);
-  const Property *internalFindChild(const QString &name) const;
+  Property *internalFindChild(const PropertyNameArg &name);
+  const Property *internalFindChild(const PropertyNameArg &name) const;
   friend void setDependantsDirty(Property* prop, bool force);
   Property *_dynamicChild;
   xsize _containedProperties;
   Database *_database;
 
-  QString makeUniqueName(const QString &name) const;
+  PropertyName makeUniqueName(const PropertyNameArg &name) const;
   void internalInsertProperty(Property *, xsize index);
   void internalSetupProperty(Property *);
   void internalRemoveProperty(Property *);

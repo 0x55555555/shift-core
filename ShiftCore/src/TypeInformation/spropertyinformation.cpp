@@ -112,7 +112,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformation::add(const PropertyInfo
   xAssert(allocatable);
 
   // size of the old type
-  xsize oldAlignedSize = X_ROUND_TO_ALIGNMENT(allocatable->size());
+  xsize oldAlignedSize = Eks::roundToAlignment(allocatable->size());
 
   // the actual object will start at this offset before the type
   xptrdiff firstFreeByte = oldAlignedSize - allocatable->propertyDataOffset();
@@ -248,11 +248,11 @@ const EmbeddedPropertyInstanceInformation *PropertyInformation::child(xsize loca
   return 0;
   }
 
-const EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const QString &in) const
+const EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const PropertyNameArg &in) const
   {
   xForeach(auto i, childWalker())
     {
-    if(i->name() == in)
+    if(in == i->name())
       {
       return i;
       }
@@ -260,11 +260,11 @@ const EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(co
   return 0;
   }
 
-EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const QString &in)
+EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const PropertyNameArg &in)
   {
   xForeach(auto i, childWalker())
     {
-    if(i->name() == in)
+    if(in == i->name())
       {
       return i;
       }
@@ -387,13 +387,13 @@ JSToNative<Shift::PropertyInformation>::ResultType JSToNative<Shift::PropertyInf
 
 Value NativeToJS<Shift::PropertyInformation>::operator()(const Shift::PropertyInformation &x) const
   {
-  return x.typeName();
+  return x.typeName().toQString();
   }
 
 Value NativeToJS<Shift::PropertyInformation>::operator()(const Shift::PropertyInformation *x) const
   {
   xAssert(x)
-  return x->typeName();
+  return x->typeName().toQString();
   }
 }
 }

@@ -33,7 +33,7 @@ void SXMLSaver::setType(const PropertyInformation *type)
   {
   xAssert(_buffer.data().isEmpty());
   xAssert(_inAttribute.isEmpty());
-  _writer.writeStartElement(type->typeName());
+  _writer.writeStartElement(type->typeName().toQString());
   }
 
 void SXMLSaver::beginChildren()
@@ -185,7 +185,7 @@ void SXMLLoader::beginNextChild()
     {
     _scratch.clear();
     _reader.text().appendTo(&_scratch);
-    _currentValue = _scratch.toAscii();
+    _currentValue = _scratch.toUtf8();
     }
   else if(!_reader.isWhitespace())
     {
@@ -217,7 +217,7 @@ void SXMLLoader::beginAttribute(const char *attr)
   xAssert(_currentAttributeValue.isEmpty());
   _scratch.clear();
   _currentAttributes.value(attr).appendTo(&_scratch);
-  _currentAttributeValue = _scratch.toAscii();
+  _currentAttributeValue = _scratch.toUtf8();
 
   _buffer.close();
   _buffer.setBuffer(&_currentAttributeValue);

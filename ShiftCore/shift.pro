@@ -5,6 +5,8 @@
 TARGET = shift
 TEMPLATE = lib
 
+QT += widgets
+
 include("../../Eks/EksCore/GeneralOptions.pri")
 
 INCLUDEPATH += $$ROOT/Shift/ShiftCore/include \
@@ -43,6 +45,9 @@ SOURCES += \
     src/Serialisation/sbinaryio.cpp \
     src/Serialisation/sjsonio.cpp \
     src/Serialisation/sloader.cpp \
+    src/Utilities/spropertyname.cpp \
+    src/UI/moc_spropertydefaultui.cpp \
+    src/UI/moc_sdatabasemodel.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -64,10 +69,8 @@ HEADERS += \
     include/shift/Changes/shandler.inl \
     include/shift/Changes/spropertychanges.h \
     include/shift/UI/sentityui.h \
-    include/shift/UI/spropertydefaultui.h \
-    include/shift/UI/sdatabasemodel.h \
     include/shift/Serialisation/sloader.h \
-    include/shift/Serialisation/JsonParser/JSON_parser.h \
+    src/Serialisation/JsonParser/JSON_parser.h \
     include/shift/Serialisation/sxmlio.h \
     include/shift/Serialisation/sbinaryio.h \
     include/shift/Serialisation/sjsonio.h \
@@ -81,8 +84,12 @@ HEADERS += \
     include/shift/Utilities/sentityweakpointer.h \
     include/shift/Utilities/sprocessmanager.h \
     include/shift/Utilities/siterator.h \
-    include/shift/Utilities/sresourcedescription.h
+    include/shift/Utilities/sresourcedescription.h \
+    include/shift/Utilities/spropertyname.h
 
+OTHER_FILES += \
+    include/shift/UI/spropertydefaultui.h \
+    include/shift/UI/sdatabasemodel.h \
 
 
 

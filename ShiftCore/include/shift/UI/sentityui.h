@@ -3,9 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "XProperty"
-#include "XMetaType"
-#include "XList"
-#include "QHash"
+#include "XUnorderedMap"
 
 class QWidget;
 
@@ -22,8 +20,8 @@ public:
   typedef QWidget *(*WidgetCreator)(const Property *property, bool readOnly, QWidget *parent);
 
 XProperties:
-  typedef XList<WidgetCreator> TypeList;
-  typedef QHash<const PropertyInformation *, int> LookupMap;
+  typedef Eks::Vector<WidgetCreator> TypeList;
+  typedef Eks::UnorderedMap<const PropertyInformation *, int> LookupMap;
   XRORefProperty(TypeList, types);
   XRORefProperty(LookupMap, uiTypes);
 

@@ -7,6 +7,7 @@
 namespace Shift
 {
 
+class PropertyNameArg;
 class PropertyGroup;
 class PropertyInformation;
 
@@ -26,15 +27,15 @@ public:
   static void initiate();
   static void terminate();
 
-  static XAllocatorBase *allocator();
+  static Eks::AllocatorBase *allocator();
 
-  static const QVector <const PropertyGroup *> &groups();
-  static const QVector <const PropertyInformation *> &types();
+  static const Eks::Vector<const PropertyGroup *> &groups();
+  static const Eks::Vector<const PropertyInformation *> &types();
 
   static void addPropertyGroup(PropertyGroup &);
   static void addType(const PropertyInformation *);
 
-  static const PropertyInformation *findType(const QString &);
+  static const PropertyInformation *findType(const PropertyNameArg &);
 
 private:
   TypeRegistry();

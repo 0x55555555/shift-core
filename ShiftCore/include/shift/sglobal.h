@@ -2,8 +2,9 @@
 #define SGLOBAL_H
 
 #include "XGlobal"
-#include "XList"
 #include "XProfiler"
+#include "Eigen/src/Core/util/Macros.h"
+#include "Eigen/src/Core/util/Memory.h"
 
 #if defined(SHIFT_BUILD)
 #  define SHIFT_EXPORT Q_DECL_EXPORT
@@ -39,14 +40,10 @@ class DirtyObserver;
 class ConnectionObserver;
 class PropertyGroup;
 
-typedef XVector<Observer*> Observers;
-typedef XVector<TreeObserver*> TreeObservers;
-typedef XVector<DirtyObserver*> DirtyObservers;
-typedef XVector<ConnectionObserver*> ConnectionObservers;
-
-typedef XVector<Entity*> Entities;
-typedef XVector<const Entity*> ConstEntities;
-
+typedef Eks::Vector<Observer*> Observers;
+typedef Eks::Vector<TreeObserver*> TreeObservers;
+typedef Eks::Vector<DirtyObserver*> DirtyObservers;
+typedef Eks::Vector<ConnectionObserver*> ConnectionObservers;
 
 PropertyGroup &propertyGroup();
 }

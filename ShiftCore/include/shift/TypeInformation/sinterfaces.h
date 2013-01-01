@@ -1,7 +1,7 @@
 #ifndef SINTERFACES_H
 #define SINTERFACES_H
 
-#include "XVector3D"
+#include "XMathVector"
 #include "sinterface.h"
 #include "XColour"
 
@@ -14,7 +14,7 @@ class PropertyVariantInterface : public StaticInterfaceBase
 
 public:
   PropertyVariantInterface(bool d) : StaticInterfaceBase(d) { }
-  virtual QString asString(const Property *) const = 0;
+  virtual Eks::String asString(const Property *) const = 0;
   virtual QVariant asVariant(const Property *) const = 0;
   virtual void setVariant(Property *, const QVariant &) const = 0;
   };
@@ -26,14 +26,14 @@ class PropertyPositionInterface : public StaticInterfaceBase
 public:
   PropertyPositionInterface(bool a) : StaticInterfaceBase(a) { }
 
-  virtual XVector3D position(const Property *) const = 0;
-  virtual void setPosition(Property *, const XVector3D &) const = 0;
+  virtual Eks::Vector3D position(const Property *) const = 0;
+  virtual void setPosition(Property *, const Eks::Vector3D &) const = 0;
 
-  virtual XVector3D inputsPosition(const Property *) const = 0;
-  virtual void setInputsPosition(Property *, const XVector3D &) const = 0;
+  virtual Eks::Vector3D inputsPosition(const Property *) const = 0;
+  virtual void setInputsPosition(Property *, const Eks::Vector3D &) const = 0;
 
-  virtual XVector3D outputsPosition(const Property *) const = 0;
-  virtual void setOutputsPosition(Property *, const XVector3D &) const = 0;
+  virtual Eks::Vector3D outputsPosition(const Property *) const = 0;
+  virtual void setOutputsPosition(Property *, const Eks::Vector3D &) const = 0;
   };
 
 class PropertyConnectionInterface : public StaticInterfaceBase
@@ -50,18 +50,18 @@ class SBasicPositionInterface : public PropertyPositionInterface
 public:
   SBasicPositionInterface();
 
-  virtual XVector3D position(const Property *) const;
-  virtual void setPosition(Property *, const XVector3D &) const;
+  virtual Eks::Vector3D position(const Property *) const;
+  virtual void setPosition(Property *, const Eks::Vector3D &) const;
 
-  virtual XVector3D inputsPosition(const Property *) const;
-  virtual void setInputsPosition(Property *, const XVector3D &) const;
+  virtual Eks::Vector3D inputsPosition(const Property *) const;
+  virtual void setInputsPosition(Property *, const Eks::Vector3D &) const;
 
-  virtual XVector3D outputsPosition(const Property *) const;
-  virtual void setOutputsPosition(Property *, const XVector3D &) const;
+  virtual Eks::Vector3D outputsPosition(const Property *) const;
+  virtual void setOutputsPosition(Property *, const Eks::Vector3D &) const;
 
 private:
-  virtual XVector3D positionGeneric(const Property *, const QString &name) const;
-  virtual void setPositionGeneric(Property *, const XVector3D &, const QString &name) const;
+  virtual Eks::Vector3D positionGeneric(const Property *, const PropertyNameArg &name) const;
+  virtual void setPositionGeneric(Property *, const Eks::Vector3D &, const PropertyNameArg &name) const;
   };
 
 class PropertyColourInterface : public StaticInterfaceBase
@@ -70,16 +70,16 @@ class PropertyColourInterface : public StaticInterfaceBase
 
 public:
   PropertyColourInterface(bool a) : StaticInterfaceBase(a) { }
-  virtual XColour colour(const Property *) const = 0;
-  virtual XColour colour(const PropertyInformation *) const = 0;
+  virtual Eks::Colour colour(const Property *) const = 0;
+  virtual Eks::Colour colour(const PropertyInformation *) const = 0;
   };
 
 class SBasicColourInterface : public PropertyColourInterface
   {
 public:
   SBasicColourInterface();
-  virtual XColour colour(const Property *) const;
-  virtual XColour colour(const PropertyInformation *) const;
+  virtual Eks::Colour colour(const Property *) const;
+  virtual Eks::Colour colour(const PropertyInformation *) const;
   };
 
 }

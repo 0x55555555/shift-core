@@ -7,7 +7,7 @@
 namespace Shift
 {
 
-class SResourceDescription : public XResourceDescription
+class SResourceDescription : public Eks::ResourceDescription
   {
 public:
   template <typename U, typename PropType>
@@ -18,9 +18,9 @@ public:
     return *this;
     }
 
-  template <typename T> X_CONST_EXPR XResourceDescription createForInstanceInformation()
+  template <typename T> X_CONST_EXPR Eks::ResourceDescription createForInstanceInformation()
     {
-    return XResourceDescriptionHelper::createFor<T::EmbeddedInstanceInformation>();
+    return Eks::ResourceDescriptionTypeHelper::createFor<T::EmbeddedInstanceInformation>();
     }
   };
 

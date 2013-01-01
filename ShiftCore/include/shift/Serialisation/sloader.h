@@ -148,27 +148,32 @@ inline void readValue(Loader &l, QByteArray &t)
     }
   }
 
-inline void writeValue(Saver &s, const QString &t)
+template <xsize Size, typename Alloc>
+inline void writeValue(Saver &s, const Eks::StringBase<Eks::Char, Size, Alloc> &t)
   {
   if(s.streamMode() == Saver::Text)
     {
-    s.textStream() << t;
+    s.textStream() << t.toQString();
     }
   else
     {
-    s.binaryStream() << t;
+    s.binaryStream() << t.toQString();
     }
   }
 
-inline void readValue(Loader &l, QString &t)
+template <xsize Size, typename Alloc>
+inline void readValue(Loader &l, Eks::StringBase<Eks::Char, Size, Alloc> &t)
   {
   if(l.streamMode() == Loader::Text)
     {
-    t = l.textStream().readAll();
+    QString arr = l.textStream().readAll();
+    t = arr;
     }
   else
     {
-    l.binaryStream() >> t;
+    QString v;
+    l.binaryStream() >> v;
+    t = v;
     }
   }
 

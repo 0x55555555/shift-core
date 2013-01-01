@@ -10,7 +10,6 @@
 
 #define S_REGISTER_TYPE_FUNCTION(name) \
   public: \
-  static void findTypeInformationResourceRequirements(SResourceDescription& rsc); \
   static void createTypeInformation(PropertyInformationTyped<name> *info, \
     const PropertyInformationCreateData &data); \
   static const PropertyInformation *staticTypeInformation(); \

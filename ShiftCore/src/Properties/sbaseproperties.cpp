@@ -43,11 +43,19 @@ void readEscapedQuotedString(QTextStream &s, QString &str)
     }
   }
 
-void writeEscapedQuotedString(QTextStream &s, QString str)
+void writeEscapedQuotedString(QTextStream &s, Eks::String str)
   {
-  str.replace('\\', "\\\\");
-  str.replace('"', "\"");
-  s << "\"" << str << "\"";
+  Eks::String::Replacement replacements[] =
+  {
+    { "\\", "\\\\" },
+    { "\"", "\\\"" },
+  };
+
+  xAssertFail(); // test the replace fn.
+  Eks::String escaped;
+  Eks::String::replace(str, &escaped, replacements, X_ARRAY_COUNT(replacements));
+
+  s << "\"" << escaped << "\"";
   }
 }
 
@@ -79,7 +87,7 @@ QTextStream &operator>>(QTextStream &s, SStringVector &v)
         }
 
       Utils::readEscapedQuotedString(s, temp);
-      v << temp;
+      v << Eks::String(temp);
       s.skipWhiteSpace();
 
       s >> tempCheck;
@@ -602,7 +610,7 @@ void Vector4DProperty::assignProperty(const Property *f, Property *t)
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
-    XColour col(aProp->value().head<4>());
+    Eks::Colour col(aProp->value().head<4>());
     to->assign(col);
     return;
     }
@@ -610,7 +618,7 @@ void Vector4DProperty::assignProperty(const Property *f, Property *t)
   const Vector3DProperty *bProp = f->castTo<Vector3DProperty>();
   if(bProp)
     {
-    XColour col(bProp->value().head<4>());
+    Eks::Colour col(bProp->value().head<4>());
     to->assign(col);
     return;
     }
@@ -644,7 +652,7 @@ void QuaternionProperty::assignProperty(const Property *f, Property *t)
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
-    XColour col(aProp->value().head<4>());
+    Eks::Colour col(aProp->value().head<4>());
     to->assign(col);
     return;
     }
@@ -652,7 +660,7 @@ void QuaternionProperty::assignProperty(const Property *f, Property *t)
   const Vector3DProperty *bProp = f->castTo<Vector3DProperty>();
   if(bProp)
     {
-    XColour col(bProp->value().head<4>());
+    Eks::Colour col(bProp->value().head<4>());
     to->assign(col);
     return;
     }
@@ -674,7 +682,7 @@ void QuaternionProperty::assignProperty(const Property *f, Property *t)
   const QuaternionProperty *qProp = f->castTo<QuaternionProperty>();
   if(qProp)
     {
-    XColour col(qProp->value().coeffs().head<4>());
+    Eks::Colour col(qProp->value().coeffs().head<4>());
     to->assign(col);
     return;
     }
@@ -687,7 +695,7 @@ void ColourProperty::assignProperty(const Property *f, Property *t)
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
-    XColour col(aProp->value().head<4>());
+    Eks::Colour col(aProp->value().head<4>());
     to->assign(col);
     return;
     }
@@ -695,7 +703,7 @@ void ColourProperty::assignProperty(const Property *f, Property *t)
   const Vector3DProperty *bProp = f->castTo<Vector3DProperty>();
   if(bProp)
     {
-    XColour col(bProp->value().head<4>());
+    Eks::Colour col(bProp->value().head<4>());
     to->assign(col);
     return;
     }
@@ -717,7 +725,7 @@ void ColourProperty::assignProperty(const Property *f, Property *t)
   const QuaternionProperty *qProp = f->castTo<QuaternionProperty>();
   if(qProp)
     {
-    XColour col(qProp->value().coeffs().head<4>());
+    Eks::Colour col(qProp->value().coeffs().head<4>());
     to->assign(col);
     return;
     }

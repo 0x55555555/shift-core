@@ -21,10 +21,13 @@ class PropertyNameChange : public Change
   {
   S_CHANGE(PropertyNameChange, Change, 50)
 public:
-  PropertyNameChange(const QString &b, const QString &a, Property *ent)
-    : _before(b), _after(a), _property(ent)
-    { }
-  const QString &before(bool back=false) const
+  PropertyNameChange(const PropertyNameArg &b, const PropertyNameArg &a, Property *ent)
+    : _property(ent)
+    {
+    b.toName(_before);
+    a.toName(_after);
+    }
+  const PropertyName &before(bool back=false) const
     {
     if(back)
       {
@@ -32,7 +35,7 @@ public:
       }
     return _before;
     }
-  const QString &after(bool back=false) const
+  const PropertyName &after(bool back=false) const
     {
     if(back)
       {
@@ -43,8 +46,8 @@ public:
   Property *property() {return _property;}
   const Property *property() const {return _property;}
 private:
-  QString _before;
-  QString _after;
+  PropertyName _before;
+  PropertyName _after;
   Property *_property;
   bool apply();
   bool unApply();

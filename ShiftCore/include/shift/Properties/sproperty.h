@@ -3,6 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "shift/Properties/spropertymacros.h"
+#include "shift/Utilities/spropertyname.h"
 #include "XFlags"
 #include "XInterface.h"
 
@@ -116,25 +117,25 @@ public:
   inline bool isDynamic() const;
 
   // find a path from this to that
-  QString pathTo(const Property *that) const;
-  QString path() const;
-  QString path(const Property *from) const;
+  Eks::String pathTo(const Property *that) const;
+  Eks::String path() const;
+  Eks::String path(const Property *from) const;
 
   bool isDescendedFrom(const Property *ent) const;
-  Property *resolvePath(const QString &path);
-  const Property *resolvePath(const QString &path) const;
+  Property *resolvePath(const Eks::String &path);
+  const Property *resolvePath(const Eks::String &path) const;
 
-  QString mode() const;
+  Eks::String mode() const;
 
   QVariant value() const;
   void setValue(const QVariant &);
-  QString valueAsString() const;
+  Eks::String valueAsString() const;
 
   // set only works for dynamic properties
-  void setName(const QString &);
-  const QString &name() const;
+  void setName(const PropertyNameArg &);
+  const PropertyName &name() const;
   // name valid for entry into paths.
-  QString escapedName() const;
+  PropertyName escapedName() const;
 
   template <typename T>T *uncheckedCastTo()
     {
@@ -224,7 +225,7 @@ private:
   X_DISABLE_COPY(Property);
 
   void setDirty();
-  void internalSetName(const QString &name);
+  void internalSetName(const PropertyNameArg &name);
 
   void connectInternal(Property *) const;
   void disconnectInternal(Property *) const;

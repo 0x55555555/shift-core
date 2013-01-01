@@ -55,18 +55,18 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
         api->property<Property *, &Property::output>("firstOutput"),
         api->property<Property *, &Property::nextOutput>("nextOutput"),
 
-        api->property<QString, &Property::mode>("mode"),
+        api->property<Eks::String, &Property::mode>("mode"),
         api->property<bool, &Property::isDynamic>("dynamic"),
-        api->property<const QString &, const QString &, &Property::name, &Property::setName>("name"),
+        api->property<const PropertyName &, const PropertyNameArg &, &Property::name, &Property::setName>("name"),
 
         api->property<QVariant, const QVariant &, &Property::value, &Property::setValue>("value"),
-        api->property<QString, &Property::valueAsString>("valueString"),
+        api->property<Eks::String, &Property::valueAsString>("valueString"),
 
 
         api->property<AffectsGetter>("affects")
       },
       {
-        api->constMethod<QString (const Property *), &Property::pathTo>("pathTo"),
+        api->constMethod<Eks::String (const Property *), &Property::pathTo>("pathTo"),
 
         api->method<void(), &Property::beginBlock>("beginBlock"),
         api->method<void(bool), &Property::endBlock>("endBlock"),
@@ -208,13 +208,14 @@ Property::~Property()
   }
 #endif
 
-void Property::setName(const QString &in)
+void Property::setName(const PropertyNameArg &in)
   {
   SProfileFunction
   xAssert(isDynamic());
   xAssert(parent());
 
-  QString fixedName = in;
+  PropertyName fixedName;
+  in.toName(fixedName);
   if(fixedName == "")
     {
     fixedName = typeInformation()->typeName();
@@ -227,10 +228,11 @@ void Property::setName(const QString &in)
 
   // ensure the name is unique
   xsize num = 1;
-  QString realName = fixedName;
+  PropertyName realName = fixedName;
   while(parent()->findChild(realName))
     {
-    realName = fixedName + QString::number(num++);
+    realName = fixedName;
+    realName.appendType(num++);
     }
 
   PropertyDoChange(NameChange, name(), realName, this);
@@ -275,7 +277,7 @@ void Property::saveProperty(const Property *p, Saver &l, bool writeInput)
 
     if(!instInfo->isDefaultMode())
       {
-      QString mode = instInfo->modeString();
+      const Eks::String &mode = instInfo->modeString();
 
       l.beginAttribute("mode");
       writeValue(l, mode);
@@ -348,7 +350,7 @@ Property *Property::loadProperty(PropertyContainer *parent, Loader &l)
   Initialiser initialiser;
 
   l.beginAttribute("name");
-  QString name;
+  PropertyName name;
   readValue(l, name);
   l.endAttribute("name");
 
@@ -577,18 +579,24 @@ bool Property::inheritsFromType(const PropertyInformation *type) const
   return typeInformation()->inheritsFromType(type);
   }
 
-const QString &Property::name() const
+const PropertyName &Property::name() const
   {
   SProfileFunction
   return baseInstanceInformation()->name();
   }
 
-QString Property::escapedName() const
+PropertyName Property::escapedName() const
   {
   SProfileFunction
-  QString n = baseInstanceInformation()->name();
+  const PropertyName &baseName =  baseInstanceInformation()->name();
 
-  n.replace(Database::pathSeparator(), '\\' + Database::pathSeparator());
+  Eks::String::Replacement reps[] =
+  {
+    { Database::pathSeparator(), Database::escapedPathSeparator() }
+  };
+
+  Eks::String n;
+  Eks::String::replace(baseName, &n, reps, X_ARRAY_COUNT(reps));
 
   return n;
   }
@@ -965,12 +973,12 @@ void Property::disconnectInternal(Property *prop) const
 #endif
   }
 
-QString Property::pathTo(const Property *that) const
+Eks::String Property::pathTo(const Property *that) const
   {
   return that->path(this);
   }
 
-QString Property::path() const
+Eks::String Property::path() const
   {
   SProfileFunction
   const Property *par = parent();
@@ -981,7 +989,7 @@ QString Property::path() const
   return par->path() + Database::pathSeparator() + escapedName();
   }
 
-QString Property::path(const Property *from) const
+Eks::String Property::path(const Property *from) const
   {
   SProfileFunction
 
@@ -992,7 +1000,7 @@ QString Property::path(const Property *from) const
 
   if(isDescendedFrom(from))
     {
-    QString ret;
+    Eks::String ret;
     const Property *p = parent();
     while(p && p != from)
       {
@@ -1007,14 +1015,15 @@ QString Property::path(const Property *from) const
   const Property *parent = from->parent();
   if(parent)
     {
-    return ".." + Database::pathSeparator() + path(parent);
+    Eks::String s("..");
+    return s + Database::pathSeparator() + path(parent);
     }
 
   xAssert(0);
   return "";
   }
 
-QString Property::mode() const
+Eks::String Property::mode() const
   {
   return baseInstanceInformation()->modeString();
   }
@@ -1035,31 +1044,31 @@ bool Property::isDescendedFrom(const Property *in) const
   return par->isDescendedFrom(in);
   }
 
-Property *Property::resolvePath(const QString &path)
+Property *Property::resolvePath(const Eks::String &path)
   {
   SProfileFunction
   preGet();
 
   Property *cur = this;
 
-  QString name;
+  Eks::String name;
   bool escape = false;
   for(int i = 0, s = path.size(); i < s; ++i)
     {
-    QChar c = path[i];
+    Eks::String::Char c = path[i];
 
-    if(c == QChar('\\'))
+    if(c == Eks::String::Char('\\'))
       {
       escape = true;
       }
     else
       {
-      if(!escape && c != QChar('/'))
+      if(!escape && c != Eks::String::Char('/'))
         {
-        name.append(c);
+        name.pushBack(c);
         }
 
-      if(!escape && (c == QChar('/') || i == (s-1)))
+      if(!escape && (c == Eks::String::Char('/') || i == (s-1)))
         {
         if(!cur)
           {
@@ -1096,7 +1105,7 @@ Property *Property::resolvePath(const QString &path)
   return cur;
   }
 
-const Property *Property::resolvePath(const QString &path) const
+const Property *Property::resolvePath(const Eks::String &path) const
   {
   return const_cast<Property*>(this)->resolvePath(path);
   }
@@ -1122,7 +1131,7 @@ void Property::setValue(const QVariant &val)
     }
   }
 
-QString Property::valueAsString() const
+Eks::String Property::valueAsString() const
   {
   const PropertyVariantInterface *varInt = interface<PropertyVariantInterface>();
 
@@ -1130,12 +1139,12 @@ QString Property::valueAsString() const
     {
     return varInt->asString(this);
     }
-  return QString();
+  return Eks::String();
   }
 
-void Property::internalSetName(const QString &name)
+void Property::internalSetName(const PropertyNameArg &name)
   {
-  ((BaseInstanceInformation*)this->baseInstanceInformation())->name() = name;
+  name.toName(((BaseInstanceInformation*)this->baseInstanceInformation())->name());
   }
 
 void Property::postSet()

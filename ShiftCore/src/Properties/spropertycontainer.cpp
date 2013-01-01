@@ -151,18 +151,18 @@ void PropertyContainer::disconnectTree()
     }
   }
 
-const Property *PropertyContainer::findChild(const QString &name) const
+const Property *PropertyContainer::findChild(const PropertyNameArg &name) const
   {
   return const_cast<PropertyContainer*>(this)->findChild(name);
   }
 
-Property *PropertyContainer::findChild(const QString &name)
+Property *PropertyContainer::findChild(const PropertyNameArg &name)
   {
   preGet();
   return internalFindChild(name);
   }
 
-Property *PropertyContainer::internalFindChild(const QString &name)
+Property *PropertyContainer::internalFindChild(const PropertyNameArg &name)
   {
   const EmbeddedPropertyInstanceInformation *inst = typeInformation()->childFromName(name);
   if(inst)
@@ -172,7 +172,7 @@ Property *PropertyContainer::internalFindChild(const QString &name)
 
   for(Property *child=_dynamicChild; child; child=nextDynamicSibling(child))
     {
-    if(child->name() == name)
+    if(name == child->name())
       {
       return child;
       }
@@ -180,7 +180,7 @@ Property *PropertyContainer::internalFindChild(const QString &name)
   return 0;
   }
 
-const Property *PropertyContainer::internalFindChild(const QString &name) const
+const Property *PropertyContainer::internalFindChild(const PropertyNameArg &name) const
   {
   return const_cast<PropertyContainer*>(this)->internalFindChild(name);
   }
@@ -229,21 +229,24 @@ void PropertyContainer::internalClear(Database *db)
   _dynamicChild = 0;
   }
 
-QString PropertyContainer::makeUniqueName(const QString &name) const
+PropertyName PropertyContainer::makeUniqueName(const PropertyNameArg &name) const
   {
-  QString newName;
+  PropertyName newName;
 
   xuint32 id = 1;
-  newName = name + QString::number(id);
+  name.toName(newName);
+  newName.appendType(id);
   while(internalFindChild(newName))
     {
-    newName = name + QString::number(id);
+    name.toName(newName);
+    newName.appendType(id);
+
     ++id;
     }
   return newName;
   }
 
-Property *PropertyContainer::addProperty(const PropertyInformation *info, xsize index, const QString& name, PropertyInstanceInformationInitialiser *init)
+Property *PropertyContainer::addProperty(const PropertyInformation *info, xsize index, const PropertyNameArg& name, PropertyInstanceInformationInitialiser *init)
   {
   xAssert(index >= _containedProperties);
 
@@ -257,7 +260,7 @@ Property *PropertyContainer::addProperty(const PropertyInformation *info, xsize 
     }
   else
     {
-    ((PropertyInstanceInformation*)newProp->_instanceInfo)->name() = name;
+    name.toName(((PropertyInstanceInformation*)newProp->_instanceInfo)->name());
     }
 
   PropertyDoChange(TreeChange, (PropertyContainer*)0, this, newProp, index);
@@ -268,7 +271,7 @@ void PropertyContainer::moveProperty(PropertyContainer *c, Property *p)
   {
   xAssert(p->parent() == this);
 
-  const QString &name = p->name();
+  const PropertyNameArg &name = p->name();
   bool nameUnique = c->internalFindChild(name) == false;
   if(!nameUnique)
     {

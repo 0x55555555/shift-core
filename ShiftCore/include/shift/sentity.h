@@ -24,16 +24,16 @@ public:
 
   void reparent(Entity *);
 
-  template <typename T>T *addChild(const QString& name="")
+  template <typename T>T *addChild(const PropertyNameArg& name="")
     {
     Property *p = addChild(T::staticTypeInformation(), name);
     xAssert(p);
     return p->uncheckedCastTo<T>();
     }
 
-  Property *addChild(const PropertyInformation *info, const QString& name="");
+  Property *addChild(const PropertyInformation *info, const PropertyNameArg& name=PropertyNameArg());
 
-  template <typename T>T *addProperty(const QString& name="", PropertyInstanceInformationInitialiser *init=0)
+  template <typename T>T *addProperty(const PropertyNameArg& name="", PropertyInstanceInformationInitialiser *init=0)
     {
     Property *p = addProperty(T::staticTypeInformation(), name, init);
     xAssert(p);
@@ -41,7 +41,7 @@ public:
     return p->uncheckedCastTo<T>();
     }
 
-  Property *addProperty(const PropertyInformation *info, const QString& name="", PropertyInstanceInformationInitialiser *inst=0);
+  Property *addProperty(const PropertyInformation *info, const PropertyNameArg& name=PropertyNameArg(), PropertyInstanceInformationInitialiser *inst=0);
 
   void removeProperty(Property *prop)
     {
@@ -72,8 +72,8 @@ public:
   void informTreeObservers(const Change *event, bool backwards);
   void informConnectionObservers(const Change *event, bool backwards);
 
-  Entity *findChildEntity(const QString &);
-  const Entity *findChildEntity(const QString &) const;
+  Entity *findChildEntity(const PropertyNameArg &);
+  const Entity *findChildEntity(const PropertyNameArg &) const;
 
   static void saveProperty(const Property *, Saver &);
   static Property *loadProperty(PropertyContainer *, Loader &);
@@ -94,7 +94,7 @@ private:
 
     Observer *getObserver();
     };
-  XList<ObserverStruct> _observers;
+  Eks::Vector<ObserverStruct> _observers;
   };
 
 }

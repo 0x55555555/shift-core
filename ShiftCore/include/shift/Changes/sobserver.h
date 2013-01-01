@@ -19,7 +19,7 @@ public:
 
 private:
   X_DISABLE_COPY(Observer);
-  QVector <Entity*> _entities;
+  Eks::Vector <Entity*> _entities;
   friend class Entity;
   };
 

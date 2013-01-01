@@ -2,7 +2,7 @@
 #define SPROPERTYINSTANCEINFORMATION_H
 
 #include "shift/sglobal.h"
-#include "QString"
+#include "shift/Utilities/spropertyname.h"
 
 namespace Shift
 {
@@ -44,7 +44,7 @@ public:
 
 XProperties:
   XProperty(const PropertyInformation *, childInformation, setChildInformation);
-  XRefProperty(QString, name);
+  XRefProperty(PropertyName, name);
   XProperty(xuint16, index, setIndex);
   XPropertyMember(xuint8, mode);
   XROProperty(xuint8, isDynamic);
@@ -57,9 +57,9 @@ public:
 
   Mode mode() const;
   void setMode(Mode);
-  void setModeString(const QString &);
+  void setModeString(const Eks::String &);
   bool isDefaultMode() const;
-  const QString &modeString() const;
+  const Eks::String &modeString() const;
 
   const EmbeddedPropertyInstanceInformation* embeddedInfo() const;
   const DynamicPropertyInstanceInformation* dynamicInfo() const;
@@ -86,7 +86,7 @@ public:
 
   void setMode(Mode);
 
-  const EmbeddedPropertyInstanceInformation *resolvePath(const QString &) const;
+  const EmbeddedPropertyInstanceInformation *resolvePath(const Eks::String &) const;
 
   virtual void setDefaultValue(const QString &);
   virtual void initiateProperty(Property *propertyToInitiate) const;

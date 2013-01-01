@@ -53,8 +53,8 @@ Database::Database()
   xAssert(_memory);
 
 #ifdef X_DEBUG
-  XAllocatorBase* oldAllocator = _memory;
-  _memory = new XMemoryTracker(oldAllocator);
+  Eks::AllocatorBase* oldAllocator = _memory;
+  _memory = new Eks::MemoryTracker(oldAllocator);
 #endif
   xAssert(_memory);
 
@@ -76,7 +76,7 @@ Database::~Database()
   clearChanges();
 
 #ifdef X_DEBUG
-  XMemoryTracker* tracker = dynamic_cast<XMemoryTracker*>(_memory);
+  Eks::MemoryTracker* tracker = dynamic_cast<Eks::MemoryTracker*>(_memory);
   xAssert(tracker);
 
   if(!tracker->empty())
@@ -137,9 +137,8 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
 
   // new the instance information
   xuint8 *alignedPtr = (xuint8*)(propMem) + type->size();
-  alignedPtr = X_ROUND_TO_ALIGNMENT(alignedPtr);
+  alignedPtr = Eks::roundToAlignment(alignedPtr);
   xAssertIsAligned(alignedPtr);
-
   PropertyInstanceInformation *instanceInfoMem = (PropertyInstanceInformation *)(alignedPtr);
   PropertyInstanceInformation *instanceInfo = type->functions().createDynamicInstanceInformation(instanceInfoMem);
 
@@ -262,11 +261,6 @@ void Database::initiateProperty(Property *prop)
     initiatePropertyFromMetaData(container, metaData);
     }
 
-
-  if(prop->baseInstanceInformation()->name() == "width")
-  {
-    xAssert(prop->isDirty());
-  }
 #ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(prop->handler());
 #endif
@@ -336,9 +330,14 @@ void Database::uninitiateProperty(Property *prop)
     }
   }
 
-QChar Database::pathSeparator()
+const Eks::Char *Database::pathSeparator()
   {
-  return QChar('/');
+  return "/";
+  }
+
+const Eks::Char *Database::escapedPathSeparator()
+  {
+  return "\\/";
   }
 
 }

@@ -3,7 +3,6 @@
 
 #include "shift/sglobal.h"
 #include "shift/TypeInformation/sinterface.h"
-#include "XList"
 
 namespace Shift
 {
@@ -46,7 +45,7 @@ public:
   Observers &currentBlockObserverList() { return _blockObservers; }
 
 private:
-  XAllocatorBase *changeAllocator();
+  Eks::AllocatorBase *changeAllocator();
 
   xuint32 _blockLevel;
 
@@ -56,8 +55,8 @@ private:
   Observers _blockObservers;
   QMutex _doChange;
 
-  XList <Change*> _done;
-  QVector <xsize> _blockSize;
+  Eks::Vector <Change*> _done;
+  Eks::Vector <xsize> _blockSize;
   };
 
 class SHIFT_EXPORT SBlock

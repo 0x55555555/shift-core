@@ -100,7 +100,7 @@ void SJSONSaver::setType(const PropertyInformation *type)
   xAssert(_buffer.data().isEmpty());
   xAssert(_inAttribute.isEmpty());
 
-  OBJECT_VALUE_CHAR_BYTEARRAY(TYPE_KEY, type->typeName().toUtf8());
+  OBJECT_VALUE_CHAR_BYTEARRAY(TYPE_KEY, type->typeName().toQString().toUtf8());
   }
 
 void SJSONSaver::beginChildren()
@@ -371,7 +371,7 @@ const PropertyInformation *SJSONLoader::type() const
   SProfileFunction
   xAssert(_root);
 
-  const PropertyInformation *info = TypeRegistry::findType(_currentAttributes.value(TYPE_KEY));
+  const PropertyInformation *info = TypeRegistry::findType(QString::fromUtf8(_currentAttributes.value(TYPE_KEY)));
   xAssert(info);
   return info;
   }
