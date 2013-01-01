@@ -10,10 +10,10 @@
 
 #define S_REGISTER_TYPE_FUNCTION(name) \
   public: \
-  static void createTypeInformation(PropertyInformationTyped<name> *info, \
-    const PropertyInformationCreateData &data); \
-  static const PropertyInformation *staticTypeInformation(); \
-  static const PropertyInformation *bootstrapStaticTypeInformation();
+  static void createTypeInformation(Shift::PropertyInformationTyped<name> *info, \
+    const Shift::PropertyInformationCreateData &data); \
+  static const Shift::PropertyInformation *staticTypeInformation(); \
+  static const Shift::PropertyInformation *bootstrapStaticTypeInformation();
 
 #define S_ADD_INSTANCE_INFORMATION(name) \
   inline const EmbeddedInstanceInformation *embeddedInstanceInformation() const \

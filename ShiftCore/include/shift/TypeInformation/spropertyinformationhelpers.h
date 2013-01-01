@@ -13,12 +13,12 @@ namespace Shift
 {
 
 #define S_IMPLEMENT_PROPERTY(myName, grp) \
-  static PropertyGroup::Information _##myName##StaticTypeInformation = \
+  static Shift::PropertyGroup::Information _##myName##StaticTypeInformation = \
     grp :: propertyGroup().registerPropertyInformation( \
     &_##myName##StaticTypeInformation, myName::bootstrapStaticTypeInformation); \
-  const PropertyInformation *myName::staticTypeInformation() { return _##myName##StaticTypeInformation.information; } \
-  const PropertyInformation *myName::bootstrapStaticTypeInformation() \
-  { PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
+  const Shift::PropertyInformation *myName::staticTypeInformation() { return _##myName##StaticTypeInformation.information; } \
+  const Shift::PropertyInformation *myName::bootstrapStaticTypeInformation() \
+  { Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
   #myName, myName::ParentType::bootstrapStaticTypeInformation()); return staticTypeInformation(); }
 
 #define S_IMPLEMENT_ABSTRACT_PROPERTY(myName, grp) \

@@ -85,12 +85,13 @@ protected:
       xAssert(!prop->database()->stateStorageEnabled());
       }
 
-  private:
     bool apply()
       {
       property()->postSet();
       return true;
       }
+
+  private:
     bool unApply()
       {
       xAssertFail();
