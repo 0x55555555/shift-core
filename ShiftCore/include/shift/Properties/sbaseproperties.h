@@ -354,7 +354,8 @@ template <> class PODInterface <type> { public: typedef name Type; \
   void name::createTypeInformation(PropertyInformationTyped<name> *info, \
       const PropertyInformationCreateData &data) { \
     if(data.registerInterfaces) { \
-    info->addStaticInterface(new PODPropertyVariantInterface<name, name::PODType>()); } } \
+    info->addStaticInterface( \
+      data.allocator->create<PODPropertyVariantInterface<name, name::PODType> >()); } } \
   name::name() { }
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 0, 100);

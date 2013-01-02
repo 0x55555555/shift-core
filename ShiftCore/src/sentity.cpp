@@ -39,7 +39,7 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
 
     api->buildInterface(cls);
 
-    info->addStaticInterface(new SBasicPositionInterface);
+    info->addStaticInterface(data.allocator->create<SBasicPositionInterface>());
     }
   }
 

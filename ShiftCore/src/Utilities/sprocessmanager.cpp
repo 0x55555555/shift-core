@@ -66,6 +66,7 @@ void WorkerThread::run()
 void SProcessManager::initiate(xsize processes)
   {
   xAssert(g_manager == 0);
+  xAssertFail(); // dont new this
   g_manager = new SProcessManagerData;
 
   g_manager->spareWorkers.reserve(processes - 1);

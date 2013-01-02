@@ -49,12 +49,12 @@ void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
 
 Database::Database()
   {
-  _memory = TypeRegistry::allocator();
+  _memory = TypeRegistry::persistentBlockAllocator();
   xAssert(_memory);
 
 #ifdef X_DEBUG
   Eks::AllocatorBase* oldAllocator = _memory;
-  _memory = new Eks::MemoryTracker(oldAllocator);
+  _memory = TypeRegistry::generalPurposeAllocator()->create<Eks::MemoryTracker>(oldAllocator);
 #endif
   xAssert(_memory);
 
@@ -84,7 +84,7 @@ Database::~Database()
     //_memory.debugDump();
     xAssertFail();
     }
-  delete _memory;
+  TypeRegistry::generalPurposeAllocator()->destroy(_memory);
   _memory = 0;
 #endif
   }

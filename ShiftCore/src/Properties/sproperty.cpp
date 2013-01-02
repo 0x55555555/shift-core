@@ -77,7 +77,7 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
 
     api->buildInterface(cls);
 
-    info->addStaticInterface(new SBasicColourInterface);
+    info->addStaticInterface(data.allocator->create<SBasicColourInterface>());
     }
   }
 
@@ -390,6 +390,7 @@ Property *Property::loadProperty(PropertyContainer *parent, Loader &l)
         }
       }
 
+###
     initialiser.affects = new xsize[numAffects+1];
     initialiser.affects[numAffects] = 0;
     const PropertyInformation *parentType = parent->typeInformation();

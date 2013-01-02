@@ -162,6 +162,7 @@ void EmbeddedPropertyInstanceInformation::addAffects(const EmbeddedPropertyInsta
       }
     }
 
+###
   _affects = new xsize[affectsSize+2]; // one for the new one, one for the end 0
 
   if(oldAffects)
@@ -187,6 +188,7 @@ void EmbeddedPropertyInstanceInformation::setAffects(const EmbeddedPropertyInsta
   xAssert(!_affects);
   xAssert(info);
 
+###
   _affects = new xsize[size+1];
 
   for(xsize i = 0; i < size; ++i)

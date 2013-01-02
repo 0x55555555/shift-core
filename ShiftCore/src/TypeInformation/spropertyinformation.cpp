@@ -23,16 +23,12 @@ struct Utils
   };
 
 
-PropertyInformation *PropertyInformation::allocate()
+PropertyInformation *PropertyInformation::allocate(Eks::AllocatorBase *allocator)
   {
-  xAssert(TypeRegistry::allocator());
-  void *ptr = TypeRegistry::allocator()->alloc(sizeof(PropertyInformation));
-
-  xAssert(ptr);
-  return new(ptr) PropertyInformation;
+  return allocator->create<PropertyInformation>();
   }
 
-void PropertyInformation::destroy(PropertyInformation *d)
+void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *allocator)
   {
   Q_FOREACH(InterfaceBaseFactory *f, d->_interfaceFactories)
     {
@@ -59,8 +55,7 @@ void PropertyInformation::destroy(PropertyInformation *d)
   d->_childLimit = 0;
   d->_childEnd = 0;
 
-  //xAssert(TypeRegistry::allocator());
-  //TypeRegistry::allocator()->free(d);
+  allocator->destroy(d);
   }
 
 void PropertyInformation::initiate(PropertyInformation *info, const PropertyInformation *from)

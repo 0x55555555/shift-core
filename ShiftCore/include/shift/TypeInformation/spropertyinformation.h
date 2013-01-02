@@ -27,14 +27,16 @@ class PropertyGroup;
 class PropertyInformationCreateData
   {
 public:
-  PropertyInformationCreateData()
+  PropertyInformationCreateData(Eks::AllocatorBase *a)
     {
+    allocator = a;
     registerAttributes = false;
     registerInterfaces = false;
     }
 
   bool registerAttributes;
   bool registerInterfaces;
+  Eks::AllocatorBase *allocator;
   };
 
 struct PropertyInformationFunctions
@@ -109,8 +111,8 @@ XProperties:
 
 public:
   PropertyInformation() : _childData(0), _childEnd(0) { }
-  static PropertyInformation *allocate();
-  static void destroy(PropertyInformation *);
+  static PropertyInformation *allocate(Eks::AllocatorBase *allocator);
+  static void destroy(PropertyInformation *, Eks::AllocatorBase *allocator);
 
   static DataKey newDataKey();
 

@@ -27,7 +27,8 @@ public:
   static void initiate();
   static void terminate();
 
-  static Eks::AllocatorBase *allocator();
+  static Eks::AllocatorBase *persistentBlockAllocator();
+  static Eks::AllocatorBase *generalPurposeAllocator();
 
   static const Eks::Vector<const PropertyGroup *> &groups();
   static const Eks::Vector<const PropertyInformation *> &types();

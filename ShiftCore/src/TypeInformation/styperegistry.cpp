@@ -26,8 +26,10 @@ void TypeRegistry::initiate()
   {
   XScript::Engine::initiate(false);
 
+###
   _internalTypes = new TypeData();
 
+###
   _internalTypes->allocator = new Eks::BucketAllocator();
 
   addPropertyGroup(Shift::propertyGroup());

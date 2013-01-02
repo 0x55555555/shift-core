@@ -305,12 +305,14 @@ public:
           }
 
         // none found, create one and add it.
+        xAssertFail(); // todo, dont new this
         T* newInterface = new T(prop);
         prop->addUserData(newInterface);
         return newInterface;
         }
       };
 
+    xAssertFail(); // todo, dont new this
     addInterfaceFactory(new AddonInterface);
     }
 #endif

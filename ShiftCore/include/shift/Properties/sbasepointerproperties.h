@@ -168,6 +168,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
         }
       };
 
+#
     info->addInterfaceFactoryInternal(PointerArrayConnectionInterface::InterfaceType::InterfaceTypeId, new PointerArrayConnectionInterface);
 
     typedef XScript::MethodToInCa
