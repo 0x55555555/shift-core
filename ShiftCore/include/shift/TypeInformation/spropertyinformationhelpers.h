@@ -17,9 +17,9 @@ namespace Shift
     grp :: propertyGroup().registerPropertyInformation( \
     &_##myName##StaticTypeInformation, myName::bootstrapStaticTypeInformation); \
   const Shift::PropertyInformation *myName::staticTypeInformation() { return _##myName##StaticTypeInformation.information; } \
-  const Shift::PropertyInformation *myName::bootstrapStaticTypeInformation() \
+  const Shift::PropertyInformation *myName::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator) \
   { Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
-  #myName, myName::ParentType::bootstrapStaticTypeInformation()); return staticTypeInformation(); }
+  #myName, myName::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
 
 #define S_IMPLEMENT_ABSTRACT_PROPERTY(myName, grp) \
   S_IMPLEMENT_PROPERTY(myName, grp)
@@ -159,11 +159,12 @@ template <typename PropType> class PropertyInformationTyped : public PropertyInf
 public:
   static void bootstrapTypeInformation(PropertyInformation **info,
                                const char *name,
-                               const PropertyInformation *parent)
+                               const PropertyInformation *parent,
+                               Eks::AllocatorBase *allocator)
     {
     if(!*info)
       {
-      *info = createTypeInformation(name, parent);
+      *info = createTypeInformation(name, parent, allocator);
       }
     }
 
@@ -197,12 +198,12 @@ public:
     return static_cast<const XScript::Interface<PropType>*>(PropertyInformation::apiInterface());
     }
 
-  static PropertyInformation *createTypeInformation(const char *name, const PropertyInformation *parentType)
+  static PropertyInformation *createTypeInformation(const char *name, const PropertyInformation *parentType, Eks::AllocatorBase *allocator)
     {
     typedef void (*FnType)(PropertyInformation *, const char *);
     FnType fn = PropertyInformationTyped<PropType>::initiate;
 
-    return createTypeInformationInternal(name, parentType, fn);
+    return createTypeInformationInternal(name, parentType, fn, allocator);
     }
 
   template <typename U, typename AncestorPropType> xsize findLocation(U AncestorPropType::* ptr)
@@ -221,7 +222,10 @@ public:
     }
 
   template <typename U, typename AncestorPropType>
-      PropertyInstanceInformationTyped<PropType, U> *add(U AncestorPropType::* ptr, const QString &name)
+      PropertyInstanceInformationTyped<PropType, U> *add(
+          const PropertyInformationCreateData &data,
+          U AncestorPropType::* ptr,
+          const PropertyNameArg &name)
     {
     xptrdiff location = findLocation(ptr);
 
@@ -229,7 +233,7 @@ public:
     findAllocatableBase(offset);
     location -= offset;
 
-    return add<U>(location, name);
+    return add<U>(data, location, name);
     }
 
   // add a dynamic child, ie it is embedded in the container when created,
@@ -237,39 +241,29 @@ public:
   // this will fail and go crazy if you try to aggregate an entity with dynamic members...
   // i should fix this...
   template <typename T>
-      PropertyInstanceInformationTyped<PropType, T> *add(const QString &name)
+      PropertyInstanceInformationTyped<PropType, T> *add(
+          const PropertyInformationCreateData &data,
+          const PropertyNameArg &name)
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
 
-    PropertyInstanceInformation *inst = PropertyInformation::add(newChildType, name);
+    PropertyInstanceInformation *inst = PropertyInformation::add(data, newChildType, name);
 
     return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
     }
 
   template <typename T>
-      PropertyInstanceInformationTyped<PropType, T> *add(xsize location, const QString &name)
+      PropertyInstanceInformationTyped<PropType, T> *add(
+          const PropertyInformationCreateData &data,
+          xsize location,
+          const PropertyNameArg &name)
     {
-    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
+    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(data.allocator);
 
-    PropertyInstanceInformation *inst = PropertyInformation::add(newChildType, location, name, false);
+    PropertyInstanceInformation *inst =
+      PropertyInformation::add(data, newChildType, location, name, false);
 
     return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
-    }
-
-  template <typename T> void addInheritedInterface()
-    {
-    class InheritedInterface : public InterfaceBaseFactory
-      {
-      S_INTERFACE_FACTORY_TYPE(T)
-    public:
-      InheritedInterface() : InterfaceBaseFactory(true) { }
-      virtual InterfaceBase *classInterface(Property *prop)
-        {
-        return prop->castTo<PropType>();
-        }
-      };
-
-    PropertyInformation::addInterfaceFactoryInternal(InheritedInterface::InterfaceType::InterfaceTypeId, new InheritedInterface);
     }
 
   template <typename PropTypeIn, typename InstanceTypeIn>

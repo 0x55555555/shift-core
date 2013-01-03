@@ -15,7 +15,7 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
   {
   if(data.registerAttributes)
     {
-    auto *childInst = info->add(&Entity::children, "children");
+    auto *childInst = info->add(data, &Entity::children, "children");
     childInst->setMode(PropertyInstanceInformation::Internal);
     }
 
@@ -38,8 +38,6 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
     };
 
     api->buildInterface(cls);
-
-    info->addStaticInterface(data.allocator->create<SBasicPositionInterface>());
     }
   }
 

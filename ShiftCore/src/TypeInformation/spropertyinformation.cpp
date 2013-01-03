@@ -30,26 +30,16 @@ PropertyInformation *PropertyInformation::allocate(Eks::AllocatorBase *allocator
 
 void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *allocator)
   {
-  Q_FOREACH(InterfaceBaseFactory *f, d->_interfaceFactories)
-    {
-    xAssert(f->referenceCount() > 0);
-    f->setReferenceCount(f->referenceCount() - 1);
-    if(f->referenceCount() == 0 && f->deleteOnNoReferences())
-      {
-      delete f;
-      }
-    }
-
   xForeach(auto inst, d->childWalker())
     {
-    //delete [] inst->affects();
+    allocator->free(inst->affects());
 
     PropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
       inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
 
     destroy(inst);
 
-    PropertyInstanceInformation::destroy(inst);
+    PropertyInstanceInformation::destroy(allocator, inst);
     }
   d->_childData = 0;
   d->_childLimit = 0;
@@ -78,16 +68,20 @@ void PropertyInformation::initiate(PropertyInformation *info, const PropertyInfo
   info->_typeName = from->typeName();
   }
 
-PropertyInformation *PropertyInformation::derive(const PropertyInformation *from)
+PropertyInformation *PropertyInformation::derive(
+    const PropertyInformation *from,
+    Eks::AllocatorBase *allocator)
   {
   xAssert(from->functions().createTypeInformation);
-  PropertyInformation *copy = PropertyInformation::allocate();
+
+  PropertyInformationCreateData data(allocator);
+
+  PropertyInformation *copy = PropertyInformation::allocate(allocator);
 
   PropertyInformation::initiate(copy, from);
 
   copy->_parentTypeInformation = from;
 
-  PropertyInformationCreateData data;
   data.registerAttributes = true;
   data.registerInterfaces = false;
 
@@ -100,7 +94,10 @@ PropertyInformation *PropertyInformation::derive(const PropertyInformation *from
   return copy;
   }
 
-EmbeddedPropertyInstanceInformation *PropertyInformation::add(const PropertyInformation *newChildType, const QString &name)
+EmbeddedPropertyInstanceInformation *PropertyInformation::add(
+    const PropertyInformationCreateData &data,
+    const PropertyInformation *newChildType,
+    const PropertyNameArg &name)
   {
   xsize backwardsOffset = 0;
   PropertyInformation *allocatable = findAllocatableBase(backwardsOffset);
@@ -123,7 +120,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformation::add(const PropertyInfo
   xAssert(propertyDataLocation > backwardsOffset);
   xsize location = propertyDataLocation - backwardsOffset;
 
-  EmbeddedPropertyInstanceInformation *def = add(newChildType, location, name, true);
+  EmbeddedPropertyInstanceInformation *def = add(data, newChildType, location, name, true);
 
 #ifdef X_DEBUG
   const Property *prop = def->locateProperty((const PropertyContainer*)0);
@@ -133,14 +130,21 @@ EmbeddedPropertyInstanceInformation *PropertyInformation::add(const PropertyInfo
   return def;
   }
 
-EmbeddedPropertyInstanceInformation *PropertyInformation::add(const PropertyInformation *newChildType, xsize location, const QString &name, bool notClassMember)
+EmbeddedPropertyInstanceInformation *PropertyInformation::add(
+    const PropertyInformationCreateData &data,
+    const PropertyInformation *newChildType,
+    xsize location,
+    const PropertyNameArg &name,
+    bool notClassMember)
   {
   xAssert(newChildType);
   xAssert(!childFromName(name));
   xAssert(_childEnd < _childLimit);
 
 
-  EmbeddedPropertyInstanceInformation* def = EmbeddedPropertyInstanceInformation::allocate(newChildType->embeddedInstanceInformationSize());
+  EmbeddedPropertyInstanceInformation* def =
+      EmbeddedPropertyInstanceInformation::allocate(
+        data.allocator, newChildType->embeddedInstanceInformationSize());
 
   newChildType->functions().createEmbeddedInstanceInformation(def);
 
@@ -155,34 +159,12 @@ EmbeddedPropertyInstanceInformation *PropertyInformation::add(const PropertyInfo
   return def;
   }
 
-void PropertyInformation::addInterfaceFactoryInternal(xuint32 typeId, InterfaceBaseFactory *factory)
-  {
-  xAssert(factory);
-  xAssert(typeId != SInterfaceTypes::Invalid);
-
-  _interfaceFactories.insert(typeId, factory);
-
-  factory->setReferenceCount(factory->referenceCount() + 1);
-  xAssert(interfaceFactory(typeId) == factory);
-  }
-
-const InterfaceBaseFactory *PropertyInformation::interfaceFactory(xuint32 type) const
-  {
-  const InterfaceBaseFactory *fac = 0;
-  const PropertyInformation *info = this;
-  while(!fac && info)
-    {
-    fac = info->_interfaceFactories.value(type, 0);
-    info = info->parentTypeInformation();
-    }
-
-  return fac;
-  }
-
-PropertyInformation *PropertyInformation::extendContainedProperty(EmbeddedPropertyInstanceInformation *inst)
+PropertyInformation *PropertyInformation::extendContainedProperty(
+    const PropertyInformationCreateData &data,
+    EmbeddedPropertyInstanceInformation *inst)
   {
   const PropertyInformation *oldInst = inst->childInformation();
-  PropertyInformation *info = PropertyInformation::derive(oldInst);
+  PropertyInformation *info = PropertyInformation::derive(oldInst, data.allocator);
 
   info->setExtendedParent(inst);
   inst->setChildInformation(info);
@@ -190,18 +172,20 @@ PropertyInformation *PropertyInformation::extendContainedProperty(EmbeddedProper
   return info;
   }
 
-PropertyInformation *PropertyInformation::createTypeInformationInternal(const char *name,
-                                                                                const PropertyInformation *parentType,
-                                                                                void (init)(PropertyInformation *, const char *))
+PropertyInformation *PropertyInformation::createTypeInformationInternal(
+    const char *name,
+    const PropertyInformation *parentType,
+    void (init)(PropertyInformation *, const char *),
+    Eks::AllocatorBase *allocator)
   {
   SProfileScopedBlock("Initiate information")
 
-  PropertyInformation *createdInfo = PropertyInformation::allocate();
+  PropertyInformation *createdInfo = PropertyInformation::allocate(allocator);
   xAssert(createdInfo);
 
   init(createdInfo, name);
 
-  PropertyInformationCreateData data;
+  PropertyInformationCreateData data(allocator);
 
   data.registerAttributes = true;
   data.registerInterfaces = false;
@@ -321,18 +305,6 @@ PropertyInformation *PropertyInformation::findAllocatableBase(xsize &offset)
     }
 
   return allocateOn;
-  }
-
-PropertyInformation::DataKey g_maxKey = 0;
-PropertyInformation::DataKey PropertyInformation::newDataKey()
-  {
-  return g_maxKey++;
-  }
-
-void PropertyInformation::setData(DataKey k, const QVariant &v)
-  {
-  xAssert(k < g_maxKey);
-  _data[k].setValue(v);
   }
 
 bool PropertyInformation::inheritsFromType(const PropertyInformation *match) const

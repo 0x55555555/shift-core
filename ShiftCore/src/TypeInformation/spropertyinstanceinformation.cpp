@@ -12,10 +12,12 @@ PropertyInstanceInformation::PropertyInstanceInformation(bool dynamic)
   _isDynamic = dynamic;
   }
 
-void PropertyInstanceInformation::destroy(PropertyInstanceInformation *d)
+void PropertyInstanceInformation::destroy(
+    Eks::AllocatorBase *allocator,
+    PropertyInstanceInformation *d)
   {
-  xAssert(TypeRegistry::allocator());
-  TypeRegistry::allocator()->free(d);
+  xAssert(allocator);
+  allocator->free(d);
   }
 
 Eks::String g_modeStrings[] = {
@@ -80,10 +82,12 @@ EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation()
   {
   }
 
-EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::allocate(xsize size)
+EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::allocate(
+    Eks::AllocatorBase *allocator,
+    xsize size)
   {
-  xAssert(TypeRegistry::allocator());
-  void *ptr = TypeRegistry::allocator()->alloc(size);
+  xAssert(allocator);
+  void *ptr = allocator->alloc(size);
 
   xAssert(ptr);
   return (EmbeddedPropertyInstanceInformation*)ptr;
@@ -125,14 +129,16 @@ void EmbeddedPropertyInstanceInformation::setMode(Mode m)
   }
 
 void EmbeddedPropertyInstanceInformation::initiate(const PropertyInformation *info,
-                 const QString &n,
+                 const PropertyNameArg &n,
                  xsize index,
                  xsize location)
   {
   setChildInformation(info);
-  name() = n;
+  n.toName(name());
+
   xAssert(location < X_UINT16_SENTINEL);
   setLocation(location);
+
   xAssert(index < X_UINT16_SENTINEL);
   setIndex(index);
   }
@@ -145,8 +151,10 @@ void EmbeddedPropertyInstanceInformation::setCompute(ComputeFunction fn)
     _mode = Computed;
     }
   }
-
-void EmbeddedPropertyInstanceInformation::addAffects(const EmbeddedPropertyInstanceInformation *info)
+/*
+void EmbeddedPropertyInstanceInformation::addAffects(
+    const PropertyInformationCreateData &data,
+    const EmbeddedPropertyInstanceInformation *info)
   {
   xsize *oldAffects = _affects;
   xsize affectsSize = 0;
@@ -162,7 +170,8 @@ void EmbeddedPropertyInstanceInformation::addAffects(const EmbeddedPropertyInsta
       }
     }
 
-###
+  xAssert(!_affects);
+  ###
   _affects = new xsize[affectsSize+2]; // one for the new one, one for the end 0
 
   if(oldAffects)
@@ -173,23 +182,27 @@ void EmbeddedPropertyInstanceInformation::addAffects(const EmbeddedPropertyInsta
 
   _affects[affectsSize] = info->location();
   _affects[affectsSize+1] = 0;
-  }
+  }*/
 
-void EmbeddedPropertyInstanceInformation::setAffects(const EmbeddedPropertyInstanceInformation *info)
+void EmbeddedPropertyInstanceInformation::setAffects(
+    const PropertyInformationCreateData &data,
+    const EmbeddedPropertyInstanceInformation *info)
   {
   xAssert(!_affects);
   xAssert(info);
 
-  addAffects(info);
+  setAffects(data, &info, 1);
   }
 
-void EmbeddedPropertyInstanceInformation::setAffects(const EmbeddedPropertyInstanceInformation **info, xsize size)
+void EmbeddedPropertyInstanceInformation::setAffects(
+    const PropertyInformationCreateData &data,
+    const EmbeddedPropertyInstanceInformation **info,
+    xsize size)
   {
   xAssert(!_affects);
   xAssert(info);
 
-###
-  _affects = new xsize[size+1];
+  _affects = (xsize *)data.allocator->alloc(sizeof(xsize) * (size+1));
 
   for(xsize i = 0; i < size; ++i)
     {
@@ -197,12 +210,6 @@ void EmbeddedPropertyInstanceInformation::setAffects(const EmbeddedPropertyInsta
     }
 
   _affects[size] = 0;
-  }
-
-void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects)
-  {
-  xAssert(!_affects);
-  _affects = affects;
   }
 
 const EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::resolvePath(const Eks::String &path) const

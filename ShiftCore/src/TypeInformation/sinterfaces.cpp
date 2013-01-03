@@ -91,10 +91,11 @@ Eks::Colour SBasicColourInterface::colour(const Property *t) const
 
 Eks::Colour SBasicColourInterface::colour(const PropertyInformation *t) const
   {
+  xAssertFail();
   if(t->inheritsFromType<Pointer>())
     {
-    const PropertyInformation *pointedTo = Pointer::pointedToType(t);
-    return colour(pointedTo);
+    //const PropertyInformation *pointedTo = Pointer::pointedToType(t);
+    //return colour(pointedTo);
     }
 
   xuint32 h = qHash(t->typeName());

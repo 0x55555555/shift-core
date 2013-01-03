@@ -351,11 +351,8 @@ template <> class PODInterface <type> { public: typedef name Type; \
 
 #define IMPLEMENT_POD_PROPERTY(name, grp) \
   S_IMPLEMENT_PROPERTY(name, grp) \
-  void name::createTypeInformation(PropertyInformationTyped<name> *info, \
-      const PropertyInformationCreateData &data) { \
-    if(data.registerInterfaces) { \
-    info->addStaticInterface( \
-      data.allocator->create<PODPropertyVariantInterface<name, name::PODType> >()); } } \
+  void name::createTypeInformation(PropertyInformationTyped<name> *, \
+      const PropertyInformationCreateData &) { } \
   name::name() { }
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 0, 100);

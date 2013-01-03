@@ -23,17 +23,8 @@ S_IMPLEMENT_PROPERTY(Database, Shift)
 void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
                                       const PropertyInformationCreateData &data)
   {
-  if(data.registerAttributes)
-    {
-    info->add(&Database::majorVersion, "majorVersion")->setDefault(0);
-    info->add(&Database::minorVersion, "minorVersion")->setDefault(0);
-    info->add(&Database::revision, "revision")->setDefault(0);
-    }
-
   if(data.registerInterfaces)
     {
-    info->addInheritedInterface<Handler>();
-
     auto *api = info->apiInterface();
 
     static XScript::ClassDef<0,0,2> cls = {

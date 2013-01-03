@@ -18,13 +18,13 @@ PropertyGroup::Information PropertyGroup::registerPropertyInformation(PropertyGr
   return ret;
   }
 
-void PropertyGroup::bootstrap()
+void PropertyGroup::bootstrap(Eks::AllocatorBase *allocator)
   {
   SProfileFunction
 
   for(Information *i = _first; i; i = i->next)
     {
-    i->bootstrap();
+    i->bootstrap(allocator);
 
     xAssert(i->information);
 

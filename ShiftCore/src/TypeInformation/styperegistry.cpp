@@ -9,11 +9,26 @@ namespace Shift
 
 struct TypeData
   {
+  enum
+    {
+    DefaultAllocation = 128,
+    ExpandingAllocation = 1024
+    };
+  TypeData(Eks::AllocatorBase *allocator)
+    : groups(allocator),
+      types(allocator),
+      observers(allocator),
+      bucketAllocator(DefaultAllocation, ExpandingAllocation, allocator),
+      baseAllocator(allocator)
+    {
+    }
+
   Eks::Vector<const PropertyGroup *> groups;
   Eks::Vector<const PropertyInformation *> types;
   Eks::Vector<TypeRegistry::Observer *> observers;
+  Eks::BucketAllocator bucketAllocator;
 
-  Eks::AllocatorBase *allocator;
+  Eks::AllocatorBase *baseAllocator;
   };
 
 static TypeData *_internalTypes = 0;;
@@ -22,43 +37,50 @@ TypeRegistry::TypeRegistry()
   {
   }
 
-void TypeRegistry::initiate()
+void TypeRegistry::initiate(
+    Eks::AllocatorBase *baseAllocator
+    )
   {
   XScript::Engine::initiate(false);
 
-###
-  _internalTypes = new TypeData();
-
-###
-  _internalTypes->allocator = new Eks::BucketAllocator();
+  _internalTypes = baseAllocator->create<TypeData>(baseAllocator);
 
   addPropertyGroup(Shift::propertyGroup());
+
+  //Entity::staticTypeInformation()->addStaticInterface(data.allocator->create<SBasicPositionInterface>());
+  //Property::staticTypeInformation()->addStaticInterface(data.allocator->create<SBasicColourInterface>());
+  //Database::staticTypeInformation()->addInheritedInterface<Handler>();
+  //per typed pointer property info->addStaticInterface( data.allocator->create<PODPropertyVariantInterface<name, name::PODType> >()); }
+  //base->addInterfaceFactoryInternal(PointerArrayConnectionInterface::InterfaceType::InterfaceTypeId, new PointerArrayConnectionInterface);
 
   XScript::Interface<TreeObserver> *treeObs = XScript::Interface<TreeObserver>::create("_TreeObserver");
   treeObs->seal();
   }
 
 void TypeRegistry::terminate()
-{
+  {
+  _internalTypes->baseAllocator->destroy(_internalTypes);
+
   // script engine needs to access type info.
   XScript::Engine::terminate();
-
-  delete _internalTypes->allocator;
-  _internalTypes->allocator = 0;
-
-  delete _internalTypes;
   }
 
-Eks::AllocatorBase *TypeRegistry::allocator()
+Eks::AllocatorBase *TypeRegistry::persistentBlockAllocator()
   {
-  xAssert(_internalTypes->allocator);
-  return _internalTypes->allocator;
+  return &_internalTypes->bucketAllocator;
+  }
+
+Eks::AllocatorBase *TypeRegistry::generalPurposeAllocator()
+  {
+  xAssert(_internalTypes->baseAllocator);
+  return _internalTypes->baseAllocator;
   }
 
 void TypeRegistry::addPropertyGroup(PropertyGroup &g)
   {
   _internalTypes->groups << &g;
-  g.bootstrap();
+  xAssertFail();
+  g.bootstrap(_internalTypes->baseAllocator);
   }
 
 const Eks::Vector<const PropertyGroup *> &TypeRegistry::groups()

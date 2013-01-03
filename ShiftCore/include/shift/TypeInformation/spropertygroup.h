@@ -13,7 +13,7 @@ class PropertyInformation;
 class SHIFT_EXPORT PropertyGroup
   {
 public:
-  typedef const PropertyInformation *(*BootstrapFunction)();
+  typedef const PropertyInformation *(*BootstrapFunction)(Eks::AllocatorBase *allocator);
   struct Information
     {
     PropertyInformation *information;
@@ -23,7 +23,7 @@ public:
 
   PropertyGroup();
 
-  void bootstrap();
+  void bootstrap(Eks::AllocatorBase *allocator);
   Information registerPropertyInformation(Information *info, BootstrapFunction fn);
 
 private:

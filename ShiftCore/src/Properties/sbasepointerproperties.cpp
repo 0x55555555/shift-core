@@ -6,13 +6,9 @@ namespace Shift
 
 S_IMPLEMENT_PROPERTY(Pointer, Shift)
 
-void Pointer::createTypeInformation(PropertyInformationTyped<Pointer> *info,
-                                    const PropertyInformationCreateData &data)
+void Pointer::createTypeInformation(PropertyInformationTyped<Pointer> *,
+                                    const PropertyInformationCreateData &)
   {
-  if(data.registerInterfaces)
-    {
-    assignPointerInformation(info, Property::staticTypeInformation());
-    }
   }
 
 void Pointer::setPointed(const Property *prop)
@@ -28,12 +24,12 @@ void Pointer::setPointed(const Property *prop)
     }
   }
 
-PropertyInformation::DataKey g_pointerTypeKey = PropertyInformation::newDataKey();
-const PropertyInformation *Pointer::pointedToType() const
+/*const PropertyInformation *Pointer::pointedToType() const
   {
   return pointedToType(typeInformation());
   }
 
+PropertyInformation::DataKey g_pointerTypeKey = PropertyInformation::newDataKey();
 const PropertyInformation *Pointer::pointedToType(const PropertyInformation *info)
   {
   xAssert(info);
@@ -49,12 +45,7 @@ const PropertyInformation *Pointer::pointedToType(const PropertyInformation *inf
   xAssert(pointedTo);
 
   return pointedTo;
-  }
-
-void Pointer::assignPointerInformation(PropertyInformation *newInfo, const PropertyInformation *pointedToInfo)
-  {
-  newInfo->setData(g_pointerTypeKey, QVariant::fromValue(pointedToInfo));
-  }
+  }*/
 
 S_IMPLEMENT_TYPED_POINTER_ARRAY_TYPE(PointerArray, Shift)
 

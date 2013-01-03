@@ -46,8 +46,8 @@ public:
   void setPointed(const Property *prop);
   Pointer &operator=(const Property *prop) { setPointed(prop); return *this; }
 
-  const PropertyInformation *pointedToType() const;
-  static const PropertyInformation *pointedToType(const PropertyInformation *);
+  //const PropertyInformation *pointedToType() const;
+  //static const PropertyInformation *pointedToType(const PropertyInformation *);
 
   static void assignPointerInformation(PropertyInformation *newInfo, const PropertyInformation *pointedToInfo);
   };
@@ -167,9 +167,6 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
           }
         }
       };
-
-#
-    info->addInterfaceFactoryInternal(PointerArrayConnectionInterface::InterfaceType::InterfaceTypeId, new PointerArrayConnectionInterface);
 
     typedef XScript::MethodToInCa
         <TypedPointerArray<TYPE>, void (), &T::clear>

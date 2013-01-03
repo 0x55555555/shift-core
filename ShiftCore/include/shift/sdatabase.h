@@ -18,10 +18,6 @@ class SHIFT_EXPORT Database : public Entity, public Handler
   S_ENTITY(Database, Entity, 0);
 
 public:
-  UnsignedIntProperty majorVersion;
-  UnsignedIntProperty minorVersion;
-  UnsignedIntProperty revision;
-
   Database();
   ~Database();
 

@@ -25,10 +25,10 @@ const PropertyInformation *Property::staticTypeInformation()
   return _sPropertyTypeInformation.information;
   }
 
-const PropertyInformation *Property::bootstrapStaticTypeInformation()
+const PropertyInformation *Property::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator)
   {
   PropertyInformationTyped<Property>::bootstrapTypeInformation(
-        &_sPropertyTypeInformation.information, "Property", 0);
+        &_sPropertyTypeInformation.information, "Property", 0, allocator);
 
   return staticTypeInformation();
   }
@@ -76,8 +76,6 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
     };
 
     api->buildInterface(cls);
-
-    info->addStaticInterface(data.allocator->create<SBasicColourInterface>());
     }
   }
 
@@ -1270,7 +1268,7 @@ void Property::removeUserData(UserData *userData)
 
 InterfaceBase *Property::interface(xuint32 typeId)
   {
-  const InterfaceBaseFactory* factory = typeInformation()->interfaceFactory(typeId);
+  const InterfaceBaseFactory* factory = TypeRegistry::interfaceFactory(typeInformation(), typeId);
   if(factory)
     {
     return const_cast<InterfaceBaseFactory*>(factory)->classInterface(this);
@@ -1280,7 +1278,7 @@ InterfaceBase *Property::interface(xuint32 typeId)
 
 const InterfaceBase *Property::interface(xuint32 typeId) const
   {
-  const InterfaceBaseFactory* factory = typeInformation()->interfaceFactory(typeId);
+  const InterfaceBaseFactory* factory = TypeRegistry::interfaceFactory(typeInformation(), typeId);
   if(factory)
     {
     return const_cast<InterfaceBaseFactory*>(factory)->classInterface(const_cast<Property*>(this));

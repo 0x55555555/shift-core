@@ -13,7 +13,7 @@
   static void createTypeInformation(Shift::PropertyInformationTyped<name> *info, \
     const Shift::PropertyInformationCreateData &data); \
   static const Shift::PropertyInformation *staticTypeInformation(); \
-  static const Shift::PropertyInformation *bootstrapStaticTypeInformation();
+  static const Shift::PropertyInformation *bootstrapStaticTypeInformation(Eks::AllocatorBase *alloc);
 
 #define S_ADD_INSTANCE_INFORMATION(name) \
   inline const EmbeddedInstanceInformation *embeddedInstanceInformation() const \

@@ -114,8 +114,6 @@ public:
   static PropertyInformation *allocate(Eks::AllocatorBase *allocator);
   static void destroy(PropertyInformation *, Eks::AllocatorBase *allocator);
 
-  static DataKey newDataKey();
-
   template <typename T> bool inheritsFromType() const
     {
     return inheritsFromType(T::staticTypeInformation());
@@ -153,42 +151,36 @@ public:
   PropertyInformation *findAllocatableBase(xsize &offset);
   const PropertyInformation *findAllocatableBase(xsize &offset) const;
 
-  void setData(DataKey, const QVariant &);
-
   // size of the property type, and its instance information
   xsize dynamicSize() const { return size() + dynamicInstanceInformationSize() + X_ALIGN_BYTE_COUNT; }
 
-  EmbeddedPropertyInstanceInformation *add(const PropertyInformation *newChildType,
-                                    xsize location,
-                                    const QString &name,
-                                    bool notClassMember);
+  EmbeddedPropertyInstanceInformation *add(
+      const PropertyInformationCreateData &data,
+      const PropertyInformation *newChildType,
+      xsize location,
+      const PropertyNameArg &name,
+      bool notClassMember);
 
-  EmbeddedPropertyInstanceInformation *add(const PropertyInformation *newChildType, const QString &name);
+  EmbeddedPropertyInstanceInformation *add(
+      const PropertyInformationCreateData &data,
+      const PropertyInformation *newChildType,
+      const PropertyNameArg &name);
 
-  const InterfaceBaseFactory *interfaceFactory(xuint32 type) const;
-  PropertyInformation *extendContainedProperty(EmbeddedPropertyInstanceInformation *inst);
+  template <typename T> static PropertyInformation *createTypeInformation(
+      const char *name,
+      const PropertyInformation *parent);
 
-  template <typename T> void addInterfaceFactory(T *factory)
-    {
-    addInterfaceFactoryInternal(T::InterfaceType::InterfaceTypeId, factory);
-    }
-  template <typename T> void addStaticInterface(T *factory)
-    {
-    addInterfaceFactory(factory);
-    }
-  void addInterfaceFactoryInternal(xuint32 typeId, InterfaceBaseFactory *);
+  static PropertyInformation *createTypeInformationInternal(
+      const char *name,
+      const PropertyInformation *parent,
+      void (PropertyInformation *, const char *),
+      Eks::AllocatorBase *allocator);
 
-#ifdef S_PROPERTY_USER_DATA
-  template <typename T> void addAddonInterface() const;
-#endif
+  PropertyInformation *extendContainedProperty(
+      const PropertyInformationCreateData &data,
+      EmbeddedPropertyInstanceInformation *inst);
 
-  template <typename T> static PropertyInformation *createTypeInformation(const char *,
-                                                                                 const PropertyInformation *parent);
-  static PropertyInformation *createTypeInformationInternal(const char *name,
-                                                                   const PropertyInformation *parent,
-                                                                   void (PropertyInformation *, const char *));
-
-  static PropertyInformation *derive(const PropertyInformation *obj);
+  static PropertyInformation *derive(const PropertyInformation *obj, Eks::AllocatorBase *allocator);
   static void initiate(PropertyInformation *info, const PropertyInformation *from);
 
   template <typename Cont, typename Member> class Walker
@@ -238,8 +230,6 @@ public:
 
 private:
   X_DISABLE_COPY(PropertyInformation);
-
-  mutable InterfaceHash _interfaceFactories;
 
   void reference() const;
   void dereference() const;

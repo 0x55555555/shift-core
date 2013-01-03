@@ -7,6 +7,7 @@
 namespace Shift
 {
 
+class PropertyInformationCreateData;
 class Property;
 class PropertyContainer;
 class PropertyInformation;
@@ -51,7 +52,7 @@ XProperties:
 
 public:
   PropertyInstanceInformation(bool dynamic);
-  static void destroy(PropertyInstanceInformation *);
+  static void destroy(Eks::AllocatorBase *allocator, PropertyInstanceInformation *);
 
   void setInvalidIndex();
 
@@ -82,7 +83,7 @@ class SHIFT_EXPORT EmbeddedPropertyInstanceInformation : public PropertyInstance
 public:
   EmbeddedPropertyInstanceInformation();
 
-  static EmbeddedPropertyInstanceInformation *allocate(xsize size);
+  static EmbeddedPropertyInstanceInformation *allocate(Eks::AllocatorBase *allocator, xsize size);
 
   void setMode(Mode);
 
@@ -100,14 +101,17 @@ public:
   void setCompute(ComputeFunction fn);
   bool isComputed() const { return _compute != 0; }
 
-  void addAffects(const EmbeddedPropertyInstanceInformation *info);
-  void setAffects(const EmbeddedPropertyInstanceInformation *info);
-  void setAffects(const EmbeddedPropertyInstanceInformation **info, xsize size);
-  void setAffects(xsize *affects);
+  //void addAffects(const EmbeddedPropertyInstanceInformation *info);
+  void setAffects(
+      const PropertyInformationCreateData &data,
+      const EmbeddedPropertyInstanceInformation *info);
+  void setAffects(
+      const PropertyInformationCreateData &data,
+      const EmbeddedPropertyInstanceInformation **info, xsize size);
   bool affectsSiblings() const { return _affects != 0; }
 
   void initiate(const PropertyInformation *info,
-                const QString &name,
+                const PropertyNameArg &name,
                 xsize index,
                 xsize s);
 
