@@ -75,9 +75,6 @@ public:
   Entity *findChildEntity(const PropertyNameArg &);
   const Entity *findChildEntity(const PropertyNameArg &) const;
 
-  static void saveProperty(const Property *, Saver &);
-  static Property *loadProperty(PropertyContainer *, Loader &);
-
   X_ALIGNED_OPERATOR_NEW
 
 private:

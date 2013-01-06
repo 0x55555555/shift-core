@@ -126,16 +126,6 @@ const Entity *Entity::findChildEntity(const PropertyNameArg &n) const
   return prop->castTo<Entity>();
   }
 
-void Entity::saveProperty(const Property *p, Saver &l)
-  {
-  PropertyContainer::saveProperty(p, l);
-  }
-
-Property *Entity::loadProperty(PropertyContainer *p, Loader &l)
-  {
-  return PropertyContainer::loadProperty(p, l);
-  }
-
 Observer *Entity::ObserverStruct::getObserver()
   {
   if(mode == ObserverStruct::Tree)

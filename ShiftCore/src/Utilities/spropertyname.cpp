@@ -26,12 +26,14 @@ PropertyNameArg& PropertyNameArg::operator=(PropertyNameArg&& oth)
   return *this;
   }
 
+#if X_QT_INTEROP
 PropertyNameArg::PropertyNameArg(const QString &t)
   {
   _type = TypeQt;
   _data.qt = &t;
   _length = t.length();
   }
+#endif
 
 void PropertyNameArg::toName(PropertyName &out) const
   {
@@ -41,10 +43,12 @@ void PropertyNameArg::toName(PropertyName &out) const
     {
     out.resizeAndCopy(_length, _data.eks);
     }
+#if X_QT_INTEROP
   else if(_type == TypeQt)
     {
     out = *_data.qt;
     }
+#endif
   }
 
 bool PropertyNameArg::isEmpty() const
@@ -60,11 +64,14 @@ bool PropertyNameArg::operator==(const PropertyNameArg &oth) const
       {
       return strcmp(_data.eks, oth._data.eks) == 0;
       }
+#if X_QT_INTEROP
     else if(oth._type == TypeQt)
       {
       return  *oth._data.qt == _data.eks;
       }
-    }
+#endif
+    }  
+#if X_QT_INTEROP
   else if(_type == TypeQt)
     {
     if(oth._type == TypeEks)
@@ -76,6 +83,7 @@ bool PropertyNameArg::operator==(const PropertyNameArg &oth) const
       return *_data.qt == *oth._data.qt;
       }
     }
+#endif
 
   return false;
   }
@@ -86,10 +94,12 @@ bool PropertyNameArg::operator==(const PropertyName &oth) const
     {
     return oth == _data.eks;
     }
+#if X_QT_INTEROP
   else if(_type == TypeQt)
     {
     return (*_data.qt) == oth.data();
     }
+#endif
 
   return false;
   }

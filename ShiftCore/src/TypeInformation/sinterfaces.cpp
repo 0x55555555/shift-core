@@ -1,6 +1,7 @@
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Properties/sbaseproperties.h"
 #include "shift/Properties/sbasepointerproperties.h"
+#include "shift/sentity.h"
 #include "QColor"
 #include "QString"
 
@@ -10,10 +11,6 @@ namespace Shift
 const QString g_positionName("__position");
 const QString g_inputsPositionName("__inputsPosition");
 const QString g_outputsPositionName("__outputsPosition");
-
-SBasicPositionInterface::SBasicPositionInterface() : PropertyPositionInterface(true)
-  {
-  }
 
 Eks::Vector3D SBasicPositionInterface::positionGeneric(const Property * p, const PropertyNameArg &name) const
   {
@@ -80,10 +77,6 @@ void SBasicPositionInterface::setOutputsPosition(Property *p, const Eks::Vector3
   setPositionGeneric(p, val, g_outputsPositionName);
   }
 
-SBasicColourInterface::SBasicColourInterface() : PropertyColourInterface(true)
-  {
-  }
-
 Eks::Colour SBasicColourInterface::colour(const Property *t) const
   {
   return colour(t->typeInformation());
@@ -113,4 +106,36 @@ Eks::Colour SBasicColourInterface::colour(const PropertyInformation *t) const
   return Eks::Colour(col);
   }
 
+struct Util
+  {
+  template <typename T> static void addPODInterface()
+    {
+    Interface::addStaticInterface<T, PODPropertyVariantInterface<T, T::PODType> >();
+    }
+  };
+
+void setupBaseInterfaces()
+  {
+  Interface::addStaticInterface<Entity, SBasicPositionInterface>();
+  Interface::addStaticInterface<Property, SBasicColourInterface>();
+  Interface::addInheritedInterface<Database, Handler>();
+
+
+  Util::addPODInterface<BoolProperty>();
+  Util::addPODInterface<IntProperty>();
+  Util::addPODInterface<LongIntProperty>();
+  Util::addPODInterface<UnsignedIntProperty>();
+  Util::addPODInterface<LongUnsignedIntProperty>();
+  Util::addPODInterface<FloatProperty>();
+  Util::addPODInterface<DoubleProperty>();
+  Util::addPODInterface<Vector2DProperty>();
+  Util::addPODInterface<Vector3DProperty>();
+  Util::addPODInterface<Vector4DProperty>();
+  Util::addPODInterface<QuaternionProperty>();
+  Util::addPODInterface<StringPropertyBase>();
+  Util::addPODInterface<ColourProperty>();
+  Util::addPODInterface<ByteArrayProperty>();
+
+  Util::addPODInterface<StringArrayProperty>();
+  }
 }

@@ -1,5 +1,6 @@
 #include "shift/UI/sdatabasemodel.h"
 #include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/TypeInformation/sinterfaces.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "QtWidgets/QPushButton"

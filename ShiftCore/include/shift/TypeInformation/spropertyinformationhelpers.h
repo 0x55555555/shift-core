@@ -5,6 +5,7 @@
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertygroup.h"
+#include "shift/TypeInformation/spropertytraits.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/sproperty.inl"
 #include "shift/Utilities/sresourcedescription.h"
@@ -314,30 +315,7 @@ public:
 private:
   static void initiate(PropertyInformation *info, const char *typeName)
     {
-    PropertyInformationFunctions fns;
-
-    // update copy constructor too
-    fns.createProperty = PropertyHelper<PropType>::create;
-    fns.createPropertyInPlace = PropertyHelper<PropType>::createInPlace;
-    fns.destroyProperty = PropertyHelper<PropType>::destroy;
-    fns.createEmbeddedInstanceInformation = InstanceInformationHelper<PropType>::createEmbedded;
-    fns.createDynamicInstanceInformation = InstanceInformationHelper<PropType>::createDynamic;
-    fns.destroyEmbeddedInstanceInformation = InstanceInformationHelper<PropType>::destroyEmbedded;
-    fns.destroyDynamicInstanceInformation = InstanceInformationHelper<PropType>::destroyDynamic;
-
-    fns.save = PropType::saveProperty;
-    fns.load = PropType::loadProperty;
-    fns.shouldSave = PropType::shouldSaveProperty;
-    fns.shouldSaveValue = PropType::shouldSavePropertyValue;
-    fns.assign = PropType::assignProperty;
-
-#ifdef S_PROPERTY_POST_CREATE
-    fns.postCreate = 0;
-#endif
-
-    fns.createTypeInformation = (Functions::CreateTypeInformationFunction)PropType::createTypeInformation;
-
-    info->setFunctions(fns);
+    PropertyTraits::build<PropType>(info->functions());
 
     info->setVersion(PropType::Version);
     info->setSize(sizeof(PropType));

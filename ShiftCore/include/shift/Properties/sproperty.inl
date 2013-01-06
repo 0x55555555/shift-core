@@ -1,9 +1,9 @@
 #ifndef SPROPERTY_INL
 #define SPROPERTY_INL
 
-#include "sproperty.h"
-#include "spropertyinstanceinformation.h"
-#include "spropertyinformation.h"
+#include "shift/Properties/sproperty.h"
+#include "shift/TypeInformation/spropertyinstanceinformation.h"
+#include "shift/TypeInformation/spropertyinformation.h"
 
 namespace Shift
 {

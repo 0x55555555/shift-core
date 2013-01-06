@@ -310,89 +310,6 @@ void PropertyContainer::removeProperty(Property *oldProp)
   PropertyDoChange(TreeChange, this, (PropertyContainer*)0, oldProp, index(oldProp));
   }
 
-void PropertyContainer::assignProperty(const Property *f, Property *t)
-  {
-  SProfileFunction
-  const PropertyContainer *from = f->uncheckedCastTo<PropertyContainer>();
-  PropertyContainer *to = t->uncheckedCastTo<PropertyContainer>();
-
-  if(from->containedProperties() == to->containedProperties())
-    {
-    xsize index = 0;
-    auto tChildIt = to->walker().begin();
-    xForeach(auto fChild, from->walker())
-      {
-      auto tChild = *tChildIt;
-
-      if(!tChild || tChild->staticTypeInformation() != fChild->staticTypeInformation())
-        {
-        xAssert(tChild->isDynamic());
-        if(tChild)
-          {
-          to->removeProperty(tChild);
-          }
-
-        tChild = to->addProperty(fChild->staticTypeInformation(), index);
-        }
-
-      tChild->assign(fChild);
-
-      ++tChildIt;
-      ++index;
-      }
-    }
-  else
-    {
-    xAssertFail();
-    }
-  }
-
-void PropertyContainer::saveProperty(const Property *p, Saver &l)
-  {
-  SProfileFunction
-  const PropertyContainer *c = p->uncheckedCastTo<PropertyContainer>();
-  xAssert(c);
-
-  Property::saveProperty(p, l);
-
-  l.saveChildren(c);
-  }
-
-Property *PropertyContainer::loadProperty(PropertyContainer *parent, Loader &l)
-  {
-  SProfileFunction
-  xAssert(parent);
-
-  Property *prop = Property::loadProperty(parent, l);
-  xAssert(prop);
-
-  PropertyContainer* container = prop->uncheckedCastTo<PropertyContainer>();
-
-  l.loadChildren(container);
-
-  return prop;
-  }
-
-bool PropertyContainer::shouldSavePropertyValue(const Property *p)
-  {
-  const PropertyContainer *ptr = p->uncheckedCastTo<PropertyContainer>();
-  if(ptr->_containedProperties < ptr->size())
-    {
-    return true;
-    }
-
-  xForeach(auto p, ptr->walker())
-    {
-    const PropertyInformation *info = p->typeInformation();
-    if(info->functions().shouldSave(p))
-      {
-      return true;
-      }
-    }
-
-  return false;
-  }
-
 void PropertyContainer::internalInsertProperty(Property *newProp, xsize index)
   {
   // xAssert(newProp->_entity == 0); may be true because of post init
@@ -607,5 +524,93 @@ xsize PropertyContainer::index(const Property* prop) const
 
   return prop->baseInstanceInformation()->index();
   }
+
+
+namespace detail
+{
+
+void PropertyContainerTraits::assignProperty(const Property *f, Property *t)
+  {
+  SProfileFunction
+  const PropertyContainer *from = f->uncheckedCastTo<PropertyContainer>();
+  PropertyContainer *to = t->uncheckedCastTo<PropertyContainer>();
+
+  if(from->containedProperties() == to->containedProperties())
+    {
+    xsize index = 0;
+    auto tChildIt = to->walker().begin();
+    xForeach(auto fChild, from->walker())
+      {
+      auto tChild = *tChildIt;
+
+      if(!tChild || tChild->staticTypeInformation() != fChild->staticTypeInformation())
+        {
+        xAssert(tChild->isDynamic());
+        if(tChild)
+          {
+          to->removeProperty(tChild);
+          }
+
+        tChild = to->addProperty(fChild->staticTypeInformation(), index);
+        }
+
+      tChild->assign(fChild);
+
+      ++tChildIt;
+      ++index;
+      }
+    }
+  else
+    {
+    xAssertFail();
+    }
+  }
+
+void PropertyContainerTraits::saveProperty(const Property *p, Saver &l)
+  {
+  SProfileFunction
+  const PropertyContainer *c = p->uncheckedCastTo<PropertyContainer>();
+  xAssert(c);
+
+  Property::saveProperty(p, l);
+
+  l.saveChildren(c);
+  }
+
+Property *PropertyContainerTraits::loadProperty(PropertyContainer *parent, Loader &l)
+  {
+  SProfileFunction
+  xAssert(parent);
+
+  Property *prop = Property::loadProperty(parent, l);
+  xAssert(prop);
+
+  PropertyContainer* container = prop->uncheckedCastTo<PropertyContainer>();
+
+  l.loadChildren(container);
+
+  return prop;
+  }
+
+bool PropertyContainerTraits::shouldSavePropertyValue(const Property *p)
+  {
+  const PropertyContainer *ptr = p->uncheckedCastTo<PropertyContainer>();
+  if(ptr->_containedProperties < ptr->size())
+    {
+    return true;
+    }
+
+  xForeach(auto p, ptr->walker())
+    {
+    const PropertyInformation *info = p->typeInformation();
+    if(info->functions().shouldSave(p))
+      {
+      return true;
+      }
+    }
+
+  return false;
+  }
+}
 
 }

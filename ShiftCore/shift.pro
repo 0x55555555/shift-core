@@ -47,7 +47,8 @@ SOURCES += \
     src/Serialisation/sloader.cpp \
     src/Utilities/spropertyname.cpp \
     src/UI/moc_spropertydefaultui.cpp \
-    src/UI/moc_sdatabasemodel.cpp
+    src/UI/moc_sdatabasemodel.cpp \
+    src/TypeInformation/spropertytraits.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -85,7 +86,8 @@ HEADERS += \
     include/shift/Utilities/sprocessmanager.h \
     include/shift/Utilities/siterator.h \
     include/shift/Utilities/sresourcedescription.h \
-    include/shift/Utilities/spropertyname.h
+    include/shift/Utilities/spropertyname.h \
+    include/shift/TypeInformation/spropertytraits.h
 
 OTHER_FILES += \
     include/shift/UI/spropertydefaultui.h \

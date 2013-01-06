@@ -5,8 +5,6 @@
 #include "shift/Properties/sproperty.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
-#include "shift/TypeInformation/sinterface.h"
-#include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Changes/schange.h"
 #include "shift/Changes/sobserver.h"
 #include "shift/Changes/shandler.h"
@@ -41,10 +39,71 @@ class PODInterface
   {
   };
 
+namespace detail
+{
+template <typename T> class BasePODPropertyTraits
+  {
+  static void saveProperty(const Property *p, Saver &l )
+    {
+    PropertyBaseTraits::saveProperty(p, l);
+    }
+
+  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+    {
+    Property *prop = PropertyBaseTraits::loadProperty(parent, l);
+    return prop;
+    }
+
+  static bool shouldSavePropertyValue(const Property *)
+    {
+    return false;
+    }
+
+  static void assignProperty(const Shift::Property *p, Shift::Property *l )
+    {
+    T::assignProperty(p, l);
+    }
+  };
+
+template <typename T> class PODPropertyTraits : public BasePODPropertyTraits<T>
+  {
+  static void saveProperty(const Property *p, Saver &l )
+    {
+    Property::saveProperty(p, l);
+    const T *ptr = p->uncheckedCastTo<T>();
+    writeValue(l, ptr->_value);
+    }
+
+  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+    {
+    Property *prop = Property::loadProperty(parent, l);
+    T *ptr = prop->uncheckedCastTo<T>();
+    readValue(l, ptr->_value);
+    return prop;
+    }
+
+  static bool shouldSavePropertyValue(const Property *p)
+    {
+    const T *ptr = p->uncheckedCastTo<T>();
+
+    if(Property::shouldSavePropertyValue(p))
+      {
+      using ::operator!=;
+
+      if(ptr->isDynamic() ||
+         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
+        {
+        return true;
+        }
+      }
+
+    return false;
+    }
+  };
+}
 template <typename PROP, typename POD> class PODPropertyVariantInterface : public PropertyVariantInterface
   {
 public:
-  PODPropertyVariantInterface() : PropertyVariantInterface(true) { }
 #if X_QT_INTEROP
   virtual Eks::String asString(const Property *p) const
     {
@@ -68,7 +127,7 @@ public:
 #endif
   };
 
-template <typename T, typename DERIVED> class PODPropertyBase : public Property
+template <typename T, typename DERIVED, typename TRAITS> class PODPropertyBase : public Property
   {
 protected:
   XPropertyMember(T, value);
@@ -79,7 +138,7 @@ protected:
     S_CHANGE(ComputeChange, Property::DataChange, 155);
 
   public:
-    ComputeChange(PODPropertyBase<T, DERIVED> *prop)
+    ComputeChange(PODPropertyBase<T, DERIVED, TRAITS> *prop)
       : Property::DataChange(prop)
       {
       xAssert(!prop->database()->stateStorageEnabled());
@@ -108,12 +167,14 @@ protected:
     };
 
 public:
+  typedef TRAITS Traits;
+
   class ComputeLock
     {
   public:
-    typedef typename PODPropertyBase<T, DERIVED>::ComputeChange Change;
+    typedef typename PODPropertyBase<T, DERIVED, TRAITS>::ComputeChange Change;
 
-    ComputeLock(PODPropertyBase<T, DERIVED> *ptr) : _ptr(ptr)
+    ComputeLock(PODPropertyBase<T, DERIVED, TRAITS> *ptr) : _ptr(ptr)
       {
       xAssert(ptr);
       _data = &_ptr->_value;
@@ -134,7 +195,7 @@ public:
       }
 
   private:
-    PODPropertyBase<T, DERIVED> *_ptr;
+    PODPropertyBase<T, DERIVED, TRAITS> *_ptr;
     T* _data;
     };
 
@@ -150,16 +211,11 @@ public:
     return _value;
     }
 
-  static bool shouldSavePropertyValue(const Property *)
-    {
-    return false;
-    }
-
 protected:
   friend class ComputeLock;
   };
 
-template <typename T, typename DERIVED> class PODProperty : public PODPropertyBase<T, DERIVED>
+template <typename T, typename DERIVED, typename TRAITS> class PODProperty : public PODPropertyBase<T, DERIVED, TRAITS>
   {
 public:
   class EmbeddedInstanceInformation : public Property::EmbeddedInstanceInformation
@@ -195,7 +251,7 @@ public:
   class Lock
     {
   public:
-    Lock(PODProperty<T, DERIVED> *ptr) : _ptr(ptr)
+    Lock(PODProperty<T, DERIVED, TRAITS> *ptr) : _ptr(ptr)
       {
       xAssert(ptr);
       _oldData = _ptr->value();
@@ -213,43 +269,10 @@ public:
       }
 
   private:
-    PODProperty<T, DERIVED> *_ptr;
+    PODProperty<T, DERIVED, TRAITS> *_ptr;
     T* _data;
     T _oldData;
     };
-
-  static void saveProperty(const Property *p, Saver &l )
-    {
-    Property::saveProperty(p, l);
-    const DERIVED *ptr = p->uncheckedCastTo<DERIVED>();
-    writeValue(l, ptr->_value);
-    }
-
-  static Property *loadProperty(PropertyContainer *parent, Loader &l)
-    {
-    Property *prop = Property::loadProperty(parent, l);
-    DERIVED *ptr = prop->uncheckedCastTo<DERIVED>();
-    readValue(l, ptr->_value);
-    return prop;
-    }
-
-  static bool shouldSavePropertyValue(const Property *p)
-    {
-    const DERIVED *ptr = p->uncheckedCastTo<DERIVED>();
-
-    if(Property::shouldSavePropertyValue(p))
-      {
-      using ::operator!=;
-
-      if(ptr->isDynamic() ||
-         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
-        {
-        return true;
-        }
-      }
-
-    return false;
-    }
 
   void assign(const T &in);
 
@@ -259,7 +282,7 @@ private:
     S_CHANGE(ComputeChange, Property::DataChange, DERIVED::TypeId);
 
   public:
-    ComputeChange(PODProperty<T, DERIVED> *prop)
+    ComputeChange(PODProperty<T, DERIVED, TRAITS> *prop)
       : Property::DataChange(prop)
       {
       xAssert(!prop->database()->stateStorageEnabled());
@@ -294,7 +317,7 @@ private:
     XRORefProperty(T, after);
 
   public:
-    Change(const T &b, const T &a, PODProperty<T, DERIVED> *prop)
+    Change(const T &b, const T &a, PODProperty<T, DERIVED, TRAITS> *prop)
       : ComputeChange(prop), _before(b), _after(a)
       { }
 
@@ -331,12 +354,13 @@ private:
   };
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, defaultDefault, typeID) \
-class EXPORT_MODE name : public PODProperty<type, name> { \
-public: class EmbeddedInstanceInformation : \
-  public PODProperty<type, name>::EmbeddedInstanceInformation \
+class EXPORT_MODE name : public Shift::PODProperty<type, name, detail::PODPropertyTraits<name> > { \
+public: typedef detail::PODPropertyTraits<name> Traits; \
+  class EmbeddedInstanceInformation : \
+  public Shift::PODProperty<type, name, Traits>::EmbeddedInstanceInformation \
     { public: \
     EmbeddedInstanceInformation() \
-    : PODProperty<type, name>::EmbeddedInstanceInformation(defaultDefault) { } }; \
+    : Shift::PODProperty<type, name, Traits>::EmbeddedInstanceInformation(defaultDefault) { } }; \
   enum { TypeId = typeID }; \
   typedef type PODType; \
   S_PROPERTY(name, Property, 0); \
@@ -344,15 +368,15 @@ public: class EmbeddedInstanceInformation : \
   name &operator=(const type &in) { \
     assign(in); \
     return *this; } \
-  static void assignProperty(const Property *p, Property *l ); }; \
-template <> class PODInterface <type> { public: typedef name Type; \
+  static void assignProperty(const Shift::Property *p, Shift::Property *l ); }; \
+template <> class Shift::PODInterface <type> { public: typedef name Type; \
   static void assign(name* s, const type& val) { s->assign(val); } \
   static const type& value(const name* s) { return s->value(); } };
 
 #define IMPLEMENT_POD_PROPERTY(name, grp) \
   S_IMPLEMENT_PROPERTY(name, grp) \
-  void name::createTypeInformation(PropertyInformationTyped<name> *, \
-      const PropertyInformationCreateData &) { } \
+  void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \
+      const Shift::PropertyInformationCreateData &) { } \
   name::name() { }
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 0, 100);
@@ -431,9 +455,10 @@ template <> class PODInterface <bool> { public: typedef BoolProperty Type; \
 namespace Shift
 {
 
-template <typename T, typename DERIVED> void PODProperty<T, DERIVED>::assign(const T &in)
+template <typename T, typename DERIVED, typename TRAITS>
+    void PODProperty<T, DERIVED, TRAITS>::assign(const T &in)
   {
-  PropertyDoChange(Change, PODPropertyBase<T, DERIVED>::_value, in, this);
+  PropertyDoChange(Change, PODPropertyBase<T, DERIVED, TRAITS>::_value, in, this);
   }
 }
 

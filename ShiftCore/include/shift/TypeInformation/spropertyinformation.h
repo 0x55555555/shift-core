@@ -228,6 +228,11 @@ public:
     return Walker<const PropertyInformation, const EmbeddedPropertyInstanceInformation>(this);
     }
 
+  PropertyInformationFunctions &functions()
+    {
+    return _functions;
+    }
+
 private:
   X_DISABLE_COPY(PropertyInformation);
 

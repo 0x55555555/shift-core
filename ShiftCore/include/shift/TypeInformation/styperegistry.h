@@ -43,50 +43,16 @@ public:
 
   static const InterfaceBaseFactory *interfaceFactory(
       const PropertyInformation *info,
-      xuint32 typeId) const;
+      xuint32 typeId);
 
-  template <typename T> static void addStaticInterface(
-      PropertyInformation *info,
-      T *factory)
-    {
-    addInterfaceFactoryInternal(
-          info,
-          T::InterfaceType::InterfaceTypeId,
-          factory);s
-    }
+  static void addInterfaceFactory(
+      const PropertyInformation *info,
+      xuint32 typeId,
+      InterfaceBaseFactory *factory);
 
-#ifdef S_PROPERTY_USER_DATA
-  template <typename T> void addAddonInterface() const;
-#endif
-
-  template <typename T> static void addInheritedInterface(PropertyInformation *info)
-    {
-    class InheritedInterface : public InterfaceBaseFactory
-      {
-      S_INTERFACE_FACTORY_TYPE(T)
-    public:
-      InheritedInterface() : InterfaceBaseFactory(true) { }
-      virtual InterfaceBase *classInterface(Property *prop)
-        {
-        return prop->castTo<PropType>();
-        }
-      };
-
-    InheritedInterface *ifc = interfaceAllocator()->create<InheritedInterface>();
-
-    addInterfaceFactoryInternal(
-          info,
-          InheritedInterface::InterfaceType::InterfaceTypeId,
-          ifc);
-    }
 private:
   TypeRegistry();
   X_DISABLE_COPY(TypeRegistry);
-
-  static void addInterfaceFactoryInternal(
-      PropertyInformation *info,
-      xuint32 typeId,
-      InterfaceBaseFactory *factory);
 
   static void internalAddType(const PropertyInformation *);
 

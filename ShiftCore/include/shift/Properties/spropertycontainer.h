@@ -23,11 +23,26 @@ template <typename T, typename Cont> class PropertyContainerBaseIterator;
 template <typename T, typename Cont> class PropertyContainerIterator;
 template <typename T, typename Cont, typename Iterator> class PropertyContainerTypedIteratorWrapperFrom;
 
+namespace detail
+{
+
+class PropertyContainerTraits : public PropertyBaseTraits
+  {
+public:
+  static void assignProperty(const Property *, Property *);
+  static void saveProperty(const Property *, Saver & );
+  static Property *loadProperty(PropertyContainer *, Loader &);
+  static bool shouldSavePropertyValue(const Property *);
+  };
+}
+
 class SHIFT_EXPORT PropertyContainer : public Property
   {
   S_PROPERTY_CONTAINER(PropertyContainer, Property, 0);
 
 public:
+  typedef detail::PropertyContainerTraits Traits;
+
   class TreeChange : public Change
     {
     S_CHANGE(TreeChange, Change, 52)
@@ -175,11 +190,6 @@ public:
 
   xsize index(const Property* prop) const;
 
-  static void assignProperty(const Property *, Property *);
-  static void saveProperty(const Property *, Saver & );
-  static Property *loadProperty(PropertyContainer *, Loader &);
-  static bool shouldSavePropertyValue(const Property *);
-
   // iterator members, can be used like for (auto prop : container->walker())
   template <typename T> PropertyContainerTypedIteratorWrapperFrom<T, PropertyContainer, PropertyContainerIterator<T, PropertyContainer> > walker();
   template <typename T> PropertyContainerTypedIteratorWrapperFrom<const T, const PropertyContainer, PropertyContainerIterator<const T, const PropertyContainer> > walker() const;
@@ -226,6 +236,8 @@ private:
   friend class Entity;
   friend class Property;
   friend class Database;
+  friend class detail::PropertyBaseTraits;
+  friend class detail::PropertyContainerTraits;
   };
 
 }

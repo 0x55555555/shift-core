@@ -3,6 +3,8 @@
 #include "shift/TypeInformation/spropertygroup.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/Changes/sobserver.h"
+#include "shift/TypeInformation/sinterfaces.h"
+#include "XUnorderedMap"
 
 namespace Shift
 {
@@ -19,6 +21,7 @@ struct TypeData
       types(allocator),
       observers(allocator),
       bucketAllocator(DefaultAllocation, ExpandingAllocation, allocator),
+      interfaces(allocator),
       baseAllocator(allocator)
     {
     }
@@ -27,6 +30,9 @@ struct TypeData
   Eks::Vector<const PropertyInformation *> types;
   Eks::Vector<TypeRegistry::Observer *> observers;
   Eks::BucketAllocator bucketAllocator;
+
+  typedef QPair<const PropertyInformation *, xuint32> InterfaceKey;
+  Eks::UnorderedMap<InterfaceKey, InterfaceBaseFactory*> interfaces;
 
   Eks::AllocatorBase *baseAllocator;
   };
@@ -47,11 +53,7 @@ void TypeRegistry::initiate(
 
   addPropertyGroup(Shift::propertyGroup());
 
-  //Entity::staticTypeInformation()->addStaticInterface(data.allocator->create<SBasicPositionInterface>());
-  //Property::staticTypeInformation()->addStaticInterface(data.allocator->create<SBasicColourInterface>());
-  //Database::staticTypeInformation()->addInheritedInterface<Handler>();
-  //per typed pointer property info->addStaticInterface( data.allocator->create<PODPropertyVariantInterface<name, name::PODType> >()); }
-  //base->addInterfaceFactoryInternal(PointerArrayConnectionInterface::InterfaceType::InterfaceTypeId, new PointerArrayConnectionInterface);
+  setupBaseInterfaces();
 
   XScript::Interface<TreeObserver> *treeObs = XScript::Interface<TreeObserver>::create("_TreeObserver");
   treeObs->seal();
@@ -74,6 +76,11 @@ Eks::AllocatorBase *TypeRegistry::generalPurposeAllocator()
   {
   xAssert(_internalTypes->baseAllocator);
   return _internalTypes->baseAllocator;
+  }
+
+Eks::AllocatorBase *TypeRegistry::interfaceAllocator()
+  {
+  return generalPurposeAllocator();
   }
 
 void TypeRegistry::addPropertyGroup(PropertyGroup &g)
@@ -133,6 +140,21 @@ const PropertyInformation *TypeRegistry::findType(const PropertyNameArg &in)
       }
     }
   return 0;
+  }
+
+const InterfaceBaseFactory *TypeRegistry::interfaceFactory(
+    const PropertyInformation *info,
+    xuint32 typeId)
+  {
+  return _internalTypes->interfaces.value(TypeData::InterfaceKey(info, typeId), 0);
+  }
+
+void TypeRegistry::addInterfaceFactory(
+    const PropertyInformation *info,
+    xuint32 typeId,
+    InterfaceBaseFactory *factory)
+  {
+  _internalTypes->interfaces[TypeData::InterfaceKey(info, typeId)] = factory;
   }
 
 PropertyGroup &propertyGroup()

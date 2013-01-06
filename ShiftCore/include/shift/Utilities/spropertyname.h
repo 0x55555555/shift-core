@@ -20,7 +20,10 @@ public:
   PropertyNameArg();
   PropertyNameArg(PropertyNameArg &&);
   PropertyNameArg& operator=(PropertyNameArg&& other);
+
+#if X_QT_INTEROP
   PropertyNameArg(const QString &);
+#endif
 
   template <typename C, xsize S, typename A>
   PropertyNameArg(const Eks::StringBase<C, S, A> &in)
@@ -52,14 +55,18 @@ private:
   enum
     {
     TypeEks,
+#if X_QT_INTEROP
     TypeQt
+#endif
     } _type;
 
   xsize _length;
   union
     {
     const Eks::Char *eks;
+#if X_QT_INTEROP
     const QString *qt;
+#endif
     } _data;
   };
 

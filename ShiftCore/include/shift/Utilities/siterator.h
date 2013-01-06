@@ -1,8 +1,8 @@
 #ifndef SITERATOR_H
 #define SITERATOR_H
 
-#include "sentity.h"
-#include "spropertycontaineriterators.h"
+#include "shift/sentity.h"
+#include "shift/Properties/spropertycontaineriterators.h"
 
 namespace Shift
 {

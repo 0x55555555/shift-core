@@ -30,12 +30,35 @@ class PropertyConnectionChange;
 class PropertyNameChange;
 class SResourceDescription;
 
+namespace detail
+{
+class PropertyBaseTraits
+  {
+public:
+  static void assignProperty(const Property *, Property *);
+  static void saveProperty(const Property *, Saver & );
+  static Property *loadProperty(PropertyContainer *, Loader &);
+
+  // should this properties value be saved, for example not when the value
+  // is this property's value the default as it is when created.
+  static bool shouldSavePropertyValue(const Property *);
+
+  // should the property definition itself be saved, note this function must be true if the above is true
+  // but the above can be false when this is true.
+  static bool shouldSaveProperty(const Property *);
+
+  // helper for custom saving, allows not saving input specifically.
+  static void saveProperty(const Property *, Saver &, bool writeInput);
+  };
+}
+
 class SHIFT_EXPORT Property
   {
 public:
   typedef PropertyInstanceInformation BaseInstanceInformation;
   typedef EmbeddedPropertyInstanceInformation EmbeddedInstanceInformation;
   typedef DynamicPropertyInstanceInformation DynamicInstanceInformation;
+  typedef detail::PropertyBaseTraits Traits;
 
   S_PROPERTY_ROOT(Property, 0)
 
@@ -201,25 +224,10 @@ public:
   typedef PropertyConnectionChange ConnectionChange;
   typedef PropertyNameChange NameChange;
 
-  static void assignProperty(const Property *, Property *);
-  static void saveProperty(const Property *, Saver & );
-  static Property *loadProperty(PropertyContainer *, Loader &);
-
-  // should this properties value be saved, for example not when the value
-  // is this property's value the default as it is when created.
-  static bool shouldSavePropertyValue(const Property *);
-
-  // should the property definition itself be saved, note this function must be true if the above is true
-  // but the above can be false when this is true.
-  static bool shouldSaveProperty(const Property *);
-
   const XScript::InterfaceBase *apiInterface() const;
   static const XScript::InterfaceBase *staticApiInterface();
 
   X_ALIGNED_OPERATOR_NEW
-
-protected:
-  static void saveProperty(const Property *, Saver &, bool writeInput);
 
 private:
   X_DISABLE_COPY(Property);
@@ -261,6 +269,7 @@ private:
   friend class PropertyDataChange;
   friend class PropertyConnectionChange;
   friend class PropertyNameChange;
+  friend class detail::PropertyBaseTraits;
   };
 
 template <typename T> inline const XScript::InterfaceBase *findPropertyInterface(const T* prop)

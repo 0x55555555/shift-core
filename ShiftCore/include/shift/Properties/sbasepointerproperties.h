@@ -127,7 +127,7 @@ private:
   };
 
 #define S_TYPED_POINTER_TYPE(exportType, name, type) \
-  class exportType name : public TypedPointer<type> { \
+  class exportType name : public Shift::TypedPointer<type> { \
     S_PROPERTY(name, Pointer, 0); }; \
   S_PROPERTY_INTERFACE(name)
 
@@ -148,7 +148,6 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
     class PointerArrayConnectionInterface : public PropertyConnectionInterface
       {
     public:
-      PointerArrayConnectionInterface() : PropertyConnectionInterface(true) { }
       virtual void connect(Property *driven, const Property *driver) const
         {
         SBlock b(driven->database());
@@ -167,6 +166,8 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
           }
         }
       };
+
+    Interface::addStaticInterface<PointerArrayConnectionInterface>(info);
 
     typedef XScript::MethodToInCa
         <TypedPointerArray<TYPE>, void (), &T::clear>
@@ -200,7 +201,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
   }
 
 #define S_TYPED_POINTER_ARRAY_TYPE(exportType, name, type) \
-  class exportType name : public TypedPointerArray<type> { \
+  class exportType name : public Shift::TypedPointerArray<type> { \
   S_PROPERTY_CONTAINER(name, PropertyContainer, 0); }; \
 
 #define S_IMPLEMENT_TYPED_POINTER_ARRAY_TYPE(name, group) \

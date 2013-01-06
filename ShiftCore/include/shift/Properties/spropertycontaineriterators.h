@@ -154,7 +154,7 @@ template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer:
     }
   else
     {
-    inst = X_SIZE_SENTINEL;
+    idx = X_SIZE_SENTINEL;
     dyProp = prop;
     }
 

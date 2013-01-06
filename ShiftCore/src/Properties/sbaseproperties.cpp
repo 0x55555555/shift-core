@@ -743,14 +743,4 @@ void StringPropertyBase::assignProperty(const Property *f, Property *t)
     }
   }
 
-void ByteArrayProperty::assignProperty(const Property *, Property *)
-  {
-  xAssertFail();
-  }
-
-void StringArrayProperty::assignProperty(const Property *, Property *)
-  {
-  xAssertFail();
-  }
-
 }
