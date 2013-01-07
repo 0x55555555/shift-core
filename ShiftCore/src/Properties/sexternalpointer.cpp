@@ -56,45 +56,49 @@ const Property *ExternalPointer::resolve(ResolveResult *resultOpt) const
   return prop;
   }
 
+class ExternalUuidPointer::Traits : public detail::PropertyBaseTraits
+  {
+public:
+  static void saveProperty(const Property *p, Saver &s )
+    {
+    detail::PropertyBaseTraits::saveProperty(p, s, false);
+
+    const ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
+    if(s.streamMode() == Saver::Text)
+      {
+      s.textStream() << uuidProp->_id.toString();
+      }
+    else
+      {
+      s.binaryStream() << uuidProp->_id;
+      }
+    }
+
+  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+    {
+    Property *p = detail::PropertyBaseTraits::loadProperty(parent, l);
+
+    ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
+    if(l.streamMode() == Saver::Text)
+      {
+      QString str;
+      l.textStream() >> str;
+      uuidProp->_id = str;
+      }
+    else
+      {
+      l.binaryStream() >> uuidProp->_id;
+      }
+
+    return p;
+    }
+  };
+
 S_IMPLEMENT_PROPERTY(ExternalUuidPointer, Shift)
 
 void ExternalUuidPointer::createTypeInformation(PropertyInformationTyped<ExternalUuidPointer> *,
                                             const PropertyInformationCreateData &)
   {
-  }
-
-void ExternalUuidPointer::saveProperty(const Property *p, Saver &s )
-  {
-  Property::saveProperty(p, s, false);
-
-  const ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
-  if(s.streamMode() == Saver::Text)
-    {
-    s.textStream() << uuidProp->_id.toString();
-    }
-  else
-    {
-    s.binaryStream() << uuidProp->_id;
-    }
-  }
-
-Property *ExternalUuidPointer::loadProperty(PropertyContainer *parent, Loader &l)
-  {
-  Property *p = Property::loadProperty(parent, l);
-
-  ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
-  if(l.streamMode() == Saver::Text)
-    {
-    QString str;
-    l.textStream() >> str;
-    uuidProp->_id = str;
-    }
-  else
-    {
-    l.binaryStream() >> uuidProp->_id;
-    }
-
-  return p;
   }
 
 void ExternalUuidPointer::setPointed(const SUuidEntity *entity)

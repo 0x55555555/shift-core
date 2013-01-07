@@ -63,7 +63,7 @@ private:
   void beginAttribute(const char *);
   void endAttribute(const char *);
 
-  virtual void resolveInputAfterLoad(Property *, const QString &);
+  virtual void resolveInputAfterLoad(Property *, const InputString &) X_OVERRIDE;
 
   void readAllAttributes();
   void readNext() const;
@@ -97,7 +97,7 @@ private:
 
   QBuffer _buffer;
 
-  QHash<Property *, QString> _resolveAfterLoad;
+  Eks::UnorderedMap<Property *, InputString> _resolveAfterLoad;
   };
 
 }

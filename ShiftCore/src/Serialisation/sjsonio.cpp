@@ -508,7 +508,7 @@ void SJSONLoader::endAttribute(const char *)
   _currentAttributeValue.clear();
   }
 
-void SJSONLoader::resolveInputAfterLoad(Property *prop, const QString &path)
+void SJSONLoader::resolveInputAfterLoad(Property *prop, const InputString &path)
   {
   SProfileFunction
   _resolveAfterLoad.insert(prop, path);

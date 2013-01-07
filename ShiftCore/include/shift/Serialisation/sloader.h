@@ -49,7 +49,8 @@ public:
   virtual void beginAttribute(const char *) = 0;
   virtual void endAttribute(const char *) = 0;
 
-  virtual void resolveInputAfterLoad(Property *, const QString &) = 0;
+  typedef Eks::StringBase<Eks::Char, 1024> InputString;
+  virtual void resolveInputAfterLoad(Property *, const InputString &) = 0;
 
   QTextStream &textStream() { return _ts; }
   QDataStream &binaryStream() { return _ds; }

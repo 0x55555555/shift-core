@@ -83,10 +83,9 @@ class SHIFT_EXPORT ExternalUuidPointer : public ExternalPointer
   S_PROPERTY(ExternalUuidPointer, ExternalPointer, 0)
 
 public:
-  void setPointed(const SUuidEntity *entity);
+  class Traits;
 
-  static void saveProperty(const Property *, Saver & );
-  static Property *loadProperty(PropertyContainer *, Loader &);
+  void setPointed(const SUuidEntity *entity);
 
   const QUuid &uuid() const { return _id; }
 

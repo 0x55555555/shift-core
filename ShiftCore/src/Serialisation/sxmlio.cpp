@@ -235,9 +235,9 @@ void SXMLLoader::endAttribute(const char *)
   _currentAttributeValue.clear();
   }
 
-void SXMLLoader::resolveInputAfterLoad(Property *prop, const QString &path)
+void SXMLLoader::resolveInputAfterLoad(Property *prop, const InputString &path)
   {
-  _resolveAfterLoad.insert(prop, path);
+  _resolveAfterLoad.inseet(prop, path);
   }
 
 

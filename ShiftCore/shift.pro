@@ -40,6 +40,7 @@ SOURCES += \
     src/TypeInformation/sinterfaces.cpp \
     src/TypeInformation/spropertygroup.cpp \
     src/TypeInformation/spropertyinstanceinformation.cpp \
+    src/TypeInformation/spropertytraits.cpp \
     src/Serialisation/JsonParser/JSON_parser.c \
     src/Serialisation/sxmlio.cpp \
     src/Serialisation/sbinaryio.cpp \
@@ -47,8 +48,7 @@ SOURCES += \
     src/Serialisation/sloader.cpp \
     src/Utilities/spropertyname.cpp \
     src/UI/moc_spropertydefaultui.cpp \
-    src/UI/moc_sdatabasemodel.cpp \
-    src/TypeInformation/spropertytraits.cpp
+    src/UI/moc_sdatabasemodel.cpp
 
 HEADERS += \
     include/shift/sglobal.h \

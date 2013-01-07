@@ -52,65 +52,6 @@ public:
     }
   };
 
-template<typename T, bool Abstract = T::IsAbstract> struct PropertyHelper;
-
-template<typename T> struct PropertyHelper<T, true>
-  {
-  static Property *create(void *)
-    {
-    xAssertFail();
-    return 0;
-    }
-  static void createInPlace(Property *)
-    {
-    xAssertFail();
-    }
-  static void destroy(Property *)
-    {
-    xAssertFail();
-    }
-  };
-
-template<typename T> struct PropertyHelper<T, false>
-  {
-  static Property *create(void *ptr)
-    {
-    return new(ptr) T();
-    }
-  static void createInPlace(Property *ptr)
-    {
-    T* t = static_cast<T*>(ptr);
-    new(t) T();
-    }
-  static void destroy(Property *ptr)
-    {
-    (void)ptr;
-    ((T*)ptr)->~T();
-    }
-  };
-
-template <typename T> struct InstanceInformationHelper
-  {
-  typedef typename T::DynamicInstanceInformation DyInst;
-  typedef typename T::EmbeddedInstanceInformation StInst;
-  static PropertyInstanceInformation *createDynamic(void *allocation)
-    {
-    return new(allocation) DyInst;
-    }
-  static PropertyInstanceInformation *createEmbedded(void *allocation)
-    {
-    return new(allocation) StInst;
-    }
-  static void destroyDynamic(PropertyInstanceInformation *allocation)
-    {
-    ((DyInst*)allocation)->~DyInst();
-    }
-  static void destroyEmbedded(PropertyInstanceInformation *allocation)
-    {
-    ((StInst*)allocation)->~StInst();
-    }
-  };
-
 template <typename T, void FUNC( const PropertyInstanceInformation *, T * )> struct ComputeHelper
   {
   static void compute( const PropertyInstanceInformation *c, Property *prop)

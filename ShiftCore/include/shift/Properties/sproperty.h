@@ -32,24 +32,7 @@ class SResourceDescription;
 
 namespace detail
 {
-class PropertyBaseTraits
-  {
-public:
-  static void assignProperty(const Property *, Property *);
-  static void saveProperty(const Property *, Saver & );
-  static Property *loadProperty(PropertyContainer *, Loader &);
-
-  // should this properties value be saved, for example not when the value
-  // is this property's value the default as it is when created.
-  static bool shouldSavePropertyValue(const Property *);
-
-  // should the property definition itself be saved, note this function must be true if the above is true
-  // but the above can be false when this is true.
-  static bool shouldSaveProperty(const Property *);
-
-  // helper for custom saving, allows not saving input specifically.
-  static void saveProperty(const Property *, Saver &, bool writeInput);
-  };
+class PropertyBaseTraits;
 }
 
 class SHIFT_EXPORT Property

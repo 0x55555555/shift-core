@@ -5,17 +5,22 @@
 #include "shift/sdatabase.h"
 #include "shift/Properties/spropertycontainer.h"
 #include "shift/Properties/sbaseproperties.h"
+#include "shift/TypeInformation/spropertytraits.h"
 #include "shift/Serialisation/sloader.h"
 #include "Eigen/Core"
 
 namespace Shift
 {
 
-// reimplement stream for QTextStream to allow it to work with template classes
+namespace detail
+{
+template <typename T> class ArrayPropertyTraits;
+}
 
 template <typename T, typename U> class ArrayProperty : public Property
   {
 public:
+  typedef detail::ArrayPropertyTraits<U> Traits;
   typedef T ElementType;
   typedef Eigen::Array <T, Eigen::Dynamic, Eigen::Dynamic> EigenArray;
 
@@ -95,21 +100,6 @@ public:
     applyChange(result);
     }
 
-  // called by parent
-  static void saveProperty( const Property* p_in, Saver &l); // Mode = Binary / ASCII
-  static Property *loadProperty( PropertyContainer* p_in, Loader&); // Mode = Binary / ASCII
-  static void AssignFunction(const Property *from, Property *to)
-    {
-    const U *f = from->castTo<U>();
-    U *t = to->castTo<U>();
-
-    xAssert(f && t);
-    if(f && t)
-      {
-      t->mData = f->mData;
-      }
-    }
-
 private:
   class ArrayChange : public Property::DataChange
     {
@@ -154,32 +144,9 @@ private:
     }
 
   Eigen::Array <T, Eigen::Dynamic, Eigen::Dynamic> mData;
+
+  friend class Traits;
   };
-
-template <typename T, typename U> void ArrayProperty<T, U>::saveProperty( const Property* p_in, Saver &l)
-  {
-  Property::saveProperty(p_in, l); // saves the data of the parent class (keeps connections)
-
-  const ArrayProperty* ptr = p_in->castTo<ArrayProperty>(); // cast the input property to an ArrayProperty
-  xAssert(ptr);
-  if(ptr)
-    {
-    writeValue(l, ptr->mData);
-    }
-  }
-
-template <typename T, typename U> Property *ArrayProperty<T, U>::loadProperty( PropertyContainer* p_in, Loader &l)
-  {
-  Property *prop = Property::loadProperty(p_in, l);
-
-  ArrayProperty* ptr = prop->uncheckedCastTo<ArrayProperty>();
-  xAssert(ptr);
-  if(ptr)
-    {
-    readValue(l, ptr->mData);
-    }
-  return prop;
-  }
 
 
 class SHIFT_EXPORT FloatArrayProperty : public ArrayProperty<float, FloatArrayProperty>

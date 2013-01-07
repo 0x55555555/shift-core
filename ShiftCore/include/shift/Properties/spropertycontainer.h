@@ -18,23 +18,14 @@ class PropertyInstanceInformationInitialiser;
 #define S_AFFECTS(property) reinterpret_cast<Property PropertyContainer::*>(&className :: property),
 #define S_COMPUTE_GROUP_END() 0 };
 
+namespace detail
+{
+class PropertyContainerTraits;
+}
 
 template <typename T, typename Cont> class PropertyContainerBaseIterator;
 template <typename T, typename Cont> class PropertyContainerIterator;
 template <typename T, typename Cont, typename Iterator> class PropertyContainerTypedIteratorWrapperFrom;
-
-namespace detail
-{
-
-class PropertyContainerTraits : public PropertyBaseTraits
-  {
-public:
-  static void assignProperty(const Property *, Property *);
-  static void saveProperty(const Property *, Saver & );
-  static Property *loadProperty(PropertyContainer *, Loader &);
-  static bool shouldSavePropertyValue(const Property *);
-  };
-}
 
 class SHIFT_EXPORT PropertyContainer : public Property
   {

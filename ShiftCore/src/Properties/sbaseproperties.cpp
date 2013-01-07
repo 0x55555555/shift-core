@@ -7,6 +7,71 @@
 namespace Shift
 {
 
+namespace detail
+{
+template <typename T> class BasePODPropertyTraits : public PropertyBaseTraits
+  {
+public:
+  static void saveProperty(const Property *p, Saver &l )
+    {
+    PropertyBaseTraits::saveProperty(p, l);
+    }
+
+  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+    {
+    Property *prop = PropertyBaseTraits::loadProperty(parent, l);
+    return prop;
+    }
+
+  static bool shouldSavePropertyValue(const Property *)
+    {
+    return false;
+    }
+
+  static void assignProperty(const Shift::Property *p, Shift::Property *l )
+    {
+    T::assignProperty(p, l);
+    }
+  };
+
+template <typename T> class PODPropertyTraits : public BasePODPropertyTraits<T>
+  {
+public:
+  static void saveProperty(const Property *p, Saver &l )
+    {
+    BasePODPropertyTraits<T>::saveProperty(p, l);
+    const T *ptr = p->uncheckedCastTo<T>();
+    writeValue(l, ptr->_value);
+    }
+
+  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+    {
+    Property *prop = BasePODPropertyTraits<T>::loadProperty(parent, l);
+    T *ptr = prop->uncheckedCastTo<T>();
+    readValue(l, ptr->_value);
+    return prop;
+    }
+
+  static bool shouldSavePropertyValue(const Property *p)
+    {
+    const T *ptr = p->uncheckedCastTo<T>();
+
+    if(BasePODPropertyTraits<T>::shouldSavePropertyValue(p))
+      {
+      using ::operator!=;
+
+      if(ptr->isDynamic() ||
+         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
+        {
+        return true;
+        }
+      }
+
+    return false;
+    }
+  };
+}
+
 QTextStream &operator<<(QTextStream &s, xuint8 v)
   {
   return s << (xuint32)v;
@@ -741,6 +806,16 @@ void StringPropertyBase::assignProperty(const Property *f, Property *t)
     to->assign(sProp->value());
     return;
     }
+  }
+
+void ByteArrayProperty::assignProperty(const Property *, Property *)
+  {
+  xAssertFail();
+  }
+
+void StringArrayProperty::assignProperty(const Property *, Property *)
+  {
+  xAssertFail();
   }
 
 }

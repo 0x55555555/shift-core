@@ -2,6 +2,7 @@
 #include "shift/Properties/spropertycontainer.h"
 #include "shift/Properties/spropertycontaineriterators.h"
 #include "shift/TypeInformation/spropertyinformation.h"
+#include "shift/TypeInformation/spropertytraits.h"
 
 namespace Shift
 {
@@ -38,7 +39,7 @@ void Loader::read(PropertyContainer *read)
     {
     // child has no stored value, because it was default at export, or something
     // so just load the property, with the Property method, and leave it as default.
-    Property::loadProperty(read, *this);
+    detail::PropertyBaseTraits::loadProperty(read, *this);
     }
   }
 

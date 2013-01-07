@@ -41,66 +41,10 @@ class PODInterface
 
 namespace detail
 {
-template <typename T> class BasePODPropertyTraits
-  {
-  static void saveProperty(const Property *p, Saver &l )
-    {
-    PropertyBaseTraits::saveProperty(p, l);
-    }
-
-  static Property *loadProperty(PropertyContainer *parent, Loader &l)
-    {
-    Property *prop = PropertyBaseTraits::loadProperty(parent, l);
-    return prop;
-    }
-
-  static bool shouldSavePropertyValue(const Property *)
-    {
-    return false;
-    }
-
-  static void assignProperty(const Shift::Property *p, Shift::Property *l )
-    {
-    T::assignProperty(p, l);
-    }
-  };
-
-template <typename T> class PODPropertyTraits : public BasePODPropertyTraits<T>
-  {
-  static void saveProperty(const Property *p, Saver &l )
-    {
-    Property::saveProperty(p, l);
-    const T *ptr = p->uncheckedCastTo<T>();
-    writeValue(l, ptr->_value);
-    }
-
-  static Property *loadProperty(PropertyContainer *parent, Loader &l)
-    {
-    Property *prop = Property::loadProperty(parent, l);
-    T *ptr = prop->uncheckedCastTo<T>();
-    readValue(l, ptr->_value);
-    return prop;
-    }
-
-  static bool shouldSavePropertyValue(const Property *p)
-    {
-    const T *ptr = p->uncheckedCastTo<T>();
-
-    if(Property::shouldSavePropertyValue(p))
-      {
-      using ::operator!=;
-
-      if(ptr->isDynamic() ||
-         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
-        {
-        return true;
-        }
-      }
-
-    return false;
-    }
-  };
+template <typename T> class BasePODPropertyTraits;
+template <typename T> class PODPropertyTraits;
 }
+
 template <typename PROP, typename POD> class PODPropertyVariantInterface : public PropertyVariantInterface
   {
 public:
@@ -213,6 +157,7 @@ public:
 
 protected:
   friend class ComputeLock;
+  friend typename Traits;
   };
 
 template <typename T, typename DERIVED, typename TRAITS> class PODProperty : public PODPropertyBase<T, DERIVED, TRAITS>
