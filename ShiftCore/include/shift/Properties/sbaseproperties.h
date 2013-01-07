@@ -299,8 +299,8 @@ private:
   };
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, defaultDefault, typeID) \
-class EXPORT_MODE name : public Shift::PODProperty<type, name, detail::PODPropertyTraits<name> > { \
-public: typedef detail::PODPropertyTraits<name> Traits; \
+class EXPORT_MODE name : public Shift::PODProperty<type, name, Shift::detail::PODPropertyTraits<name> > { \
+public: typedef Shift::detail::PODPropertyTraits<name> Traits; \
   class EmbeddedInstanceInformation : \
   public Shift::PODProperty<type, name, Traits>::EmbeddedInstanceInformation \
     { public: \
