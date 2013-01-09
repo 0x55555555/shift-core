@@ -129,7 +129,7 @@ template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer:
 
 template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer) PropertyContainer::walker() const
   {
-  PropertyInformation *info = typeInformation();
+  const PropertyInformation *info = typeInformation();
 
   xsize idx = 0;
   info->firstChild<T>(&idx);

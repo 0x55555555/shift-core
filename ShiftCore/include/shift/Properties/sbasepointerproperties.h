@@ -133,8 +133,8 @@ private:
 
 #define S_IMPLEMENT_TYPED_POINTER_TYPE(name, group) \
   S_IMPLEMENT_PROPERTY(name, group) \
-  void name::createTypeInformation(PropertyInformationTyped<name> *info, \
-    const PropertyInformationCreateData &data) { \
+  void name::createTypeInformation(Shift::PropertyInformationTyped<name> *info, \
+    const Shift::PropertyInformationCreateData &data) { \
   if(data.registerInterfaces) { \
   assignPointerInformation(info, name::PtrType::staticTypeInformation()); } } \
 
@@ -206,7 +206,8 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
 
 #define S_IMPLEMENT_TYPED_POINTER_ARRAY_TYPE(name, group) \
   S_IMPLEMENT_PROPERTY(name, group) \
-  void name::createTypeInformation(PropertyInformationTyped<name> *info, const PropertyInformationCreateData &data) { createTypedPointerArray<name, name::ElementType>(info, data); } \
+  void name::createTypeInformation(Shift::PropertyInformationTyped<name> *info, \
+    const Shift::PropertyInformationCreateData &data) { Shift::createTypedPointerArray<name, name::ElementType>(info, data); } \
 
 S_TYPED_POINTER_ARRAY_TYPE(SHIFT_EXPORT, PointerArray, Pointer)
 

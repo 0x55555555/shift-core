@@ -6,24 +6,24 @@
 namespace Shift
 {
 
-template <typename TypeTraits, bool Abstract> class PropertyCreateSelector
+template <typename TypeTraitsCreation, bool Abstract> class PropertyCreateSelector
   {
 public:
   static Property *createProperty(void *ptr)
     {
-    return TypeTraits::createProperty(ptr);
+    return TypeTraitsCreation::createProperty(ptr);
     }
   static void createPropertyInPlace(Property *ptr)
     {
-    TypeTraits::createPropertyInPlace(ptr);
+    TypeTraitsCreation::createPropertyInPlace(ptr);
     }
   static void destroyProperty(Property *ptr)
     {
-    TypeTraits::destroyProperty(ptr);
+    TypeTraitsCreation::destroyProperty(ptr);
     }
   };
 
-template <typename TypeTraits> class PropertyCreateSelector<TypeTraits, false>
+template <typename TypeTraits> class PropertyCreateSelector<TypeTraits, true>
   {
 public:
   enum
@@ -43,7 +43,8 @@ public:
     typedef PropType::Traits Traits;
     typedef Traits::TypeTraits<PropType>::Type TypeTraits;
 
-    typedef PropertyCreateSelector<TypeTraits, PropType::IsAbstract> CreateSelection;
+    typedef TypeTraits::Creation<PropType> TypeTraitsCreation;
+    typedef PropertyCreateSelector<TypeTraitsCreation, PropType::IsAbstract> CreateSelection;
 
     fns.createProperty =
         (PropertyInformationFunctions::CreatePropertyFunction)
@@ -86,20 +87,24 @@ public:
   typedef typename T::DynamicInstanceInformation DyInst;
   typedef typename T::EmbeddedInstanceInformation StInst;
 
-  static Property *createProperty(void *ptr)
+  template <typename T> struct Creation
     {
-    return new(ptr) T();
-    }
-  static void createPropertyInPlace(Property *ptr)
-    {
-    T* t = static_cast<T*>(ptr);
-    new(t) T();
-    }
-  static void destroyProperty(Property *ptr)
-    {
-    (void)ptr;
-    ((T*)ptr)->~T();
-    }
+    static Property *createProperty(void *ptr)
+      {
+      return new(ptr) T();
+      }
+    static void createPropertyInPlace(Property *ptr)
+      {
+      T* t = static_cast<T*>(ptr);
+      new(t) T();
+      }
+    static void destroyProperty(Property *ptr)
+      {
+      (void)ptr;
+      ((T*)ptr)->~T();
+      }
+    };
+
   static PropertyInstanceInformation *createDynamicInstanceInformation(void *allocation)
     {
     return new(allocation) DyInst;
@@ -150,6 +155,68 @@ public:
   static void saveProperty(const Property *, Saver & );
   static Property *loadProperty(PropertyContainer *, Loader &);
   static bool shouldSavePropertyValue(const Property *);
+  };
+
+template <typename T> class BasePODPropertyTraits : public PropertyBaseTraits
+  {
+public:
+  static void saveProperty(const Property *p, Saver &l )
+    {
+    PropertyBaseTraits::saveProperty(p, l);
+    }
+
+  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+    {
+    Property *prop = PropertyBaseTraits::loadProperty(parent, l);
+    return prop;
+    }
+
+  static bool shouldSavePropertyValue(const Property *)
+    {
+    return false;
+    }
+
+  static void assignProperty(const Shift::Property *p, Shift::Property *l )
+    {
+    T::assignProperty(p, l);
+    }
+  };
+
+template <typename T> class PODPropertyTraits : public BasePODPropertyTraits<T>
+  {
+public:
+  static void saveProperty(const Property *p, Saver &l )
+    {
+    BasePODPropertyTraits<T>::saveProperty(p, l);
+    const T *ptr = p->uncheckedCastTo<T>();
+    writeValue(l, ptr->_value);
+    }
+
+  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+    {
+    Property *prop = BasePODPropertyTraits<T>::loadProperty(parent, l);
+    T *ptr = prop->uncheckedCastTo<T>();
+    readValue(l, ptr->_value);
+    return prop;
+    }
+
+  static bool shouldSavePropertyValue(const Property *p)
+    {
+    const T *ptr = p->uncheckedCastTo<T>();
+
+    if(BasePODPropertyTraits<T>::shouldSavePropertyValue(p))
+      {
+      using ::operator!=;
+
+      if(ptr->isDynamic() ||
+         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
+        {
+        return true;
+        }
+      }
+
+    return false;
+    }
   };
 
 }

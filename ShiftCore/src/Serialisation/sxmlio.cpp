@@ -237,7 +237,7 @@ void SXMLLoader::endAttribute(const char *)
 
 void SXMLLoader::resolveInputAfterLoad(Property *prop, const InputString &path)
   {
-  _resolveAfterLoad.inseet(prop, path);
+  _resolveAfterLoad.insert(prop, path);
   }
 
 
