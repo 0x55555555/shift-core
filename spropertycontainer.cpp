@@ -394,6 +394,8 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
       const_cast<SDynamicPropertyInstanceInformation*>(newProp->dynamicBaseInstanceInformation());
   xAssert(newPropInstInfo->parent() == 0);
   xAssert(newPropInstInfo->nextSibling() == 0);
+  
+  xsize propIndex = 0;
 
   if(_dynamicChild && index > 0)
     {
@@ -404,11 +406,12 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
       SDynamicPropertyInstanceInformation *propInstInfo =
           const_cast<SDynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
 
-      if((index == propIndex && index > _containedProperties) ||
+      if((index == (propIndex+1) && index > _containedProperties) ||
          !propInstInfo->nextSibling())
         {
-        newPropInstInfo->setIndex(propIndex + 1);
         newPropInstInfo->setParent(this);
+
+        propIndex = propInstInfo->index() + 1;
 
         // insert this prop into the list
         newPropInstInfo->setNextSibling(propInstInfo->nextSibling());
@@ -421,15 +424,34 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
     }
   else
     {
-    newPropInstInfo->setIndex(0);
     newPropInstInfo->setParent(this);
 
     if(_dynamicChild)
       {
       newPropInstInfo->setNextSibling(_dynamicChild);
       }
+    
+     propIndex = 0;
 
     _dynamicChild = newProp;
+    }
+
+  SDynamicPropertyInstanceInformation *propInstInfo =
+      const_cast<SDynamicPropertyInstanceInformation*>(newProp->dynamicBaseInstanceInformation());
+  while(propInstInfo)
+    {
+    newPropInstInfo->setIndex(propIndex);
+
+    ++propIndex;
+
+    if(!newPropInstInfo->nextSibling())
+    {
+      break;
+    }
+
+    newPropInstInfo =
+        const_cast<SDynamicPropertyInstanceInformation*>(
+          newPropInstInfo->nextSibling()->dynamicBaseInstanceInformation());
     }
 
   internalSetupProperty(newProp);
@@ -472,12 +494,21 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
   SDynamicPropertyInstanceInformation *oldPropInstInfo =
       const_cast<SDynamicPropertyInstanceInformation*>(oldProp->dynamicBaseInstanceInformation());
 
+  xsize oldIndex = oldProp->baseInstanceInformation()->index();
+  SDynamicPropertyInstanceInformation *indexUpdate = 0;
 
   if(oldProp == _dynamicChild)
     {
     xAssert(_containedProperties == 0);
 
     _dynamicChild = oldPropInstInfo->nextSibling();
+
+    if(_dynamicChild)
+      {
+      indexUpdate =
+          const_cast<SDynamicPropertyInstanceInformation*>(
+            _dynamicChild->dynamicBaseInstanceInformation());
+      }
 
     removed = true;
     oldPropInstInfo->setInvalidIndex();
@@ -499,11 +530,30 @@ void SPropertyContainer::internalRemoveProperty(SProperty *oldProp)
         oldPropInstInfo->setInvalidIndex();
 
         propInstInfo->setNextSibling(oldPropInstInfo->nextSibling());
+
+        indexUpdate = propInstInfo;
+
         break;
         }
       propIndex++;
       prop = nextDynamicSibling(prop);
       }
+    }
+
+  while(indexUpdate)
+    {
+    indexUpdate->setIndex(oldIndex);
+
+    ++oldIndex;
+
+    if(!indexUpdate->nextSibling())
+    {
+      break;
+    }
+
+    indexUpdate =
+        const_cast<SDynamicPropertyInstanceInformation*>(
+          indexUpdate->nextSibling()->dynamicBaseInstanceInformation());
     }
 
   internalUnsetupProperty(oldProp);
