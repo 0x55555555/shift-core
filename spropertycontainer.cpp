@@ -395,16 +395,16 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
   xAssert(newPropInstInfo->parent() == 0);
   xAssert(newPropInstInfo->nextSibling() == 0);
 
-  if(_dynamicChild)
+  if(_dynamicChild && index > 0)
     {
-    xsize propIndex = 0;
+    xsize propIndex = containedProperties();
     SProperty *prop = _dynamicChild;
     while(prop)
       {
       SDynamicPropertyInstanceInformation *propInstInfo =
           const_cast<SDynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
 
-      if((index == (propIndex+1) && index > _containedProperties) ||
+      if((index == propIndex && index > _containedProperties) ||
          !propInstInfo->nextSibling())
         {
         newPropInstInfo->setIndex(propIndex + 1);
@@ -424,7 +424,10 @@ void SPropertyContainer::internalInsertProperty(SProperty *newProp, xsize index)
     newPropInstInfo->setIndex(0);
     newPropInstInfo->setParent(this);
 
-    xAssert(newPropInstInfo->nextSibling() == 0);
+    if(_dynamicChild)
+      {
+      newPropInstInfo->setNextSibling(_dynamicChild);
+      }
 
     _dynamicChild = newProp;
     }
