@@ -72,7 +72,7 @@ void SEntity::reparent(SEntity *ent)
 SProperty *SEntity::addChild(const SPropertyInformation *info, const QString& name)
   {
   SBlock b(handler());
-  SProperty *ent = children.add(info, name);
+  SProperty *ent = children.add(info, X_SIZE_SENTINEL, name);
   xAssert(ent);
   return ent;
   }

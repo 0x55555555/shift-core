@@ -12,7 +12,7 @@ void SPropertyArray::createTypeInformation(SPropertyInformationTyped<SPropertyAr
     auto* api = info->apiInterface();
 
     typedef XScript::MethodToInCa<SPropertyArray,
-        SProperty *(const SPropertyInformation *, const QString &),
+        SProperty *(const SPropertyInformation *, xsize index, const QString &),
         &SPropertyArray::add> AddType;
 
     static XScript::ClassDef<0,0,1> cls = {
