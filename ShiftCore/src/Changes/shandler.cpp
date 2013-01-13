@@ -17,7 +17,7 @@ void Handler::clearChanges()
   {
   Q_FOREACH(Change *ch, _done)
     {
-    xDestroyAndFree(changeAllocator(), Change, ch);
+    changeAllocator()->destroy(ch);
     }
   _done.clear();
   }

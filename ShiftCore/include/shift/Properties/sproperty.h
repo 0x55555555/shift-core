@@ -275,7 +275,7 @@ template <typename T> inline const XScript::InterfaceBase *findPropertyInterface
 #define S_PROPERTY_ABSTRACT_INTERFACE(name) X_SCRIPTABLE_ABSTRACT_TYPE_INHERITS(name, Shift::Property) \
   namespace XScript { \
   template <> inline const InterfaceBase *findInterface<name>(const name *p) { \
-    return findPropertyInterface<Shift::Property>(p); } \
+    return Shift::findPropertyInterface<Shift::Property>(p); } \
   namespace Convert { \
   template <> inline name *castFromBase<name, Shift::Property>(Shift::Property *ptr) { \
     return ptr->castTo<name>(); } } }

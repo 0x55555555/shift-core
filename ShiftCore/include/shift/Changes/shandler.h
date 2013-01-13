@@ -59,10 +59,10 @@ private:
   Eks::Vector <xsize> _blockSize;
   };
 
-class SHIFT_EXPORT SBlock
+class SHIFT_EXPORT Block
   {
 public:
-  SBlock(Handler *db) : _db(db)
+  Block(Handler *db) : _db(db)
     {
 #ifdef S_CENTRAL_CHANGE_HANDLER
     xAssert(_db);
@@ -70,7 +70,7 @@ public:
 #endif
     }
 
-  ~SBlock()
+  ~Block()
     {
 #ifdef S_CENTRAL_CHANGE_HANDLER
     _db->endBlock();
