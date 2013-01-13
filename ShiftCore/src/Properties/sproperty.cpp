@@ -419,7 +419,7 @@ void Property::connect(const QVector<Property*> &l) const
   {
   if(l.size())
     {
-    SBlock b(l.front()->handler());
+    Block b(l.front()->handler());
     Q_FOREACH(Property *p, l)
       {
       connect(p);

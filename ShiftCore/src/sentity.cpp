@@ -73,7 +73,7 @@ void Entity::reparent(Entity *ent)
 Property *Entity::addChild(const PropertyInformation *info, const PropertyNameArg& name)
   {
   Block b(handler());
-  Property *ent = children.add(info, name);
+  Property *ent = children.add(info, X_SIZE_SENTINEL, name);
   xAssert(ent);
   return ent;
   }

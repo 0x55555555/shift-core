@@ -2,6 +2,7 @@
 #define SEXTERNALPOINTER_H
 
 #include "shift/Properties/sproperty.h"
+#include "shift/Properties/sbaseproperties.h"
 #include "shift/sentity.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "QUuid"
@@ -77,7 +78,7 @@ public:
   Property *operator()() { return resolve(); }
   };
 
-class SUuidEntity;
+class UuidEntity;
 class SHIFT_EXPORT ExternalUuidPointer : public ExternalPointer
   {
   S_PROPERTY(ExternalUuidPointer, ExternalPointer, 0)
@@ -85,26 +86,24 @@ class SHIFT_EXPORT ExternalUuidPointer : public ExternalPointer
 public:
   class Traits;
 
-  void setPointed(const SUuidEntity *entity);
+  void setPointed(const UuidEntity *entity);
 
   const QUuid &uuid() const { return _id; }
 
 private:
   QUuid _id;
-  friend class SUuidEntity;
+  friend class UuidEntity;
   };
 
-class SHIFT_EXPORT SUuidEntity : public Entity
+class SHIFT_EXPORT UuidEntity : public Entity
   {
-  S_ENTITY(SUuidEntity, Entity, 0)
+  S_ENTITY(UuidEntity, Entity, 0)
 
 public:
-  SUuidEntity();
-
-  const QUuid &uuid() const { return _id; }
+    const QUuid &uuid() const { return _uuid(); }
 
 private:
-  QUuid _id;
+  UuidProperty _uuid;
   friend class ExternalUuidPointer;
   };
 
@@ -112,6 +111,6 @@ private:
 
 S_PROPERTY_INTERFACE(Shift::ExternalPointer)
 S_PROPERTY_INTERFACE(Shift::ExternalUuidPointer)
-S_PROPERTY_INTERFACE(Shift::SUuidEntity)
+S_PROPERTY_INTERFACE(Shift::UuidEntity)
 
 #endif // SEXTERNALPOINTER_H

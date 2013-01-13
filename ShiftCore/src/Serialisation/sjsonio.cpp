@@ -328,7 +328,7 @@ void SJSONLoader::readAllAttributes()
 
 void SJSONLoader::readFromDevice(QIODevice *device, PropertyContainer *parent)
   {
-  SBlock b(parent->handler());
+  Block b(parent->handler());
   SProfileFunction
   _root = parent;
 
@@ -365,13 +365,13 @@ void SJSONLoader::readFromDevice(QIODevice *device, PropertyContainer *parent)
   _root = 0;
   }
 
-
 const PropertyInformation *SJSONLoader::type() const
   {
   SProfileFunction
   xAssert(_root);
 
-  const PropertyInformation *info = TypeRegistry::findType(QString::fromUtf8(_currentAttributes.value(TYPE_KEY)));
+  QByteArray typeName = _currentAttributes.value(TYPE_KEY);
+  const PropertyInformation *info = TypeRegistry::findType(QString::fromUtf8(typeName));
   xAssert(info);
   return info;
   }

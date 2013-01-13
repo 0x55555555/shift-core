@@ -12,19 +12,23 @@ class SHIFT_EXPORT PropertyArray : public PropertyContainer
   S_PROPERTY_CONTAINER(PropertyArray, PropertyContainer, 0);
 
 public:
-  template <typename T> T *add(const QString& name=QString())
+  template <typename T> T *add(const QString& name)
     {
     return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->castTo<T>();
     }
-
-  Property *add(const PropertyInformation *info, const PropertyNameArg &name, PropertyInstanceInformationInitialiser *init)
+  template <typename T> T *add(xsize index=X_SIZE_SENTINEL, const QString& name=QString())
     {
-    return addProperty(info, X_SIZE_SENTINEL, name, init);
+    return addProperty(T::staticTypeInformation(), index, name)->castTo<T>();
     }
 
-  Property *add(const PropertyInformation *info, const PropertyNameArg &name=PropertyNameArg())
+  Property *add(const PropertyInformation *info, const PropertyNameArg &name, PropertyInstanceInformationInitialiser *init, xsize index=X_SIZE_SENTINEL)
     {
-    return addProperty(info, X_SIZE_SENTINEL, name, 0);
+    return addProperty(info, index, name, init);
+    }
+
+  Property *add(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const PropertyNameArg &name=PropertyNameArg())
+    {
+    return addProperty(info, index, name, 0);
     }
 
   Property *operator[](xsize i) { return at(i); }

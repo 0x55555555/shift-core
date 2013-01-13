@@ -74,7 +74,7 @@ template <typename PTR> class TypedPointerArray : public STypedPropertyArray<PTR
 public:
   PTR* addPointer(const typename PTR::PtrType *prop)
     {
-    SBlock b(Property::handler());
+    Block b(Property::handler());
     PTR *p = STypedPropertyArray<PTR>::add();
     xAssert(p);
     p->setPointed(prop);
@@ -150,7 +150,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
     public:
       virtual void connect(Property *driven, const Property *driver) const
         {
-        SBlock b(driven->database());
+        Block b(driven->database());
 
         T* arr = driven->castTo<T>();
         xAssert(arr);

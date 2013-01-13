@@ -101,22 +101,21 @@ void ExternalUuidPointer::createTypeInformation(PropertyInformationTyped<Externa
   {
   }
 
-void ExternalUuidPointer::setPointed(const SUuidEntity *entity)
+void ExternalUuidPointer::setPointed(const UuidEntity *entity)
   {
-  _id = entity->_id;
+  _id = entity->_uuid();
   setInput(entity);
   }
 
-S_IMPLEMENT_PROPERTY(SUuidEntity, Shift)
+S_IMPLEMENT_PROPERTY(UuidEntity, Shift)
 
-void SUuidEntity::createTypeInformation(PropertyInformationTyped<SUuidEntity> *,
-                                            const PropertyInformationCreateData &)
+void UuidEntity::createTypeInformation(PropertyInformationTyped<UuidEntity> *info,
+                                            const PropertyInformationCreateData &data)
   {
-  }
-
-SUuidEntity::SUuidEntity()
-  {
-  _id = QUuid::createUuid();
+  if(data.registerAttributes)
+    {
+    info->add(data, &UuidEntity::_uuid, "uuid");
+    }
   }
 
 }
