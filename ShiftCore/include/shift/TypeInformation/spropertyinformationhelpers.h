@@ -73,7 +73,8 @@ template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelpe
   };
 }
 
-template <typename PropType, typename InstanceType> class PropertyInstanceInformationTyped : public InstanceType::EmbeddedInstanceInformation
+template <typename PropType, typename InstanceType> class PropertyInstanceInformationTyped
+    : public InstanceType::EmbeddedInstanceInformation
   {
 public:
   using InstanceType::EmbeddedInstanceInformation::setCompute;
@@ -128,6 +129,12 @@ public:
     location -= offset;
 
     return static_cast<const PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformation::child(location));
+    }
+
+  template <typename T>
+  xsize *createAffects(const PropertyInformationCreateData &data, T a, xsize i)
+    {
+    return PropertyInformation::createAffects(data, (const EmbeddedPropertyInstanceInformation**)a, i);
     }
 
   XScript::Interface<PropType> *apiInterface()

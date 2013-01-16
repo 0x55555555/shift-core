@@ -116,11 +116,11 @@ public:
   };
 
 
-class SPointerComputeLock
+class PointerComputeLock
   {
 public:
-  SPointerComputeLock(Pointer *p) : _p(p) { }
-  ~SPointerComputeLock() { _p->pointed(); }
+  PointerComputeLock(Pointer *p) : _p(p) { }
+  ~PointerComputeLock() { _p->pointed(); }
 
 private:
   Pointer *_p;

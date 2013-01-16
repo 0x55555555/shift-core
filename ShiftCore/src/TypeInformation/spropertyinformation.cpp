@@ -32,7 +32,10 @@ void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *al
   {
   xForeach(auto inst, d->childWalker())
     {
-    allocator->free(inst->affects());
+    if(inst->affectsOwner())
+      {
+      allocator->free(inst->affects());
+      }
 
     PropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
       inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
@@ -92,6 +95,23 @@ PropertyInformation *PropertyInformation::derive(
 
   xAssert(copy);
   return copy;
+  }
+
+xsize *PropertyInformation::createAffects(
+    const PropertyInformationCreateData &data,
+    const EmbeddedPropertyInstanceInformation **info,
+    xsize size) const
+  {
+  xsize *aff = (xsize *)data.allocator->alloc(sizeof(xsize) * (size+1));
+
+  for(xsize i = 0; i < size; ++i)
+    {
+    aff[i] = info[i]->location();
+    }
+
+  aff[size] = 0;
+
+  return aff;
   }
 
 EmbeddedPropertyInstanceInformation *PropertyInformation::add(

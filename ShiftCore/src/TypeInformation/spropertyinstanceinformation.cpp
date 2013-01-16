@@ -78,6 +78,7 @@ EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation()
       _defaultInput(0),
       _compute(0),
       _affects(0),
+      _affectsOwner(false),
       _isExtraClassMember(false)
   {
   }
@@ -199,17 +200,16 @@ void EmbeddedPropertyInstanceInformation::setAffects(
     const EmbeddedPropertyInstanceInformation **info,
     xsize size)
   {
+  setAffects(createAffects(data, info, size), false);
+  }
+
+void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects, bool affectsOwner)
+  {
   xAssert(!_affects);
-  xAssert(info);
+  xAssert(affects);
 
-  _affects = (xsize *)data.allocator->alloc(sizeof(xsize) * (size+1));
-
-  for(xsize i = 0; i < size; ++i)
-    {
-    _affects[i] = info[i]->location();
-    }
-
-  _affects[size] = 0;
+  _affects = affects;
+  _affectsOwner = affectsOwner;
   }
 
 const EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::resolvePath(const Eks::String &path) const

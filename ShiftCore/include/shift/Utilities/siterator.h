@@ -7,7 +7,7 @@
 namespace Shift
 {
 
-namespace SIterator
+namespace Iterator
 {
 
 template <typename IteratorType, typename ReturnTypeIn, typename DerivedExtraData> class Base

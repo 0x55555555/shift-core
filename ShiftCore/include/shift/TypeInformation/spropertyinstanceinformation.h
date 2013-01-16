@@ -78,6 +78,8 @@ class SHIFT_EXPORT EmbeddedPropertyInstanceInformation : public PropertyInstance
   XROProperty(ComputeFunction, compute);
   XROProperty(xsize *, affects);
 
+  XROProperty(bool, affectsOwner);
+
   XProperty(bool, isExtraClassMember, setIsExtraClassMember);
 
 public:
@@ -107,7 +109,9 @@ public:
       const EmbeddedPropertyInstanceInformation *info);
   void setAffects(
       const PropertyInformationCreateData &data,
-      const EmbeddedPropertyInstanceInformation **info, xsize size);
+      const EmbeddedPropertyInstanceInformation **info,
+      xsize size);
+  void setAffects(xsize *affects, bool owner);
   bool affectsSiblings() const { return _affects != 0; }
 
   void initiate(const PropertyInformation *info,
