@@ -20,7 +20,7 @@ void ExternalPointer::createTypeInformation(PropertyInformationTyped<ExternalPoi
 
 Property *ExternalPointer::resolve(ResolveResult *resultOpt)
   {
-  XOptional<ResolveResult> res(resultOpt);
+  Eks::Optional<ResolveResult> res(resultOpt);
 
   Property *inp = input();
   if(inp)
@@ -40,7 +40,7 @@ Property *ExternalPointer::resolve(ResolveResult *resultOpt)
 
 const Property *ExternalPointer::resolve(ResolveResult *resultOpt) const
   {
-  XOptional<ResolveResult> res(resultOpt);
+  Eks::Optional<ResolveResult> res(resultOpt);
 
   const Property *inp = input();
   if(inp)

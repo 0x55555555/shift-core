@@ -75,7 +75,7 @@ public:
 #endif
   };
 
-template <typename T, typename DERIVED, typename TRAITS> class PODPropertyBase : public Property
+template <typename T, typename DERIVED> class PODPropertyBase : public Property
   {
 protected:
   XPropertyMember(T, value);
@@ -86,7 +86,7 @@ protected:
     S_CHANGE(ComputeChange, Property::DataChange, 155);
 
   public:
-    ComputeChange(PODPropertyBase<T, DERIVED, TRAITS> *prop)
+    ComputeChange(PODPropertyBase<T, DERIVED> *prop)
       : Property::DataChange(prop)
       {
       xAssert(!prop->database()->stateStorageEnabled());
@@ -115,14 +115,12 @@ protected:
     };
 
 public:
-  typedef TRAITS Traits;
-
   class ComputeLock
     {
   public:
-    typedef typename PODPropertyBase<T, DERIVED, TRAITS>::ComputeChange Change;
+    typedef typename PODPropertyBase<T, DERIVED>::ComputeChange Change;
 
-    ComputeLock(PODPropertyBase<T, DERIVED, TRAITS> *ptr) : _ptr(ptr)
+    ComputeLock(PODPropertyBase<T, DERIVED> *ptr) : _ptr(ptr)
       {
       xAssert(ptr);
       _data = &_ptr->_value;
@@ -143,7 +141,7 @@ public:
       }
 
   private:
-    PODPropertyBase<T, DERIVED, TRAITS> *_ptr;
+    PODPropertyBase<T, DERIVED> *_ptr;
     T* _data;
     };
 
@@ -161,10 +159,9 @@ public:
 
 protected:
   friend class ComputeLock;
-  friend typename Traits;
   };
 
-template <typename T, typename DERIVED, typename TRAITS> class PODProperty : public PODPropertyBase<T, DERIVED, TRAITS>
+template <typename T, typename DERIVED> class PODProperty : public PODPropertyBase<T, DERIVED>
   {
 public:
   class EmbeddedInstanceInformation : public Property::EmbeddedInstanceInformation
@@ -173,7 +170,7 @@ public:
     XByRefProperty(T, defaultValue, setDefault);
 
   public:
-    EmbeddedInstanceInformation(const T& d) : _defaultValue(d)
+    EmbeddedInstanceInformation(const T &d) : _defaultValue(d)
       {
       }
 
@@ -200,7 +197,7 @@ public:
   class Lock
     {
   public:
-    Lock(PODProperty<T, DERIVED, TRAITS> *ptr) : _ptr(ptr)
+    Lock(PODProperty<T, DERIVED> *ptr) : _ptr(ptr)
       {
       xAssert(ptr);
       _oldData = _ptr->value();
@@ -218,7 +215,7 @@ public:
       }
 
   private:
-    PODProperty<T, DERIVED, TRAITS> *_ptr;
+    PODProperty<T, DERIVED> *_ptr;
     T* _data;
     T _oldData;
     };
@@ -231,7 +228,7 @@ private:
     S_CHANGE(ComputeChange, Property::DataChange, DERIVED::TypeId);
 
   public:
-    ComputeChange(PODProperty<T, DERIVED, TRAITS> *prop)
+    ComputeChange(PODProperty<T, DERIVED> *prop)
       : Property::DataChange(prop)
       {
       xAssert(!prop->database()->stateStorageEnabled());
@@ -266,7 +263,7 @@ private:
     XRORefProperty(T, after);
 
   public:
-    Change(const T &b, const T &a, PODProperty<T, DERIVED, TRAITS> *prop)
+    Change(const T &b, const T &a, PODProperty<T, DERIVED> *prop)
       : ComputeChange(prop), _before(b), _after(a)
       { }
 
@@ -303,13 +300,14 @@ private:
   };
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, defaultDefault, typeID) \
-class EXPORT_MODE name : public Shift::PODProperty<type, name, Shift::detail::PODPropertyTraits<name> > { \
-public: typedef Shift::detail::PODPropertyTraits<name> Traits; \
+class EXPORT_MODE name : public Shift::PODProperty<type, name> { public: \
+  typedef Shift::detail::PODPropertyTraits<name> Traits; \
+  friend class Traits; \
   class EmbeddedInstanceInformation : \
-  public Shift::PODProperty<type, name, Traits>::EmbeddedInstanceInformation \
+  public Shift::PODProperty<type, name>::EmbeddedInstanceInformation \
     { public: \
     EmbeddedInstanceInformation() \
-    : Shift::PODProperty<type, name, Traits>::EmbeddedInstanceInformation(defaultDefault) { } }; \
+    : Shift::PODProperty<type, name>::EmbeddedInstanceInformation(defaultDefault) { } }; \
   enum { TypeId = typeID }; \
   typedef type PODType; \
   S_PROPERTY(name, Property, 0); \
@@ -419,10 +417,10 @@ Q_DECLARE_METATYPE(QUuid)
 namespace Shift
 {
 
-template <typename T, typename DERIVED, typename TRAITS>
-    void PODProperty<T, DERIVED, TRAITS>::assign(const T &in)
+template <typename T, typename DERIVED>
+    void PODProperty<T, DERIVED>::assign(const T &in)
   {
-  PropertyDoChange(Change, PODPropertyBase<T, DERIVED, TRAITS>::_value, in, this);
+  PropertyDoChange(Change, PODPropertyBase<T, DERIVED>::_value, in, this);
   }
 }
 

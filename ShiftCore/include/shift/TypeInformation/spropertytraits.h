@@ -69,7 +69,9 @@ public:
     fns.load = Traits::loadProperty;
     fns.shouldSave = Traits::shouldSaveProperty;
     fns.shouldSaveValue = Traits::shouldSavePropertyValue;
-    fns.assign = Traits::assignProperty;
+    fns.assign =
+        (PropertyInformationFunctions::AssignFunction)
+          Traits::assignProperty;
 
   #ifdef S_PROPERTY_POST_CREATE
     fns.postCreate = 0;
@@ -176,10 +178,10 @@ public:
     return false;
     }
 
-  static void assignProperty(const Shift::Property *p, Shift::Property *l )
+  enum
     {
-    T::assignProperty(p, l);
-    }
+    assignProperty = 0
+    };
   };
 
 template <typename T> class PODPropertyTraits : public BasePODPropertyTraits<T>
@@ -216,6 +218,11 @@ public:
       }
 
     return false;
+    }
+
+  static void assignProperty(const Shift::Property *p, Shift::Property *l )
+    {
+    T::assignProperty(p, l);
     }
   };
 

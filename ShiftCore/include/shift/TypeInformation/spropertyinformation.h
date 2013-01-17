@@ -154,10 +154,10 @@ public:
   // size of the property type, and its instance information
   xsize dynamicSize() const { return size() + dynamicInstanceInformationSize() + X_ALIGN_BYTE_COUNT; }
 
-  xsize *createAffects(
+  static xsize *createAffects(
       const PropertyInformationCreateData &data,
       const EmbeddedPropertyInstanceInformation **info,
-      xsize size) const;
+      xsize size);
 
   EmbeddedPropertyInstanceInformation *add(
       const PropertyInformationCreateData &data,

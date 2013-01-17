@@ -100,7 +100,7 @@ PropertyInformation *PropertyInformation::derive(
 xsize *PropertyInformation::createAffects(
     const PropertyInformationCreateData &data,
     const EmbeddedPropertyInstanceInformation **info,
-    xsize size) const
+    xsize size)
   {
   xsize *aff = (xsize *)data.allocator->alloc(sizeof(xsize) * (size+1));
 

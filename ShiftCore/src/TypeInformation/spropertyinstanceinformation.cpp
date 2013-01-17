@@ -200,7 +200,7 @@ void EmbeddedPropertyInstanceInformation::setAffects(
     const EmbeddedPropertyInstanceInformation **info,
     xsize size)
   {
-  setAffects(createAffects(data, info, size), false);
+  setAffects(PropertyInformation::createAffects(data, info, size), false);
   }
 
 void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects, bool affectsOwner)

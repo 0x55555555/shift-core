@@ -49,7 +49,7 @@ public:
   //const PropertyInformation *pointedToType() const;
   //static const PropertyInformation *pointedToType(const PropertyInformation *);
 
-  static void assignPointerInformation(PropertyInformation *newInfo, const PropertyInformation *pointedToInfo);
+  //static void assignPointerInformation(PropertyInformation *newInfo, const PropertyInformation *pointedToInfo);
   };
 
 template <typename T> class TypedPointer : public Pointer
@@ -133,10 +133,10 @@ private:
 
 #define S_IMPLEMENT_TYPED_POINTER_TYPE(name, group) \
   S_IMPLEMENT_PROPERTY(name, group) \
-  void name::createTypeInformation(Shift::PropertyInformationTyped<name> *info, \
-    const Shift::PropertyInformationCreateData &data) { \
-  if(data.registerInterfaces) { \
-  assignPointerInformation(info, name::PtrType::staticTypeInformation()); } } \
+  void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \
+    const Shift::PropertyInformationCreateData &) { } \
+  //if(data.registerInterfaces) { } } \
+  //assignPointerInformation(info, name::PtrType::staticTypeInformation()); } } \
 
 template <typename T, typename TYPE> void createTypedPointerArray(PropertyInformationTyped<T> *info,
                                                                   const PropertyInformationCreateData &data)
