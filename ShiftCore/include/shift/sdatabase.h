@@ -8,6 +8,11 @@
 #include "shift/Serialisation/sloader.h"
 #include "shift/Changes/shandler.h"
 
+namespace Eks
+{
+class TemporaryAllocatorCore;
+}
+
 namespace Shift
 {
 
@@ -32,6 +37,11 @@ public:
     return _memory;
     }
 
+  Eks::TemporaryAllocatorCore *temporaryAllocator()
+    {
+    return _temporaryMemory;
+    }
+
   bool stateStorageEnabled() const { return _stateStorageEnabled; }
   void setStateStorageEnabled(bool enable) { _stateStorageEnabled = enable; }
 
@@ -52,6 +62,7 @@ private:
   void uninitiatePropertyFromMetaData(PropertyContainer *container, const PropertyInformation *mD);
 
   Eks::AllocatorBase *_memory;
+  Eks::TemporaryAllocatorCore *_temporaryMemory;
 
   bool _stateStorageEnabled;
 

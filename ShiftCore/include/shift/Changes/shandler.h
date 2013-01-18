@@ -4,6 +4,11 @@
 #include "shift/sglobal.h"
 #include "shift/TypeInformation/sinterface.h"
 
+namespace Eks
+{
+class TemporaryAllocatorCore;
+}
+
 namespace Shift
 {
 
@@ -43,6 +48,8 @@ public:
 #endif
 
   Observers &currentBlockObserverList() { return _blockObservers; }
+
+  Eks::TemporaryAllocatorCore *temporaryAllocator();
 
 private:
   Eks::AllocatorBase *changeAllocator();

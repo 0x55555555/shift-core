@@ -40,6 +40,11 @@ Eks::AllocatorBase *Handler::changeAllocator()
   return _database->persistantAllocator();
   }
 
+Eks::TemporaryAllocatorCore *Handler::temporaryAllocator()
+  {
+  return _database->temporaryAllocator();
+  }
+
 void Handler::beginBlock()
   {
   _blockLevel++;
