@@ -2,7 +2,6 @@
 #define STYPEREGISTRY_H
 
 #include "shift/sglobal.h"
-#include "XSet"
 
 namespace Shift
 {

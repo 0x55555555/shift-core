@@ -217,9 +217,11 @@ public:
 
   template <typename PropTypeIn, typename InstanceTypeIn>
       PropertyInformationTyped<InstanceTypeIn> *
-          extendContainedProperty(PropertyInstanceInformationTyped<PropTypeIn, InstanceTypeIn> *inst)
+          extendContainedProperty(
+          const PropertyInformationCreateData &data,
+          PropertyInstanceInformationTyped<PropTypeIn, InstanceTypeIn> *inst)
     {
-    PropertyInformation *info = PropertyInformation::extendContainedProperty(inst);
+    PropertyInformation *info = PropertyInformation::extendContainedProperty(data, inst);
 
     return static_cast<PropertyInformationTyped<InstanceTypeIn>*>(info);
     }

@@ -10,7 +10,6 @@
 #include "shift/Utilities/sprocessmanager.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
-#include "QString"
 #include "XProfiler"
 #include "XConvertScriptSTL.h"
 
@@ -44,7 +43,7 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
     typedef XScript::XMethodToGetter<Property, PropertyContainer * (), &Property::parent> ParentGetter;
     typedef XScript::XMethodToSetter<Property, PropertyContainer *, &Property::setParent> ParentSetter;
 
-    typedef XScript::XMethodToGetter<Property, QVector<Property*> (), &Property::affects> AffectsGetter;
+    typedef XScript::XMethodToGetter<Property, Eks::Vector<Property*> (), &Property::affects> AffectsGetter;
 
     static XScript::ClassDef<0,11,4> cls = {
       {
@@ -415,7 +414,7 @@ void Property::connect(Property *prop) const
     }
   }
 
-void Property::connect(const QVector<Property*> &l) const
+void Property::connect(const Eks::Vector<Property*> &l) const
   {
   if(l.size())
     {
@@ -457,15 +456,15 @@ void Property::disconnect() const
     }
   }
 
-QVector<const Property *> Property::affects() const
+Eks::Vector<const Property *> Property::affects() const
   {
-  QVector<Property *> aff = const_cast<Property*>(this)->affects();
-  return *reinterpret_cast<QVector<const Property*>*>(&aff);
+  Eks::Vector<Property *> aff = const_cast<Property*>(this)->affects();
+  return *reinterpret_cast<Eks::Vector<const Property*>*>(&aff);
   }
 
-QVector<Property *> Property::affects()
+Eks::Vector<Property *> Property::affects()
   {
-  QVector<Property *> ret;
+  Eks::Vector<Property *> ret;
 
   const EmbeddedPropertyInstanceInformation *info = embeddedBaseInstanceInformation();
   if(!info)
@@ -706,7 +705,7 @@ Eks::String Property::path() const
   const Property *par = parent();
   if(par == 0)
     {
-    return QString();
+    return Eks::String();
     }
   return par->path() + Database::pathSeparator() + escapedName();
   }
@@ -840,7 +839,7 @@ QVariant Property::value() const
     {
     return varInt->asVariant(this);
     }
-  return QString();
+  return QVariant();
   }
 
 void Property::setValue(const QVariant &val)

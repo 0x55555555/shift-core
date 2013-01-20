@@ -12,11 +12,11 @@ class SHIFT_EXPORT PropertyArray : public PropertyContainer
   S_PROPERTY_CONTAINER(PropertyArray, PropertyContainer, 0);
 
 public:
-  template <typename T> T *add(const QString& name)
+  template <typename T> T *add(const PropertyNameArg& name)
     {
     return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->castTo<T>();
     }
-  template <typename T> T *add(xsize index=X_SIZE_SENTINEL, const QString& name=QString())
+  template <typename T> T *add(xsize index=X_SIZE_SENTINEL, const PropertyNameArg& name=PropertyNameArg())
     {
     return addProperty(T::staticTypeInformation(), index, name)->castTo<T>();
     }
@@ -38,10 +38,8 @@ public:
   void remove(Property *);
   };
 
-template <typename T> class STypedPropertyArray : public PropertyContainer
+template <typename T> class TypedPropertyArray : public PropertyContainer
   {
-  //S_PROPERTY_CONTAINER(STypedPropertyArray, PropertyContainer, 0);
-
 public:
   typedef T ElementType;
 
@@ -92,13 +90,6 @@ public:
     return 0;
     }
   };
-
-//S_IMPLEMENT_TEMPLATED_PROPERTY(template <typename T>, STypedPropertyArray<T>)
-
-/*template <typename T> PropertyInformation *STypedPropertyArray<T>::createTypeInformation()
-  {
-  return PropertyInformation::create<STypedPropertyArray<T> >("STypedPropertyArray<T>");
-  }*/
 
 }
 

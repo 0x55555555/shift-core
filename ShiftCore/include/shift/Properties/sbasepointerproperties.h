@@ -69,13 +69,13 @@ public:
   Pointer &operator=(const T *prop) { setPointed(prop); return *this; }
   };
 
-template <typename PTR> class TypedPointerArray : public STypedPropertyArray<PTR>
+template <typename PTR> class TypedPointerArray : public TypedPropertyArray<PTR>
   {
 public:
   PTR* addPointer(const typename PTR::PtrType *prop)
     {
     Block b(Property::handler());
-    PTR *p = STypedPropertyArray<PTR>::add();
+    PTR *p = TypedPropertyArray<PTR>::add();
     xAssert(p);
     p->setPointed(prop);
 
@@ -90,7 +90,7 @@ public:
         {
         if(c->pointed() == ptr)
           {
-          STypedPropertyArray<PTR>::remove(c);
+          TypedPropertyArray<PTR>::remove(c);
           return;
           }
         }

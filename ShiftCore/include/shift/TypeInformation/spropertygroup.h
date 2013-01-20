@@ -2,7 +2,6 @@
 #define SPROPERTYGROUP_H
 
 #include "XProperty"
-#include "QVector"
 #include "shift/sglobal.h"
 
 namespace Shift

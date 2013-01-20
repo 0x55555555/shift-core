@@ -74,7 +74,7 @@ public:
   // connect this property (driver) to the passed property (driven)
   void connect(Property *) const;
   void setInput(const Property *inp);
-  void connect(const QVector<Property*> &) const;
+  void connect(const Eks::Vector<Property*> &) const;
   void disconnect(Property *) const;
   void disconnect() const;
 
@@ -82,8 +82,8 @@ public:
   bool isComputed() const;
   bool hasInput() const { return _input; }
   bool hasOutputs() const { return _output; }
-  QVector<const Property *> affects() const;
-  QVector<Property *> affects();
+  Eks::Vector<const Property *> affects() const;
+  Eks::Vector<Property *> affects();
 
   Handler *handler();
   const Handler *handler() const;

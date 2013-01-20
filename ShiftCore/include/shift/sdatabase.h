@@ -4,7 +4,6 @@
 #include "XBucketAllocator"
 #include "shift/sglobal.h"
 #include "shift/sentity.h"
-#include "shift/Properties/sbaseproperties.h"
 #include "shift/Serialisation/sloader.h"
 #include "shift/Changes/shandler.h"
 

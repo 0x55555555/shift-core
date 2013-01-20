@@ -14,8 +14,8 @@
 #include "XMathVector"
 #include "XColour"
 #include "XQuaternion"
-#include "QByteArray"
-#include "QUuid"
+#include "QtCore/QByteArray"
+#include "QtCore/QUuid"
 
 namespace Shift
 {

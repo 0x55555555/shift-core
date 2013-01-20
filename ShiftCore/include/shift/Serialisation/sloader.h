@@ -2,9 +2,8 @@
 #define SLOADER_H
 
 #include "shift/sglobal.h"
-#include "QHash"
-#include "QTextStream"
-#include "QDataStream"
+#include "QtCore/QTextStream"
+#include "QtCore/QDataStream"
 
 class QString;
 
