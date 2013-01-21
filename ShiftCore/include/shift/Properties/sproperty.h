@@ -210,8 +210,6 @@ public:
   const XScript::InterfaceBase *apiInterface() const;
   static const XScript::InterfaceBase *staticApiInterface();
 
-  X_ALIGNED_OPERATOR_NEW
-
 private:
   X_DISABLE_COPY(Property);
 

@@ -4,7 +4,7 @@
 #include "shift/sglobal.h"
 #include "shift/TypeInformation/sinterface.h"
 #include "XProperty"
-#include "XHash"
+#include "XUnorderedMap"
 
 namespace XScript
 {

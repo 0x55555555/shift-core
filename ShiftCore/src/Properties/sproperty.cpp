@@ -7,6 +7,7 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/schange.h"
 #include "shift/Changes/shandler.inl"
+#include "shift/Changes/spropertychanges.h"
 #include "shift/Utilities/sprocessmanager.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
@@ -177,17 +178,6 @@ Property::Property() : _input(0), _output(0), _nextOutput(0),
     , _userData(0)
 #endif
   {
-  }
-
-Property::Property(const Property &) : _flags(Dirty)
-  {
-  xAssertFail();
-  }
-
-Property& Property::operator =(const Property &)
-  {
-  xAssertFail();
-  return *this;
   }
 
 #ifdef S_PROPERTY_USER_DATA
@@ -459,7 +449,14 @@ void Property::disconnect() const
 Eks::Vector<const Property *> Property::affects() const
   {
   Eks::Vector<Property *> aff = const_cast<Property*>(this)->affects();
-  return *reinterpret_cast<Eks::Vector<const Property*>*>(&aff);
+  union
+    {
+    Eks::Vector<Property *>* in;
+    Eks::Vector<const Property*>* out;
+    } conv;
+
+  conv.in = &aff;
+  return *conv.out;
   }
 
 Eks::Vector<Property *> Property::affects()

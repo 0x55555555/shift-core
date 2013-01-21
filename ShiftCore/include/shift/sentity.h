@@ -75,8 +75,6 @@ public:
   Entity *findChildEntity(const PropertyNameArg &);
   const Entity *findChildEntity(const PropertyNameArg &) const;
 
-  X_ALIGNED_OPERATOR_NEW
-
 private:
   struct ObserverStruct
     {

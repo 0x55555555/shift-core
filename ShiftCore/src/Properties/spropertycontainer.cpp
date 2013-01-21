@@ -4,6 +4,7 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Properties/spropertycontaineriterators.h"
 #include "shift/Changes/shandler.inl"
+#include "shift/Changes/spropertychanges.h"
 #include "shift/sdatabase.h"
 
 namespace Shift

@@ -71,8 +71,10 @@ public:
     const xsize &lastIndex = PropertyContainerBaseIterator<T, CONT>::_lastIndex;
     if(index < (lastIndex-1))
       {
+      typedef PropertyContainerBaseIterator<T, CONT> It;
+      PropertyInformation* info = It::_info;
       ++index;
-      _info->nextChild<T>(&index);
+      info->nextChild<T>(&index);
       }
     else
       {
@@ -202,10 +204,14 @@ template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer:
   if(!prop->isDynamic())
     {
     idx = prop->baseInstanceInformation()->index();
+
     const PropertyInformation* type = T::staticTypeInformation();
+
+    EmbeddedInstanceInformation* inst = type->childFromIndex(idx);
     while(inst && !inst->childInformation()->inheritsFromType(type))
       {
-      inst = inst->nextSibling();
+      ++idx;
+      inst = type->childFromIndex(idx);
       }
 
     dyProp = firstDynamicChild<T>();
@@ -234,15 +240,19 @@ template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer:
 template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer) PropertyContainer::walkerFrom(const Property *prop) const
   {
   xAssert(prop->parent() == this);
-  xsize inst = 0;
+  xsize idx = 0;
   const T *dyProp = 0;
   if(!prop->isDynamic())
     {
-    inst = prop->baseInstanceInformation()->index();
+    idx = prop->baseInstanceInformation()->index();
+
     const PropertyInformation* type = T::staticTypeInformation();
+
+    EmbeddedInstanceInformation* inst = type->childFromIndex(idx);
     while(inst && !inst->childInformation()->inheritsFromType(type))
       {
-      inst = inst->nextSibling();
+      ++idx;
+      inst = type->childFromIndex(idx);
       }
 
     dyProp = firstDynamicChild<T>();

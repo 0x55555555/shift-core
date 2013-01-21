@@ -6,6 +6,7 @@
 #include "shift/sentity.h"
 #include "shift/Serialisation/sloader.h"
 #include "shift/Changes/shandler.h"
+#include "shift/TypeInformation/spropertyinstanceinformation.h"
 
 namespace Eks
 {

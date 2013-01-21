@@ -195,8 +195,6 @@ public:
   PropertyContainerTypedIteratorWrapperFrom<const Property, const PropertyContainer, PropertyContainerBaseIterator<const Property, const PropertyContainer> > walker() const;
   PropertyContainerTypedIteratorWrapperFrom<Property, PropertyContainer, PropertyContainerBaseIterator<Property, PropertyContainer> > walkerFrom(Property *prop);
 
-  X_ALIGNED_OPERATOR_NEW
-
 protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
   // you cannot add another contained property once dynamic properties have been added, this bool

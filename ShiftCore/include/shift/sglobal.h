@@ -3,8 +3,6 @@
 
 #include "XGlobal"
 #include "XProfiler"
-#include "Eigen/src/Core/util/Macros.h"
-#include "Eigen/src/Core/util/Memory.h"
 
 #if defined(SHIFT_BUILD)
 #  define SHIFT_EXPORT Q_DECL_EXPORT

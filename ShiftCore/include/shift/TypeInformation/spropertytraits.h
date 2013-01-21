@@ -40,10 +40,10 @@ class PropertyTraits
 public:
   template <typename PropType> static void build(PropertyInformationFunctions &fns)
     {
-    typedef PropType::Traits Traits;
-    typedef Traits::TypeTraits<PropType>::Type TypeTraits;
+    typedef typename PropType::Traits Traits;
+    typedef typename Traits::template TypeTraits<PropType>::Type TypeTraits;
 
-    typedef TypeTraits::Creation<PropType> TypeTraitsCreation;
+    typedef typename TypeTraits::template Creation<PropType> TypeTraitsCreation;
     typedef PropertyCreateSelector<TypeTraitsCreation, PropType::IsAbstract> CreateSelection;
 
     fns.createProperty =
@@ -89,21 +89,21 @@ public:
   typedef typename T::DynamicInstanceInformation DyInst;
   typedef typename T::EmbeddedInstanceInformation StInst;
 
-  template <typename T> struct Creation
+  template <typename Type> struct Creation
     {
     static Property *createProperty(void *ptr)
       {
-      return new(ptr) T();
+      return new(ptr) Type();
       }
     static void createPropertyInPlace(Property *ptr)
       {
-      T* t = static_cast<T*>(ptr);
-      new(t) T();
+      Type* t = static_cast<Type*>(ptr);
+      new(t) Type();
       }
     static void destroyProperty(Property *ptr)
       {
       (void)ptr;
-      ((T*)ptr)->~T();
+      ((Type*)ptr)->~Type();
       }
     };
 

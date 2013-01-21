@@ -412,8 +412,6 @@ Q_DECLARE_METATYPE(QUuid)
 #define EnumProperty IntProperty
 
 
-#include "shift/sdatabase.h"
-
 namespace Shift
 {
 

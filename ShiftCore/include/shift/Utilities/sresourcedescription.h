@@ -14,13 +14,13 @@ public:
   SResourceDescription &operator+=(U PropType::* ptr)
     {
     (void)ptr;
-    ((XResourceDescription&)*this) += SResourceDescription::createForInstanceInformation<U>();
+    ((Eks::ResourceDescription&)*this) += SResourceDescription::createForInstanceInformation<U>();
     return *this;
     }
 
   template <typename T> X_CONST_EXPR Eks::ResourceDescription createForInstanceInformation()
     {
-    return Eks::ResourceDescriptionTypeHelper::createFor<T::EmbeddedInstanceInformation>();
+    return Eks::ResourceDescriptionTypeHelper<typename T::EmbeddedInstanceInformation>::createFor();
     }
   };
 

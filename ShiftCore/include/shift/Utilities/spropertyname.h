@@ -94,6 +94,27 @@ template <> struct JSToNative<const Shift::PropertyNameArg &>
   };
 
 }
+
+
+namespace detail
+{
+template <typename T> class MatchOut
+  {
+  typedef typename std::remove_const<T>::type NoConst;
+  typedef typename std::remove_reference<NoConst>::type Type;
+  };
+}
+
+template <> class TypeMatcher<const Shift::PropertyNameArg&, Shift::PropertyNameArg*>
+  {
+public:
+  static inline Shift::PropertyNameArg match(const Shift::PropertyName &in, bool& valid)
+    {
+    valid = true;
+    return in;
+    }
+  };
+
 }
 }
 

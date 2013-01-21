@@ -64,8 +64,6 @@ public:
 
   const EmbeddedPropertyInstanceInformation* embeddedInfo() const;
   const DynamicPropertyInstanceInformation* dynamicInfo() const;
-
-  X_ALIGNED_OPERATOR_NEW
   };
 
 class SHIFT_EXPORT EmbeddedPropertyInstanceInformation : public PropertyInstanceInformation

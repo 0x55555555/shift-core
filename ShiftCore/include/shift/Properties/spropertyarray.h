@@ -23,12 +23,12 @@ public:
 
   Property *add(const PropertyInformation *info, const PropertyNameArg &name, PropertyInstanceInformationInitialiser *init, xsize index=X_SIZE_SENTINEL)
     {
-    return addProperty(info, index, name, init);
+    return PropertyContainer::addProperty(info, index, name, init);
     }
 
   Property *add(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const PropertyNameArg &name=PropertyNameArg())
     {
-    return addProperty(info, index, name, 0);
+    return PropertyContainer::addProperty(info, index, name, 0);
     }
 
   Property *operator[](xsize i) { return at(i); }

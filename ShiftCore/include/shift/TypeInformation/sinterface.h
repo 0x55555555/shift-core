@@ -2,6 +2,7 @@
 #define SINTERFACE_H
 
 #include "shift/Properties/sproperty.h"
+#include "shift/TypeInformation/styperegistry.h"
 
 #define S_INTERFACE_FACTORY_TYPE(interfaceType) public: \
   typedef interfaceType InterfaceType; \
@@ -73,7 +74,7 @@ template <typename T> static void addStaticInterface(
 
 template <typename T> static void addStaticInterface(PropertyInformation *info)
   {
-  typedef T::InterfaceType IfcType;
+  typedef typename T::InterfaceType IfcType;
   TypeRegistry::addInterfaceFactory(
         info,
         IfcType::InterfaceTypeId,
