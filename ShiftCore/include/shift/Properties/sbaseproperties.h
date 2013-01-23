@@ -10,6 +10,10 @@
 #include "shift/Changes/shandler.h"
 #include "shift/Changes/spropertychanges.h"
 
+#if X_ASSERTS_ENABLED
+# include "shift/sdatabase.h"
+#endif
+
 #include "XStringBuffer"
 #include "XMathVector"
 #include "XColour"
@@ -231,7 +235,9 @@ private:
     ComputeChange(PODProperty<T, DERIVED> *prop)
       : Property::DataChange(prop)
       {
+#if X_ASSERTS_ENABLED
       xAssert(!prop->database()->stateStorageEnabled());
+#endif
       }
 
   private:

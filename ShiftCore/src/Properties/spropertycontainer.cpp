@@ -6,6 +6,7 @@
 #include "shift/Changes/shandler.inl"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/sdatabase.h"
+#include "XStringBuffer"
 
 namespace Shift
 {

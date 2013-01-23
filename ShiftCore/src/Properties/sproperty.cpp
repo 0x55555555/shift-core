@@ -12,6 +12,7 @@
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "XProfiler"
+#include "XStringBuffer"
 #include "XConvertScriptSTL.h"
 
 namespace Shift
@@ -178,6 +179,17 @@ Property::Property() : _input(0), _output(0), _nextOutput(0),
     , _userData(0)
 #endif
   {
+  }
+
+Property::Property(const Property &) : _flags(Dirty)
+  {
+  xAssertFail();
+  }
+
+Property& Property::operator =(const Property &)
+  {
+  xAssertFail();
+  return *this;
   }
 
 #ifdef S_PROPERTY_USER_DATA

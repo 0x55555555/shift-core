@@ -72,7 +72,7 @@ public:
     if(index < (lastIndex-1))
       {
       typedef PropertyContainerBaseIterator<T, CONT> It;
-      PropertyInformation* info = It::_info;
+      const PropertyInformation* info = It::_info;
       ++index;
       info->nextChild<T>(&index);
       }

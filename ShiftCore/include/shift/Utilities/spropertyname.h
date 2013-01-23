@@ -105,13 +105,13 @@ template <typename T> class MatchOut
   };
 }
 
-template <> class TypeMatcher<const Shift::PropertyNameArg&, Shift::PropertyNameArg*>
+template <> class TypeMatcher<const Shift::PropertyNameArg&, Shift::PropertyName>
   {
 public:
-  static inline Shift::PropertyNameArg match(const Shift::PropertyName &in, bool& valid)
+  static inline Shift::PropertyNameArg match(const Shift::PropertyName *in, bool& valid)
     {
     valid = true;
-    return in;
+    return *in;
     }
   };
 

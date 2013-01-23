@@ -3,6 +3,7 @@
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
+#include "shift/Changes/spropertychanges.h"
 #include "QtWidgets/QPushButton"
 #include "QtWidgets/QStyleOptionViewItem"
 
