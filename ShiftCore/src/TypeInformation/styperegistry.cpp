@@ -86,7 +86,6 @@ Eks::AllocatorBase *TypeRegistry::interfaceAllocator()
 void TypeRegistry::addPropertyGroup(PropertyGroup &g)
   {
   _internalTypes->groups << &g;
-  xAssertFail();
   g.bootstrap(_internalTypes->baseAllocator);
   }
 

@@ -98,8 +98,6 @@ XProperties:
   XProperty(xsize, dynamicInstanceInformationSize, setDynamicInstanceInformationSize);
   XProperty(xsize, embeddedInstanceInformationSize, setEmbeddedInstanceInformationSize);
 
-  XRORefProperty(DataHash, data);
-
   XProperty(xsize, instances, setInstances);
 
   XProperty(EmbeddedPropertyInstanceInformation *, extendedParent, setExtendedParent);
