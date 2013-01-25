@@ -45,8 +45,8 @@ void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *al
     PropertyInstanceInformation::destroy(allocator, inst);
     }
   d->_childData = 0;
-  d->_childLimit = 0;
-  d->_childEnd = 0;
+  d->_childCount = 0;
+  d->_ownedChildCount = 0;
 
   allocator->destroy(d);
   }
@@ -95,88 +95,6 @@ PropertyInformation *PropertyInformation::derive(
 
   xAssert(copy);
   return copy;
-  }
-
-xsize *PropertyInformation::createAffects(
-    const PropertyInformationCreateData &data,
-    const EmbeddedPropertyInstanceInformation **info,
-    xsize size)
-  {
-  xsize *aff = (xsize *)data.allocator->alloc(sizeof(xsize) * (size+1));
-
-  for(xsize i = 0; i < size; ++i)
-    {
-    aff[i] = info[i]->location();
-    }
-
-  aff[size] = 0;
-
-  return aff;
-  }
-
-EmbeddedPropertyInstanceInformation *PropertyInformation::add(
-    const PropertyInformationCreateData &data,
-    const PropertyInformation *newChildType,
-    const PropertyNameArg &name)
-  {
-  xsize backwardsOffset = 0;
-  PropertyInformation *allocatable = findAllocatableBase(backwardsOffset);
-  xAssert(allocatable);
-
-  // size of the old type
-  xsize oldAlignedSize = Eks::roundToAlignment(allocatable->size());
-
-  // the actual object will start at this offset before the type
-  xptrdiff firstFreeByte = oldAlignedSize - allocatable->propertyDataOffset();
-  xAssert(firstFreeByte > 0);
-
-  // location of the Property Data
-  xsize propertyDataLocation = firstFreeByte + newChildType->propertyDataOffset();
-
-  xsize finalSize = propertyDataLocation + newChildType->size();
-
-  allocatable->setSize(finalSize);
-
-  xAssert(propertyDataLocation > backwardsOffset);
-  xsize location = propertyDataLocation - backwardsOffset;
-
-  EmbeddedPropertyInstanceInformation *def = add(data, newChildType, location, name, true);
-
-#ifdef X_DEBUG
-  const Property *prop = def->locateProperty((const PropertyContainer*)0);
-  xAssert((backwardsOffset + (xsize)prop) == propertyDataLocation);
-#endif
-
-  return def;
-  }
-
-EmbeddedPropertyInstanceInformation *PropertyInformation::add(
-    const PropertyInformationCreateData &data,
-    const PropertyInformation *newChildType,
-    xsize location,
-    const PropertyNameArg &name,
-    bool notClassMember)
-  {
-  xAssert(newChildType);
-  xAssert(!childFromName(name));
-  xAssert(_childEnd < _childLimit);
-
-
-  EmbeddedPropertyInstanceInformation* def =
-      EmbeddedPropertyInstanceInformation::allocate(
-        data.allocator, newChildType->embeddedInstanceInformationSize());
-
-  newChildType->functions().createEmbeddedInstanceInformation(def);
-
-  def->initiate(newChildType, name, childCount(), location);
-
-  def->setHoldingTypeInformation(this);
-  def->setIsExtraClassMember(notClassMember);
-
-  *_childEnd = def;
-  ++_childEnd;
-
-  return def;
   }
 
 PropertyInformation *PropertyInformation::extendContainedProperty(

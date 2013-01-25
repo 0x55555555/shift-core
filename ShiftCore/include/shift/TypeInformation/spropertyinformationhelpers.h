@@ -2,6 +2,7 @@
 #define SPROPERTYINFORMATIONAPIUTILITIES_H
 
 #include "XInterface.h"
+#include "XTemporaryAllocator"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertygroup.h"
@@ -12,6 +13,8 @@
 
 namespace Shift
 {
+
+template <typename T> class PropertyInformationTyped;
 
 #define S_IMPLEMENT_PROPERTY(myName, grp) \
   static Shift::PropertyGroup::Information _##myName##StaticTypeInformation = \
@@ -97,6 +100,127 @@ public:
     }
   };
 
+class SHIFT_EXPORT PropertyInformationChildrenCreator
+  {
+public:
+  EmbeddedPropertyInstanceInformation *add(
+      const PropertyInformation *newChildType,
+      xsize location,
+      const PropertyNameArg &name,
+      bool notClassMember);
+
+  EmbeddedPropertyInstanceInformation *add(
+      const PropertyInformation *newChildType,
+      const PropertyNameArg &name);
+
+  xsize *createAffects(
+      const EmbeddedPropertyInstanceInformation **info,
+      xsize size);
+
+  static xsize *createAffects(
+      Eks::AllocatorBase *allocator,
+      const EmbeddedPropertyInstanceInformation **info,
+      xsize size);
+
+  ~PropertyInformationChildrenCreator();
+
+protected:
+  PropertyInformationChildrenCreator(
+    PropertyInformation *,
+    const PropertyInformationCreateData& data);
+
+
+  PropertyInformation *_information;
+  const PropertyInformationCreateData &_data;
+
+private:
+  X_DISABLE_COPY(PropertyInformationChildrenCreator);
+
+  Eks::Vector<EmbeddedPropertyInstanceInformation *> _properties;
+  Eks::TemporaryAllocator _temporaryAllocator;
+  };
+
+template <typename PropType> class PropertyInformationChildrenCreatorTyped
+    : PropertyInformationChildrenCreator
+  {
+public:
+  template <typename U, typename AncestorPropType>
+      PropertyInstanceInformationTyped<PropType, U> *add(
+          U AncestorPropType::* ptr,
+          const PropertyNameArg &name)
+    {
+    xptrdiff location = findLocation(ptr);
+
+    xsize offset = 0;
+    _information->findAllocatableBase(offset);
+    location -= offset;
+
+    return add<U>(location, name);
+    }
+
+  // add a dynamic child, ie it is embedded in the container when created,
+  // but not accessible via a member.
+  // this will fail and go crazy if you try to aggregate an entity with dynamic members...
+  // i should fix this...
+  template <typename T>
+      PropertyInstanceInformationTyped<PropType, T> *add(
+          const PropertyNameArg &name)
+    {
+    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
+
+    EmbeddedPropertyInstanceInformation *inst =
+        PropertyInformationChildrenCreator::add(data, newChildType, name);
+
+    return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
+    }
+
+  template <typename T>
+      PropertyInstanceInformationTyped<PropType, T> *add(
+          xsize location,
+          const PropertyNameArg &name)
+    {
+    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
+
+    EmbeddedPropertyInstanceInformation *inst =
+      PropertyInformationChildrenCreator::add(newChildType, location, name, false);
+
+    return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
+    }
+
+  template <typename T> xsize *createAffects(T a, xsize i)
+    {
+    return PropertyInformationChildrenCreator::createAffects(
+          (const EmbeddedPropertyInstanceInformation**)a,
+          i);
+    }
+
+  template <typename U, typename AncestorPropType> static xsize findLocation(U AncestorPropType::* ptr)
+    {
+    // avoid special casing for zero static cast
+    AncestorPropType *u = reinterpret_cast<AncestorPropType*>(1);
+    PropertyContainer *container = static_cast<PropertyContainer *>(u);
+    U *offset = &(u->*ptr);
+
+    Property *propOffset = offset;
+
+    // one added earlier is cancelled out because the 1 is counted in both offset and container
+    xptrdiff location = reinterpret_cast<xsize>(propOffset) - reinterpret_cast<xsize>(container);
+    xAssert(location > 0);
+
+    return (xsize)location;
+    }
+
+private:
+  friend class PropertyInformationTyped<PropType>;
+
+  PropertyInformationChildrenCreatorTyped(
+    PropertyInformationTyped<PropType> *i,
+    const PropertyInformationCreateData& data)
+      : PropertyInformationChildrenCreator(i, data)
+    {
+    }
+  };
+
 template <typename PropType> class PropertyInformationTyped : public PropertyInformation
   {
 public:
@@ -114,7 +238,7 @@ public:
   template <typename U, typename PropTypeAncestor>
   PropertyInstanceInformationTyped<PropType, U> *child(U PropTypeAncestor::* ptr)
     {
-    xsize location = findLocation(ptr);
+    xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
 
     return static_cast<PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformation::child(location));
     }
@@ -122,7 +246,7 @@ public:
   template <typename U, typename PropTypeAncestor>
   const PropertyInstanceInformationTyped<PropType, U> *child(U PropTypeAncestor::* ptr) const
     {
-    xsize location = findLocation(ptr);
+    xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
 
     xsize offset = 0;
     PropertyInformation* allocatable = findAllocatableBase(offset);
@@ -131,10 +255,10 @@ public:
     return static_cast<const PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformation::child(location));
     }
 
-  template <typename T>
-  xsize *createAffects(const PropertyInformationCreateData &data, T a, xsize i)
+  PropertyInformationChildrenCreatorTyped<PropType> createChildrenBlock(
+      const PropertyInformationCreateData &d)
     {
-    return PropertyInformation::createAffects(data, (const EmbeddedPropertyInstanceInformation**)a, i);
+    return PropertyInformationChildrenCreatorTyped<PropType>(this, d);
     }
 
   XScript::Interface<PropType> *apiInterface()
@@ -153,66 +277,6 @@ public:
     FnType fn = PropertyInformationTyped<PropType>::initiate;
 
     return createTypeInformationInternal(name, parentType, fn, allocator);
-    }
-
-  template <typename U, typename AncestorPropType> xsize findLocation(U AncestorPropType::* ptr)
-    {
-    AncestorPropType *u = reinterpret_cast<AncestorPropType*>(1); // avoid special casing for zero static cast
-    PropertyContainer *container = static_cast<PropertyContainer *>(u);
-    U *offset = &(u->*ptr);
-
-    Property *propOffset = offset;
-
-    // one added earlier is cancelled out because the 1 is counted in both offset and container
-    xptrdiff location = reinterpret_cast<xsize>(propOffset) - reinterpret_cast<xsize>(container);
-    xAssert(location > 0);
-
-    return (xsize)location;
-    }
-
-  template <typename U, typename AncestorPropType>
-      PropertyInstanceInformationTyped<PropType, U> *add(
-          const PropertyInformationCreateData &data,
-          U AncestorPropType::* ptr,
-          const PropertyNameArg &name)
-    {
-    xptrdiff location = findLocation(ptr);
-
-    xsize offset = 0;
-    findAllocatableBase(offset);
-    location -= offset;
-
-    return add<U>(data, location, name);
-    }
-
-  // add a dynamic child, ie it is embedded in the container when created,
-  // but not accessible via a member.
-  // this will fail and go crazy if you try to aggregate an entity with dynamic members...
-  // i should fix this...
-  template <typename T>
-      PropertyInstanceInformationTyped<PropType, T> *add(
-          const PropertyInformationCreateData &data,
-          const PropertyNameArg &name)
-    {
-    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
-
-    PropertyInstanceInformation *inst = PropertyInformation::add(data, newChildType, name);
-
-    return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
-    }
-
-  template <typename T>
-      PropertyInstanceInformationTyped<PropType, T> *add(
-          const PropertyInformationCreateData &data,
-          xsize location,
-          const PropertyNameArg &name)
-    {
-    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(data.allocator);
-
-    PropertyInstanceInformation *inst =
-      PropertyInformation::add(data, newChildType, location, name, false);
-
-    return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
     }
 
   template <typename PropTypeIn, typename InstanceTypeIn>
@@ -266,6 +330,10 @@ private:
   static void initiate(PropertyInformation *info, const char *typeName)
     {
     PropertyTraits::build<PropType>(info->functions());
+
+    info->setChildData(0);
+    info->setChildCount(0);
+    info->setOwnedChildCount(0);
 
     info->setVersion(PropType::Version);
     info->setSize(sizeof(PropType));

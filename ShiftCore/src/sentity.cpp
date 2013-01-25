@@ -3,7 +3,6 @@
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
-#include "QStringList"
 
 namespace Shift
 {
@@ -15,7 +14,9 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
   {
   if(data.registerAttributes)
     {
-    auto *childInst = info->add(data, &Entity::children, "children");
+    auto childBlock = info->createChildrenBlock(data);
+
+    auto *childInst = childBlock.add(&Entity::children, "children");
     childInst->setMode(PropertyInstanceInformation::Internal);
     }
 

@@ -48,7 +48,8 @@ SOURCES += \
     src/Serialisation/sloader.cpp \
     src/Utilities/spropertyname.cpp \
     src/UI/moc_spropertydefaultui.cpp \
-    src/UI/moc_sdatabasemodel.cpp
+    src/UI/moc_sdatabasemodel.cpp \
+    src/TypeInformation/spropertyinformationhelpers.cpp
 
 HEADERS += \
     include/shift/sglobal.h \

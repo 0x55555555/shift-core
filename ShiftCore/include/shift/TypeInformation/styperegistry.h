@@ -3,6 +3,11 @@
 
 #include "shift/sglobal.h"
 
+namespace Eks
+{
+class TemporaryAllocatorCore;
+}
+
 namespace Shift
 {
 
@@ -30,6 +35,7 @@ public:
   static Eks::AllocatorBase *persistentBlockAllocator();
   static Eks::AllocatorBase *generalPurposeAllocator();
   static Eks::AllocatorBase *interfaceAllocator();
+  static Eks::TemporaryAllocatorCore *temporaryAllocator();
 
   static const Eks::Vector<const PropertyGroup *> &groups();
   static const Eks::Vector<const PropertyInformation *> &types();

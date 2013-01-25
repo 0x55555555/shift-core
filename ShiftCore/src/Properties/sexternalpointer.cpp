@@ -114,7 +114,8 @@ void UuidEntity::createTypeInformation(PropertyInformationTyped<UuidEntity> *inf
   {
   if(data.registerAttributes)
     {
-    info->add(data, &UuidEntity::_uuid, "uuid");
+    auto children = info->createChildrenBlock(data);
+    children.add(&UuidEntity::_uuid, "uuid");
     }
   }
 

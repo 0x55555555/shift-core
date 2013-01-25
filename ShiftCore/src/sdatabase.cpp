@@ -49,6 +49,8 @@ Database::Database()
 #endif
   xAssert(_memory);
 
+  _temporaryMemory = TypeRegistry::temporaryAllocator();
+
 #ifdef S_CENTRAL_CHANGE_HANDLER
   _handler = this;
 #else

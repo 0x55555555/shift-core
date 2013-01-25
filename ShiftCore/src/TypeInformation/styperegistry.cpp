@@ -4,6 +4,7 @@
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/Changes/sobserver.h"
 #include "shift/TypeInformation/sinterfaces.h"
+#include "XTemporaryAllocator"
 #include "XUnorderedMap"
 
 namespace Shift
@@ -22,7 +23,8 @@ struct TypeData
       observers(allocator),
       bucketAllocator(DefaultAllocation, ExpandingAllocation, allocator),
       interfaces(allocator),
-      baseAllocator(allocator)
+      baseAllocator(allocator),
+      temporaryAllocator(allocator)
     {
     }
 
@@ -35,6 +37,7 @@ struct TypeData
   Eks::UnorderedMap<InterfaceKey, InterfaceBaseFactory*> interfaces;
 
   Eks::AllocatorBase *baseAllocator;
+  Eks::TemporaryAllocatorCore temporaryAllocator;
   };
 
 static TypeData *_internalTypes = 0;;
@@ -81,6 +84,11 @@ Eks::AllocatorBase *TypeRegistry::generalPurposeAllocator()
 Eks::AllocatorBase *TypeRegistry::interfaceAllocator()
   {
   return generalPurposeAllocator();
+  }
+
+Eks::TemporaryAllocatorCore *TypeRegistry::temporaryAllocator()
+  {
+  return &_internalTypes->temporaryAllocator;
   }
 
 void TypeRegistry::addPropertyGroup(PropertyGroup &g)

@@ -90,9 +90,9 @@ XProperties:
 
   XProperty(const PropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
-  XROProperty(EmbeddedPropertyInstanceInformation **, childData);
-  XROProperty(EmbeddedPropertyInstanceInformation **, childEnd);
-  XROProperty(EmbeddedPropertyInstanceInformation **, childLimit);
+  XProperty(EmbeddedPropertyInstanceInformation **, childData, setChildData);
+  XProperty(xuint8, childCount, setChildCount);
+  XProperty(xuint8, ownedChildCount, setOwnedChildCount);
 
   XProperty(xsize, size, setSize);
   XProperty(xsize, dynamicInstanceInformationSize, setDynamicInstanceInformationSize);
@@ -106,7 +106,7 @@ XProperties:
 
 
 public:
-  PropertyInformation() : _childData(0), _childEnd(0) { }
+  PropertyInformation() { }
   static PropertyInformation *allocate(Eks::AllocatorBase *allocator);
   static void destroy(PropertyInformation *, Eks::AllocatorBase *allocator);
 
@@ -116,11 +116,6 @@ public:
     }
 
   bool inheritsFromType(const PropertyInformation *type) const;
-
-  xsize childCount() const
-    {
-    return _childEnd - _childData;
-    }
 
   // access the properties from offset of member
   EmbeddedPropertyInstanceInformation *child(xsize location);
@@ -149,23 +144,6 @@ public:
 
   // size of the property type, and its instance information
   xsize dynamicSize() const { return size() + dynamicInstanceInformationSize() + X_ALIGN_BYTE_COUNT; }
-
-  static xsize *createAffects(
-      const PropertyInformationCreateData &data,
-      const EmbeddedPropertyInstanceInformation **info,
-      xsize size);
-
-  EmbeddedPropertyInstanceInformation *add(
-      const PropertyInformationCreateData &data,
-      const PropertyInformation *newChildType,
-      xsize location,
-      const PropertyNameArg &name,
-      bool notClassMember);
-
-  EmbeddedPropertyInstanceInformation *add(
-      const PropertyInformationCreateData &data,
-      const PropertyInformation *newChildType,
-      const PropertyNameArg &name);
 
   template <typename T> static PropertyInformation *createTypeInformation(
       const char *name,

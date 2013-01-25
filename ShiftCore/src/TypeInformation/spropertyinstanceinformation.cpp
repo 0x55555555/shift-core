@@ -1,6 +1,7 @@
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/styperegistry.h"
+#include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/sdatabase.h"
 
 namespace Shift
@@ -200,7 +201,7 @@ void EmbeddedPropertyInstanceInformation::setAffects(
     const EmbeddedPropertyInstanceInformation **info,
     xsize size)
   {
-  setAffects(PropertyInformation::createAffects(data, info, size), false);
+  setAffects(PropertyInformationChildrenCreator::createAffects(data.allocator, info, size), false);
   }
 
 void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects, bool affectsOwner)
