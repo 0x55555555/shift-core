@@ -49,9 +49,11 @@ XProperties:
   XProperty(xuint16, index, setIndex);
   XPropertyMember(xuint8, mode);
   XROProperty(xuint8, isDynamic);
+  XProperty(xuint8, referenceCount, setReferenceCount);
 
 public:
   PropertyInstanceInformation(bool dynamic);
+  PropertyInstanceInformation(const PropertyInstanceInformation &);
   static void destroy(Eks::AllocatorBase *allocator, PropertyInstanceInformation *);
 
   void setInvalidIndex();
@@ -82,6 +84,7 @@ class SHIFT_EXPORT EmbeddedPropertyInstanceInformation : public PropertyInstance
 
 public:
   EmbeddedPropertyInstanceInformation();
+  EmbeddedPropertyInstanceInformation(const EmbeddedPropertyInstanceInformation &);
 
   static EmbeddedPropertyInstanceInformation *allocate(Eks::AllocatorBase *allocator, xsize size);
 
@@ -128,6 +131,7 @@ class SHIFT_EXPORT DynamicPropertyInstanceInformation : public PropertyInstanceI
 
 public:
   DynamicPropertyInstanceInformation();
+  DynamicPropertyInstanceInformation(const DynamicPropertyInstanceInformation &);
   };
 
 inline const EmbeddedPropertyInstanceInformation* PropertyInstanceInformation::embeddedInfo() const

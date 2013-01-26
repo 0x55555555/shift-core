@@ -61,10 +61,6 @@ public:
     fns.destroyEmbeddedInstanceInformation = TypeTraits::destroyEmbeddedInstanceInformation;
     fns.destroyDynamicInstanceInformation = TypeTraits::destroyDynamicInstanceInformation;
 
-    fns.createTypeInformation =
-        (PropertyInformationFunctions::CreateTypeInformationFunction)
-          PropType::createTypeInformation;
-
     fns.save = Traits::saveProperty;
     fns.load = Traits::loadProperty;
     fns.shouldSave = Traits::shouldSaveProperty;
@@ -107,12 +103,26 @@ public:
       }
     };
 
-  static PropertyInstanceInformation *createDynamicInstanceInformation(void *allocation)
+  static PropertyInstanceInformation *createDynamicInstanceInformation(
+      void *allocation,
+      const PropertyInstanceInformation *cpy)
     {
+    if(cpy)
+      {
+      return new(allocation) DyInst(*static_cast<const DyInst*>(cpy));
+      }
+
     return new(allocation) DyInst;
     }
-  static PropertyInstanceInformation *createEmbeddedInstanceInformation(void *allocation)
+  static PropertyInstanceInformation *createEmbeddedInstanceInformation(
+      void *allocation,
+      const PropertyInstanceInformation *cpy)
     {
+    if(cpy)
+      {
+      return new(allocation) StInst(*static_cast<const StInst*>(cpy));
+      }
+
     return new(allocation) StInst;
     }
   static void destroyDynamicInstanceInformation(PropertyInstanceInformation *allocation)

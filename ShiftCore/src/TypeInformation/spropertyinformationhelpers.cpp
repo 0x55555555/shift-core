@@ -8,29 +8,53 @@ PropertyInformationChildrenCreator::PropertyInformationChildrenCreator(
     const PropertyInformationCreateData &data)
   : _information(i),
     _data(data),
-    _temporaryAllocator(TypeRegistry::temporaryAllocator())
+    _temporaryAllocator(TypeRegistry::temporaryAllocator()),
+    _properties(&_temporaryAllocator)
   {
+  const PropertyInformation *parent = i->parentTypeInformation();
+  _properties.resize(parent->childCount());
   }
 
 PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
   {
   xsize ownedChildCount = _properties.size();
 
-  xsize childCount = ownedChildCount + _information->parentTypeInformation()->childCount();
+  const PropertyInformation *parent = _information->parentTypeInformation();
 
-  EmbeddedPropertyInstanceInformation **children =
-    (EmbeddedPropertyInstanceInformation **)
+  xsize childCount = ownedChildCount + parent->childCount();
+
+  const EmbeddedPropertyInstanceInformation **children =
+    (const EmbeddedPropertyInstanceInformation **)
       _data.allocator->alloc(sizeof(EmbeddedPropertyInstanceInformation *) * childCount);
 
   xCompileTimeAssert(sizeof(_information->childCount()) == sizeof(xuint8));
-  xAssert(childCount < X_UINT8_SENTINEL)
+  xAssert(childCount < X_UINT8_SENTINEL);
 
-  // copy into children.
-  // unique names.
+  Eks::UnorderedMap<PropertyName, bool> names(&_temporaryAllocator);
+
+  // copy into children, check for unique names
+  // also adjust ref counts
+  for(xsize i = 0, s = _properties.size(); i < s; ++i)
+    {
+    EmbeddedPropertyInstanceInformation *inst = _properties[i];
+    if(!inst)
+      {
+      inst = const_cast<EmbeddedPropertyInstanceInformation*>(parent->childFromIndex(i));
+      }
+    xAssert(!names.contains(inst->name()));
+    names.insert(inst->name(), true);
+
+    auto ref = inst->referenceCount();
+    xAssert(ref < X_UINT8_SENTINEL);
+    ++ref;
+
+    inst->setReferenceCount(ref);
+
+    children[i] = inst;
+    }
 
   _information->setChildData(children);
   _information->setChildCount(childCount);
-  _information->setOwnedChildCount(ownedChildCount);
   }
 
 xsize *PropertyInformationChildrenCreator::createAffects(
@@ -50,6 +74,34 @@ xsize *PropertyInformationChildrenCreator::createAffects(
   return aff;
   }
 
+EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::overrideChild(xsize location)
+  {
+  if(!_information->parentTypeInformation())
+    {
+    return 0;
+    }
+
+  const EmbeddedPropertyInstanceInformation *oldInst =
+      _information->parentTypeInformation()->child(location);
+
+  const PropertyInformation *newType = oldInst->childInformation();
+
+  const PropertyInformationFunctions& fns = newType->functions();
+
+  EmbeddedPropertyInstanceInformation* def =
+      EmbeddedPropertyInstanceInformation::allocate(
+        _data.allocator, newType->embeddedInstanceInformationSize());
+
+  PropertyInstanceInformation *inst = fns.createEmbeddedInstanceInformation(def, oldInst);
+  xAssert(inst == def);
+
+  def->setHoldingTypeInformation(_information);
+
+  xAssert(!_properties[def->index()]);
+  _properties[def->index()] = def;
+
+  return def;
+  }
 
 xsize *PropertyInformationChildrenCreator::createAffects(
     const EmbeddedPropertyInstanceInformation **info,
@@ -105,7 +157,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
       EmbeddedPropertyInstanceInformation::allocate(
         _data.allocator, newChildType->embeddedInstanceInformationSize());
 
-  newChildType->functions().createEmbeddedInstanceInformation(def);
+  newChildType->functions().createEmbeddedInstanceInformation(def, 0);
 
   def->initiate(newChildType, name, _properties.size(), location);
 

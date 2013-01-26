@@ -133,7 +133,7 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
   alignedPtr = Eks::roundToAlignment(alignedPtr);
   xAssertIsAligned(alignedPtr);
   PropertyInstanceInformation *instanceInfoMem = (PropertyInstanceInformation *)(alignedPtr);
-  PropertyInstanceInformation *instanceInfo = type->functions().createDynamicInstanceInformation(instanceInfoMem);
+  PropertyInstanceInformation *instanceInfo = type->functions().createDynamicInstanceInformation(instanceInfoMem, 0);
 
   prop->_instanceInfo = instanceInfo;
 

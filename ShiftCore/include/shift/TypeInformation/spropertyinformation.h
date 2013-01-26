@@ -49,10 +49,9 @@ struct PropertyInformationFunctions
   typedef void (*AssignFunction)( const Property *, Property * );
   typedef bool (*SaveQueryFunction)( const Property * );
   typedef void (*CreateTypeInformationFunction)(PropertyInformation *, const PropertyInformationCreateData &);
-  typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(void *data);
+  typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(void *data, const PropertyInstanceInformation *copy);
   typedef void (*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
 
-  CreateTypeInformationFunction createTypeInformation;
   CreateInstanceInformationFunction createEmbeddedInstanceInformation;
   CreateInstanceInformationFunction createDynamicInstanceInformation;
   DestroyInstanceInformationFunction destroyEmbeddedInstanceInformation;
@@ -90,9 +89,8 @@ XProperties:
 
   XProperty(const PropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
-  XProperty(EmbeddedPropertyInstanceInformation **, childData, setChildData);
+  XProperty(const EmbeddedPropertyInstanceInformation **, childData, setChildData);
   XProperty(xuint8, childCount, setChildCount);
-  XProperty(xuint8, ownedChildCount, setOwnedChildCount);
 
   XProperty(xsize, size, setSize);
   XProperty(xsize, dynamicInstanceInformationSize, setDynamicInstanceInformationSize);
@@ -118,13 +116,7 @@ public:
   bool inheritsFromType(const PropertyInformation *type) const;
 
   // access the properties from offset of member
-  EmbeddedPropertyInstanceInformation *child(xsize location);
   const EmbeddedPropertyInstanceInformation *child(xsize location) const;
-
-  EmbeddedPropertyInstanceInformation *childFromIndex(xsize i)
-    {
-    return *(_childData + i);
-    }
 
   const EmbeddedPropertyInstanceInformation *childFromIndex(xsize i) const
     {
@@ -134,7 +126,6 @@ public:
   template <typename T> const EmbeddedPropertyInstanceInformation *firstChild(xsize *i) const;
   template <typename T> const EmbeddedPropertyInstanceInformation *nextChild(xsize *i) const;
 
-  EmbeddedPropertyInstanceInformation *childFromName(const PropertyNameArg &);
   const EmbeddedPropertyInstanceInformation *childFromName(const PropertyNameArg &) const;
 
   // find the sproperty information that will be allocated dynamically (ie has no static parent)
@@ -152,7 +143,7 @@ public:
   static PropertyInformation *createTypeInformationInternal(
       const char *name,
       const PropertyInformation *parent,
-      void (PropertyInformation *, const char *),
+      void (Eks::AllocatorBase *, PropertyInformation *, const char *),
       Eks::AllocatorBase *allocator);
 
   PropertyInformation *extendContainedProperty(

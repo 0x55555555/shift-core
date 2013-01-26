@@ -6,23 +6,6 @@
 namespace Shift
 {
 
-struct Utils
-  {
-  static void callCreateTypeInformationBottomUp(PropertyInformation *i,
-                                         PropertyInformationCreateData &d,
-                                         const PropertyInformation *from)
-    {
-    if(from)
-      {
-      const PropertyInformation *parent = from->parentTypeInformation();
-      callCreateTypeInformationBottomUp(i, d, parent);
-
-      from->functions().createTypeInformation(i, d);
-      }
-    }
-  };
-
-
 PropertyInformation *PropertyInformation::allocate(Eks::AllocatorBase *allocator)
   {
   return allocator->create<PropertyInformation>();
@@ -30,8 +13,11 @@ PropertyInformation *PropertyInformation::allocate(Eks::AllocatorBase *allocator
 
 void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *allocator)
   {
-  xForeach(auto inst, d->childWalker())
+  for(xuint8 i = 0; i < d->childCount(); ++i)
     {
+    EmbeddedPropertyInstanceInformation *inst =
+        const_cast<EmbeddedPropertyInstanceInformation*>(d->_childData[i]);
+
     if(inst->affectsOwner())
       {
       allocator->free(inst->affects());
@@ -44,9 +30,9 @@ void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *al
 
     PropertyInstanceInformation::destroy(allocator, inst);
     }
+
   d->_childData = 0;
   d->_childCount = 0;
-  d->_ownedChildCount = 0;
 
   allocator->destroy(d);
   }
@@ -75,20 +61,41 @@ PropertyInformation *PropertyInformation::derive(
     const PropertyInformation *from,
     Eks::AllocatorBase *allocator)
   {
-  xAssert(from->functions().createTypeInformation);
-
   PropertyInformationCreateData data(allocator);
 
   PropertyInformation *copy = PropertyInformation::allocate(allocator);
 
   PropertyInformation::initiate(copy, from);
 
+  xsize childCount = from->childCount();
+  xsize childByteCount = childCount * sizeof(EmbeddedPropertyInstanceInformation *);
+
+  const EmbeddedPropertyInstanceInformation **children =
+    (const EmbeddedPropertyInstanceInformation **)
+      allocator->alloc(childByteCount);
+
+  for(xsize i = 0, s = from->childCount(); i < s; ++i)
+    {
+    EmbeddedPropertyInstanceInformation* inst =
+        const_cast<EmbeddedPropertyInstanceInformation*>(from->childFromIndex(i));
+
+    auto ref = inst->referenceCount();
+    xAssert(ref < X_UINT8_SENTINEL);
+    ++ref;
+
+    inst->setReferenceCount(ref);
+
+    children[i] = inst;
+    }
+
+  copy->setChildCount(childCount);
+  copy->setChildData(children);
+
+
   copy->_parentTypeInformation = from;
 
   data.registerAttributes = true;
   data.registerInterfaces = false;
-
-  Utils::callCreateTypeInformationBottomUp(copy, data, from);
 
   copy->_apiInterface = from->_apiInterface;
   xAssert(copy->_apiInterface);
@@ -113,7 +120,7 @@ PropertyInformation *PropertyInformation::extendContainedProperty(
 PropertyInformation *PropertyInformation::createTypeInformationInternal(
     const char *name,
     const PropertyInformation *parentType,
-    void (init)(PropertyInformation *, const char *),
+    void (init)(Eks::AllocatorBase *, PropertyInformation *, const char *),
     Eks::AllocatorBase *allocator)
   {
   SProfileScopedBlock("Initiate information")
@@ -121,36 +128,14 @@ PropertyInformation *PropertyInformation::createTypeInformationInternal(
   PropertyInformation *createdInfo = PropertyInformation::allocate(allocator);
   xAssert(createdInfo);
 
-  init(createdInfo, name);
-
-  PropertyInformationCreateData data(allocator);
-
-  data.registerAttributes = true;
-  data.registerInterfaces = false;
-  Utils::callCreateTypeInformationBottomUp(createdInfo, data, parentType);
-
   createdInfo->setParentTypeInformation(parentType);
 
-  data.registerAttributes = true;
-  data.registerInterfaces = true;
-  createdInfo->functions().createTypeInformation(createdInfo, data);
+  init(allocator, createdInfo, name);
 
   // seal API
   createdInfo->apiInterface()->seal();
 
   return createdInfo;
-  }
-
-EmbeddedPropertyInstanceInformation *PropertyInformation::child(xsize location)
-  {
-  xForeach(auto i, childWalker())
-    {
-    if(i->location() == location)
-      {
-      return i;
-      }
-    }
-  return 0;
   }
 
 const EmbeddedPropertyInstanceInformation *PropertyInformation::child(xsize location) const
@@ -162,22 +147,12 @@ const EmbeddedPropertyInstanceInformation *PropertyInformation::child(xsize loca
       return i;
       }
     }
+
+  xAssertFail();
   return 0;
   }
 
 const EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const PropertyNameArg &in) const
-  {
-  xForeach(auto i, childWalker())
-    {
-    if(in == i->name())
-      {
-      return i;
-      }
-    }
-  return 0;
-  }
-
-EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const PropertyNameArg &in)
   {
   xForeach(auto i, childWalker())
     {

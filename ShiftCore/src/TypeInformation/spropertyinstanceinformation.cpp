@@ -9,16 +9,32 @@ namespace Shift
 
 PropertyInstanceInformation::PropertyInstanceInformation(bool dynamic)
   {
+  _referenceCount = 0;
   _mode = Default;
   _isDynamic = dynamic;
+  }
+
+PropertyInstanceInformation::PropertyInstanceInformation(const PropertyInstanceInformation &c)
+  {
+  _childInformation = c.childInformation();
+  _name = c.name();
+  _index = c.index();
+  _mode = c.mode();
+  _isDynamic = c.isDynamic();
+
+  _referenceCount = 0;
   }
 
 void PropertyInstanceInformation::destroy(
     Eks::AllocatorBase *allocator,
     PropertyInstanceInformation *d)
   {
-  xAssert(allocator);
-  allocator->free(d);
+  --d->_referenceCount;
+  if(d->referenceCount() == 0)
+    {
+    xAssert(allocator);
+    allocator->free(d);
+    }
   }
 
 Eks::String g_modeStrings[] = {
@@ -82,6 +98,20 @@ EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation()
       _affectsOwner(false),
       _isExtraClassMember(false)
   {
+  }
+
+EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation(
+    const EmbeddedPropertyInstanceInformation &o)
+    : PropertyInstanceInformation(o),
+    _holdingTypeInformation(o.holdingTypeInformation()),
+    _location(o.location()),
+    _defaultInput(o.defaultInput()),
+    _compute(o.compute()),
+    _affects(o.affects()),
+    _affectsOwner(false),
+    _isExtraClassMember(false)
+  {
+  xAssert(!o.isExtraClassMember())
   }
 
 EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::allocate(
@@ -351,6 +381,13 @@ DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation()
     : PropertyInstanceInformation(true),
       _parent(0),
       _nextSibling(0)
+  {
+  }
+DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation(
+    const DynamicPropertyInstanceInformation &o)
+    : PropertyInstanceInformation(o),
+    _parent(0),
+    _nextSibling(0)
   {
   }
 

@@ -122,6 +122,8 @@ public:
       const EmbeddedPropertyInstanceInformation **info,
       xsize size);
 
+  EmbeddedPropertyInstanceInformation *overrideChild(xsize location);
+
   ~PropertyInformationChildrenCreator();
 
 protected:
@@ -210,6 +212,14 @@ public:
     return (xsize)location;
     }
 
+  template <typename U, typename PropTypeAncestor>
+      PropertyInstanceInformationTyped<PropType, U> *overrideChild(U PropTypeAncestor::* ptr)
+    {
+    xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
+
+    return static_cast<PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformationChildrenCreator::overrideChild(location));
+    }
+
 private:
   friend class PropertyInformationTyped<PropType>;
 
@@ -232,15 +242,9 @@ public:
     if(!*info)
       {
       *info = createTypeInformation(name, parent, allocator);
+
+      xAssert((*info)->childCount() >= parent->childCount());
       }
-    }
-
-  template <typename U, typename PropTypeAncestor>
-  PropertyInstanceInformationTyped<PropType, U> *child(U PropTypeAncestor::* ptr)
-    {
-    xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
-
-    return static_cast<PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformation::child(location));
     }
 
   template <typename U, typename PropTypeAncestor>
@@ -249,7 +253,8 @@ public:
     xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
 
     xsize offset = 0;
-    PropertyInformation* allocatable = findAllocatableBase(offset);
+    const PropertyInformation* allocatable = findAllocatableBase(offset);
+    (void)allocatable;
     location -= offset;
 
     return static_cast<const PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformation::child(location));
@@ -273,10 +278,13 @@ public:
 
   static PropertyInformation *createTypeInformation(const char *name, const PropertyInformation *parentType, Eks::AllocatorBase *allocator)
     {
-    typedef void (*FnType)(PropertyInformation *, const char *);
+    typedef void (*FnType)(Eks::AllocatorBase *, PropertyInformationTyped<PropType> *, const char *);
     FnType fn = PropertyInformationTyped<PropType>::initiate;
 
-    return createTypeInformationInternal(name, parentType, fn, allocator);
+    typedef void (*BaseFnType)(Eks::AllocatorBase *, PropertyInformation *, const char *);
+    BaseFnType bFn = (BaseFnType)fn;
+
+    return createTypeInformationInternal(name, parentType, bFn, allocator);
     }
 
   template <typename PropTypeIn, typename InstanceTypeIn>
@@ -327,13 +335,12 @@ public:
 #endif
 
 private:
-  static void initiate(PropertyInformation *info, const char *typeName)
+  static void initiate(Eks::AllocatorBase *allocator, PropertyInformationTyped<PropType> *info, const char *typeName)
     {
     PropertyTraits::build<PropType>(info->functions());
 
     info->setChildData(0);
     info->setChildCount(0);
-    info->setOwnedChildCount(0);
 
     info->setVersion(PropType::Version);
     info->setSize(sizeof(PropType));
@@ -353,6 +360,11 @@ private:
     info->setInstances(0);
 
     ApiHelper<PropType>::create(info);
+
+    PropertyInformationCreateData data(allocator);
+    data.registerAttributes = true;
+    data.registerInterfaces = true;
+    PropType::createTypeInformation(info, data);
     }
   };
 
