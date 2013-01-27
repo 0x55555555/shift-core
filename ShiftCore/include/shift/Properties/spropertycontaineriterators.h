@@ -21,7 +21,7 @@ public:
     }
   T *operator*() const
     {
-    if(_index < (_lastIndex-1))
+    if(_index < _lastIndex)
       {
       const EmbeddedPropertyInstanceInformation *from = _info->childFromIndex(_index);
       Property *p = const_cast<Property *>(from->locateProperty(_c));
@@ -39,7 +39,7 @@ public:
       }
     else
       {
-      _index = X_SIZE_SENTINEL;
+      xAssert(_index == X_SIZE_SENTINEL);
       _fromDynamic = _c->nextDynamicSibling(_fromDynamic);
       }
     return *this;
@@ -108,7 +108,7 @@ public:
     }
 
   Iterator begin() { return Iterator(_cont, _info, _index, _fromDynamic); }
-  Iterator end() { return Iterator(0, 0, X_SIZE_SENTINEL, 0); }
+  Iterator end() { return Iterator(0, _info, _info->childCount(), 0); }
   };
 
 #define WRAPPER_TYPE_FROM(T, CONT) PropertyContainerTypedIteratorWrapperFrom<T, CONT, PropertyContainerIterator<T, CONT> >

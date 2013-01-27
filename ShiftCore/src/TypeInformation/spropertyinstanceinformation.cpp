@@ -236,7 +236,7 @@ void EmbeddedPropertyInstanceInformation::setAffects(
 
 void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects, bool affectsOwner)
   {
-  xAssert(!_affects);
+  xAssert(!_affects || !_affectsOwner);
   xAssert(affects);
 
   _affects = affects;

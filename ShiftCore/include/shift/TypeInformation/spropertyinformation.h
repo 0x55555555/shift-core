@@ -120,6 +120,7 @@ public:
 
   const EmbeddedPropertyInstanceInformation *childFromIndex(xsize i) const
     {
+    xAssert(i < _childCount);
     return *(_childData + i);
     }
 

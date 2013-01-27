@@ -23,6 +23,10 @@ S_IMPLEMENT_PROPERTY(Database, Shift)
 void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
                                       const PropertyInformationCreateData &data)
   {
+  if(data.registerAttributes)
+    {
+    auto childBlock = info->createChildrenBlock(data);
+    }
   if(data.registerInterfaces)
     {
     auto *api = info->apiInterface();

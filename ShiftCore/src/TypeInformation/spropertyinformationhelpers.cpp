@@ -12,16 +12,14 @@ PropertyInformationChildrenCreator::PropertyInformationChildrenCreator(
     _properties(&_temporaryAllocator)
   {
   const PropertyInformation *parent = i->parentTypeInformation();
-  _properties.resize(parent->childCount());
+  _properties.resize(parent->childCount(), 0);
   }
 
 PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
   {
-  xsize ownedChildCount = _properties.size();
-
   const PropertyInformation *parent = _information->parentTypeInformation();
-
-  xsize childCount = ownedChildCount + parent->childCount();
+  
+  xsize childCount = _properties.size();
 
   const EmbeddedPropertyInstanceInformation **children =
     (const EmbeddedPropertyInstanceInformation **)
@@ -42,7 +40,10 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
       inst = const_cast<EmbeddedPropertyInstanceInformation*>(parent->childFromIndex(i));
       }
     xAssert(!names.contains(inst->name()));
-    names.insert(inst->name(), true);
+
+    const PropertyName &name = inst->name();
+
+    names.insert(name, true);
 
     auto ref = inst->referenceCount();
     xAssert(ref < X_UINT8_SENTINEL);
@@ -55,6 +56,9 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
 
   _information->setChildData(children);
   _information->setChildCount(childCount);
+
+  _properties.clear();
+  _properties.squeeze();
   }
 
 xsize *PropertyInformationChildrenCreator::createAffects(
@@ -72,6 +76,28 @@ xsize *PropertyInformationChildrenCreator::createAffects(
   aff[size] = 0;
 
   return aff;
+  }
+
+const EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::child(xsize location) const
+  {
+  const PropertyInformation *parent = _information->parentTypeInformation();
+
+  for(xsize i = 0, s = _properties.size(); i < s; ++i)
+    {
+    const EmbeddedPropertyInstanceInformation *inst = _properties[i];
+    if(!inst)
+      {
+      inst = parent->childFromIndex(i);
+      }
+
+    if(inst->location() == location)
+      {
+      return inst;
+      }
+    }
+
+  xAssertFail();
+  return 0;
   }
 
 EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::overrideChild(xsize location)

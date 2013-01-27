@@ -122,6 +122,7 @@ public:
       const EmbeddedPropertyInstanceInformation **info,
       xsize size);
 
+  const EmbeddedPropertyInstanceInformation *child(xsize location) const;
   EmbeddedPropertyInstanceInformation *overrideChild(xsize location);
 
   ~PropertyInformationChildrenCreator();
@@ -137,9 +138,9 @@ protected:
 
 private:
   X_DISABLE_COPY(PropertyInformationChildrenCreator);
-
-  Eks::Vector<EmbeddedPropertyInstanceInformation *> _properties;
+  
   Eks::TemporaryAllocator _temporaryAllocator;
+  Eks::Vector<EmbeddedPropertyInstanceInformation *> _properties;
   };
 
 template <typename PropType> class PropertyInformationChildrenCreatorTyped
@@ -220,6 +221,19 @@ public:
     return static_cast<PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformationChildrenCreator::overrideChild(location));
     }
 
+  template <typename U, typename PropTypeAncestor>
+  const PropertyInstanceInformationTyped<PropType, U> *child(U PropTypeAncestor::* ptr) const
+    {
+    xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
+
+    xsize offset = 0;
+    const PropertyInformation* allocatable = _information->findAllocatableBase(offset);
+    (void)allocatable;
+    location -= offset;
+
+    return static_cast<const PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformationChildrenCreator::child(location));
+    }
+
 private:
   friend class PropertyInformationTyped<PropType>;
 
@@ -243,19 +257,6 @@ public:
       {
       *info = createTypeInformation(name, parent, allocator);
       }
-    }
-
-  template <typename U, typename PropTypeAncestor>
-  const PropertyInstanceInformationTyped<PropType, U> *child(U PropTypeAncestor::* ptr) const
-    {
-    xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
-
-    xsize offset = 0;
-    const PropertyInformation* allocatable = findAllocatableBase(offset);
-    (void)allocatable;
-    location -= offset;
-
-    return static_cast<const PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformation::child(location));
     }
 
   PropertyInformationChildrenCreatorTyped<PropType> createChildrenBlock(
