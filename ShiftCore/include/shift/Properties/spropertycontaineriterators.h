@@ -39,7 +39,7 @@ public:
       }
     else
       {
-      xAssert(_index == X_SIZE_SENTINEL);
+      xAssert(_index == (_lastIndex-1));
       _fromDynamic = _c->nextDynamicSibling(_fromDynamic);
       }
     return *this;
