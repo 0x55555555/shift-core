@@ -135,6 +135,7 @@ PropertyInformation *PropertyInformation::createTypeInformationInternal(
   // seal API
   createdInfo->apiInterface()->seal();
 
+  xAssert(!parentType || createdInfo->childCount() >= parentType->childCount());
   return createdInfo;
   }
 

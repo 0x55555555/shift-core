@@ -242,8 +242,6 @@ public:
     if(!*info)
       {
       *info = createTypeInformation(name, parent, allocator);
-
-      xAssert((*info)->childCount() >= parent->childCount());
       }
     }
 
