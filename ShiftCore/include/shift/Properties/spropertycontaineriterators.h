@@ -17,11 +17,12 @@ public:
       _index(idx),
       _fromDynamic(dP)
     {
-    _lastIndex = _info->childCount();
+    xAssert(idx != X_SIZE_SENTINEL);
+    _embeddedCount = _info->childCount();
     }
   T *operator*() const
     {
-    if(_index < _lastIndex)
+    if(_index < _embeddedCount)
       {
       const EmbeddedPropertyInstanceInformation *from = _info->childFromIndex(_index);
       Property *p = const_cast<Property *>(from->locateProperty(_c));
@@ -33,13 +34,13 @@ public:
     }
   PropertyContainerBaseIterator<T,CONT>& operator++()
     {
-    if(_index < (_lastIndex-1))
+    if(_index+1 < _embeddedCount)
       {
       ++_index;
       }
-    else
+    else if(_fromDynamic)
       {
-      xAssert(_index == (_lastIndex-1));
+      xAssert(_index+1 == _embeddedCount);
       _fromDynamic = _c->nextDynamicSibling(_fromDynamic);
       }
     return *this;
@@ -53,7 +54,7 @@ protected:
   CONT *_c;
   const PropertyInformation *_info;
   xsize _index;
-  xsize _lastIndex;
+  xsize _embeddedCount;
   T *_fromDynamic;
   };
 
@@ -68,8 +69,8 @@ public:
   PropertyContainerBaseIterator<T,CONT>& operator++()
     {
     xsize &index = PropertyContainerBaseIterator<T, CONT>::_index;
-    const xsize &lastIndex = PropertyContainerBaseIterator<T, CONT>::_lastIndex;
-    if(index < (lastIndex-1))
+    const xsize &lastIndex = PropertyContainerBaseIterator<T, CONT>::_embeddedCount;
+    if(index < lastIndex)
       {
       typedef PropertyContainerBaseIterator<T, CONT> It;
       const PropertyInformation* info = It::_info;
@@ -108,7 +109,7 @@ public:
     }
 
   Iterator begin() { return Iterator(_cont, _info, _index, _fromDynamic); }
-  Iterator end() { return Iterator(0, _info, _info->childCount(), 0); }
+  Iterator end() { return Iterator(0, _info, xMin(0U, (xsize)_info->childCount()), 0); }
   };
 
 #define WRAPPER_TYPE_FROM(T, CONT) PropertyContainerTypedIteratorWrapperFrom<T, CONT, PropertyContainerIterator<T, CONT> >

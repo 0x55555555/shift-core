@@ -21,6 +21,8 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
   
   xsize childCount = _properties.size();
 
+  xAssert(childCount != 0);
+
   const EmbeddedPropertyInstanceInformation **children =
     (const EmbeddedPropertyInstanceInformation **)
       _data.allocator->alloc(sizeof(EmbeddedPropertyInstanceInformation *) * childCount);

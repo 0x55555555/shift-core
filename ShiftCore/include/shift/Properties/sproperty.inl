@@ -40,7 +40,7 @@ inline const Property::DynamicInstanceInformation *Property::dynamicBaseInstance
 template <typename T> const EmbeddedPropertyInstanceInformation *PropertyInformation::firstChild(xsize *idx) const
   {
   *idx = 0;
-  return nextChild<T>(idx);
+  return _childCount > 0 ? nextChild<T>(idx) : 0;
   }
 
 template <typename T> const EmbeddedPropertyInstanceInformation *PropertyInformation::nextChild(xsize *i) const
