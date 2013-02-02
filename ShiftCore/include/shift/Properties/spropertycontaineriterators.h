@@ -40,7 +40,7 @@ public:
       }
     else if(_fromDynamic)
       {
-      xAssert(_index+1 == _embeddedCount);
+      xAssert(_index == _embeddedCount);
       _fromDynamic = _c->nextDynamicSibling(_fromDynamic);
       }
     return *this;
@@ -79,7 +79,7 @@ public:
       }
     else
       {
-      xAssert(index == X_SIZE_SENTINEL);
+      xAssert(index == lastIndex);
       T *&fromDynamic = PropertyContainerBaseIterator<T, CONT>::_fromDynamic;
       PropertyContainer *c = const_cast<PropertyContainer*>(PropertyContainerBaseIterator<T, CONT>::_c);
       fromDynamic = c->nextDynamicSibling<T>(fromDynamic);
