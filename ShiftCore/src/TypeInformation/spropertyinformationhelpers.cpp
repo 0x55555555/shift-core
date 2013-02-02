@@ -21,7 +21,11 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
   
   xsize childCount = _properties.size();
 
-  xAssert(childCount != 0);
+  _information->setChildCount(childCount);
+  if(childCount == 0)
+    {
+    _information->setChildData(0);
+    }
 
   const EmbeddedPropertyInstanceInformation **children =
     (const EmbeddedPropertyInstanceInformation **)
@@ -57,7 +61,6 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
     }
 
   _information->setChildData(children);
-  _information->setChildCount(childCount);
 
   _properties.clear();
   _properties.squeeze();

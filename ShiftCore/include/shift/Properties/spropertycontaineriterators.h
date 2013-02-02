@@ -115,98 +115,70 @@ public:
 #define WRAPPER_TYPE_FROM(T, CONT) PropertyContainerTypedIteratorWrapperFrom<T, CONT, PropertyContainerIterator<T, CONT> >
 #define WRAPPER_TYPE_FROM_BASE(T, CONT) PropertyContainerTypedIteratorWrapperFrom<T, CONT, PropertyContainerBaseIterator<T, CONT> >
 
-template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer::walker()
+namespace detail
+{
+template <typename Res, typename T, typename Cont> Res makeWalker(Cont *c)
   {
-  const PropertyInformation *info = typeInformation();
+  const PropertyInformation *info = c->typeInformation();
 
   xsize idx = 0;
   info->firstChild<T>(&idx);
 
-  return WRAPPER_TYPE_FROM(T, PropertyContainer)(
-        this,
-        info,
-        idx,
-        firstDynamicChild<T>()
-        );
+  return Res(
+      c,
+      info,
+      idx,
+      c->firstDynamicChild<T>()
+      );
   }
 
-template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer) PropertyContainer::walker() const
+template <typename Res, typename Cont> Res makeTypelessWalker(Cont *c)
   {
-  const PropertyInformation *info = typeInformation();
-
-  xsize idx = 0;
-  info->firstChild<T>(&idx);
-
-  return WRAPPER_TYPE_FROM(const T, const PropertyContainer)(
-        this,
-        info,
-        idx,
-        firstDynamicChild<T>()
-        );
+  return Res(
+      c,
+      c->typeInformation(),
+      0,
+      c->firstDynamicChild()
+      );
   }
 
-template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer::walkerFrom(T *prop)
+template <typename Res, typename T, typename Cont>  Res makeWalkerFrom(Cont *c, T *prop)
   {
-  xAssert(prop->parent() == this);
+  xAssert(prop->parent() == c);
   xsize idx = 0;
   T *dyProp = 0;
+  const PropertyInformation *info = c->typeInformation();
+
   if(!prop->isDynamic())
     {
     idx = prop->baseInstanceInformation()->index();
-    dyProp = firstDynamicChild<T>();
+    dyProp = c->firstDynamicChild<T>();
     }
   else
     {
-    idx = X_SIZE_SENTINEL;
+    idx = xMin(0U, (xsize)info->childCount());
     dyProp = prop;
     }
 
-  const PropertyInformation *info = typeInformation();
 
-  return WRAPPER_TYPE_FROM(T, PropertyContainer)(
-      this,
+  return Res(
+      c,
       info,
       idx,
       dyProp
       );
   }
 
-template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer) PropertyContainer::walkerFrom(const T *prop) const
+template <typename Res, typename T, typename Cont> Res makeWalkerFromNext(Cont *c, T *prop)
   {
-  xAssert(prop->parent() == this);
+  xAssert(prop->parent() == c);
   xsize idx = 0;
   const T *dyProp = 0;
+  const PropertyInformation* type = c->typeInformation();
+
   if(!prop->isDynamic())
     {
     idx = prop->baseInstanceInformation()->index();
-    dyProp = firstDynamicChild<T>();
-    }
-  else
-    {
-    idx = X_SIZE_SENTINEL;
-    dyProp = prop;
-    }
-
-  const PropertyInformation *info = typeInformation();
-
-  return WRAPPER_TYPE_FROM(const T, const PropertyContainer)(
-      this,
-      info,
-      idx,
-      dyProp
-      );
-  }
-
-template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer::walkerFrom(Property *prop)
-  {
-  xAssert(prop->parent() == this);
-  xsize idx = 0;
-  const T *dyProp = 0;
-  if(!prop->isDynamic())
-    {
-    idx = prop->baseInstanceInformation()->index();
-
-    const PropertyInformation* type = T::staticTypeInformation();
 
     EmbeddedInstanceInformation* inst = type->childFromIndex(idx);
     while(inst && !inst->childInformation()->inheritsFromType(type))
@@ -219,7 +191,7 @@ template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer:
     }
   else
     {
-    idx = X_SIZE_SENTINEL;
+    idx = xMin(0U, (xsize)type->childCount());
     Property* itProp = prop;
     while(!dyProp && itProp)
       {
@@ -228,82 +200,24 @@ template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer:
       }
     }
 
-  const PropertyInformation *info = typeInformation();
+  const PropertyInformation *info = c->typeInformation();
 
-  return WRAPPER_TYPE_FROM(T, PropertyContainer)(
-      this,
+  return Res(
+      c,
       info,
       idx,
       dyProp
       );
   }
-
-template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer) PropertyContainer::walkerFrom(const Property *prop) const
-  {
-  xAssert(prop->parent() == this);
-  xsize idx = 0;
-  const T *dyProp = 0;
-  if(!prop->isDynamic())
-    {
-    idx = prop->baseInstanceInformation()->index();
-
-    const PropertyInformation* type = T::staticTypeInformation();
-
-    EmbeddedInstanceInformation* inst = type->childFromIndex(idx);
-    while(inst && !inst->childInformation()->inheritsFromType(type))
-      {
-      ++idx;
-      inst = type->childFromIndex(idx);
-      }
-
-    dyProp = firstDynamicChild<T>();
-    }
-  else
-    {
-    idx = X_SIZE_SENTINEL;
-    const Property* itProp = prop;
-    while(!dyProp && itProp)
-      {
-      dyProp = itProp->castTo<T>();
-      itProp = nextDynamicSibling(itProp);
-      }
-    }
-
-  const PropertyInformation *info = typeInformation();
-
-  return WRAPPER_TYPE_FROM(const T, const PropertyContainer)(
-      this,
-        info,
-        idx,
-      dyProp
-      );
-  }
-
-inline WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer) PropertyContainer::walker()
-  {
-  return WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer)(
-        this,
-        typeInformation(),
-        0,
-        firstDynamicChild()
-        );
-  }
-
-inline WRAPPER_TYPE_FROM_BASE(const Property, const PropertyContainer) PropertyContainer::walker() const
-  {
-  return WRAPPER_TYPE_FROM_BASE(const Property, const PropertyContainer)(
-        this,
-        typeInformation(),
-        0,
-        firstDynamicChild()
-        );
-  }
+}
 
 inline WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer) PropertyContainer::walkerFrom(Property *prop)
   {
   xAssert(prop->parent() == this);
   xsize idx = 0;
   Property *dyProp = 0;
+  const PropertyInformation *info = typeInformation();
+
   if(!prop->isDynamic())
     {
     idx = prop->baseInstanceInformation()->index();
@@ -311,11 +225,9 @@ inline WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer) PropertyContainer::wa
     }
   else
     {
-    idx = X_SIZE_SENTINEL;
+    idx = xMin(0U, (xsize)info->childCount());
     dyProp = prop;
     }
-
-  const PropertyInformation *info = typeInformation();
 
   return WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer)(
       this,
@@ -323,6 +235,47 @@ inline WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer) PropertyContainer::wa
       idx,
       dyProp
       );
+  }
+
+template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer::walker()
+  {
+  return detail::makeWalker<WRAPPER_TYPE_FROM(T, PropertyContainer), T>(this);
+  }
+
+template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer) PropertyContainer::walker() const
+  {
+  return detail::makeWalker<WRAPPER_TYPE_FROM(const T, const PropertyContainer), T>(this);
+  }
+
+template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer::walkerFrom(T *prop)
+  {
+  return detail::makeWalkerFrom<WRAPPER_TYPE_FROM(T, PropertyContainer)>(this, prop);
+  }
+
+template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer)
+    PropertyContainer::walkerFrom(const T *prop) const
+  {
+  return detail::makeWalkerFrom<WRAPPER_TYPE_FROM(const T, const PropertyContainer)>(this, prop);
+  }
+
+template <typename T> WRAPPER_TYPE_FROM(T, PropertyContainer) PropertyContainer::walkerFrom(Property *prop)
+  {
+  return detail::makeWalkerFromNext<WRAPPER_TYPE_FROM(T, PropertyContainer)>(this, p);
+  }
+
+template <typename T> WRAPPER_TYPE_FROM(const T, const PropertyContainer) PropertyContainer::walkerFrom(const Property *prop) const
+  {
+  return detail::makeWalkerFromNext<WRAPPER_TYPE_FROM(const T, const PropertyContainer)>(this, p);
+  }
+
+inline WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer) PropertyContainer::walker()
+  {
+  return detail::makeTypelessWalker<WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer)>(this);
+  }
+
+inline WRAPPER_TYPE_FROM_BASE(const Property, const PropertyContainer) PropertyContainer::walker() const
+  {
+  return detail::makeTypelessWalker<WRAPPER_TYPE_FROM_BASE(const Property, const PropertyContainer)>(this);
   }
 
 #undef WRAPPER_TYPE_FROM

@@ -21,7 +21,7 @@ struct TypeData
     : groups(allocator),
       types(allocator),
       observers(allocator),
-      bucketAllocator(DefaultAllocation, ExpandingAllocation, allocator),
+      bucketAllocator(allocator, DefaultAllocation, ExpandingAllocation),
       interfaces(allocator),
       baseAllocator(allocator),
       temporaryAllocator(allocator)
