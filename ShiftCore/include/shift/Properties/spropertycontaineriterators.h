@@ -34,7 +34,7 @@ public:
     }
   PropertyContainerBaseIterator<T,CONT>& operator++()
     {
-    if(_index+1 < _embeddedCount)
+    if(_index < _embeddedCount)
       {
       ++_index;
       }
