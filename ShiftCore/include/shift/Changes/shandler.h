@@ -51,6 +51,9 @@ public:
 
   Eks::TemporaryAllocatorCore *temporaryAllocator();
 
+  bool stateStorageEnabled() const { return _stateStorageEnabled; }
+  void setStateStorageEnabled(bool enable) { _stateStorageEnabled = enable; }
+
 private:
   Eks::AllocatorBase *changeAllocator();
 
@@ -64,6 +67,8 @@ private:
 
   Eks::Vector <Change*> _done;
   Eks::Vector <xsize> _blockSize;
+
+  bool _stateStorageEnabled;
   };
 
 class SHIFT_EXPORT Block
@@ -86,6 +91,35 @@ public:
 
 private:
   Handler *_db;
+  };
+
+class SHIFT_EXPORT StateStorageBlock
+  {
+public:
+  StateStorageBlock(bool enable, Handler *h) 
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    : _handler(h), _oldValue(h->stateStorageEnabled())
+#endif
+    {
+    (void)enable;
+    (void)h;
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    _handler->setStateStorageEnabled(enable);
+#endif
+    }
+
+  ~StateStorageBlock()
+    {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    _handler->setStateStorageEnabled(_oldValue);
+#endif
+    }
+  
+#ifdef S_CENTRAL_CHANGE_HANDLER
+private:
+  Handler *_handler;
+  bool _oldValue;
+#endif
   };
 
 }

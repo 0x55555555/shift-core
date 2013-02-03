@@ -10,8 +10,7 @@ namespace Shift
 template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&... params)
   {
   SProfileFunction
-  bool oldStateStorageEnabled = database()->stateStorageEnabled();
-  database()->setStateStorageEnabled(false);
+  StateStorageBlock ss(false, this);
 
   if(!oldStateStorageEnabled)
     {
@@ -50,14 +49,11 @@ template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&...
     {
     inform();
     }
-
-  database()->setStateStorageEnabled(oldStateStorageEnabled);
   }
 #else
 #define DO_CHANGE_IMPL(...) { \
   SProfileFunction \
-  bool oldStateStorageEnabled = database()->stateStorageEnabled(); \
-  database()->setStateStorageEnabled(false); \
+  StateStorageBlock ss(false, this); \
   if(!oldStateStorageEnabled) { \
     CLS change(__VA_ARGS__); \
     ((Change&)change).apply(); \
@@ -73,7 +69,6 @@ template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&...
       xAssertFailMessage("Change failed"); \
     } } \
   if(_blockLevel == 0) { inform(); } \
-  database()->setStateStorageEnabled(oldStateStorageEnabled); \
   }
 
 template <typename CLS, typename T0> void Handler::doChange(const T0 &t0)

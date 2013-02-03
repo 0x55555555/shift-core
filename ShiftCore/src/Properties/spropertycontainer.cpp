@@ -541,9 +541,10 @@ const Property *PropertyContainer::nextDynamicSibling(const Property *p) const
 
 Property *PropertyContainer::firstChild()
   {
-  const EmbeddedPropertyInstanceInformation *inst = typeInformation()->childFromIndex(0);
-  if(inst)
+  const PropertyInformation* info = typeInformation();
+  if(info->childCount())
     {
+    const EmbeddedPropertyInstanceInformation *inst = info->childFromIndex(0);
     return inst->locateProperty(this);
     }
 

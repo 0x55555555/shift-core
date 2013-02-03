@@ -54,12 +54,15 @@ public:
 namespace Interface
 {
 
-template <typename PropType, typename T> static void addStaticInterface()
+template <typename PropType, typename T> static T *addStaticInterface()
   {
+  T* t = TypeRegistry::interfaceAllocator()->create<T>();
+
   TypeRegistry::addInterfaceFactory(
         PropType::staticTypeInformation(),
         T::InterfaceType::InterfaceTypeId,
-        TypeRegistry::interfaceAllocator()->create<T>());
+        t);
+  return t;
   }
 
 template <typename T> static void addStaticInterface(
@@ -72,13 +75,16 @@ template <typename T> static void addStaticInterface(
         factory);
   }
 
-template <typename T> static void addStaticInterface(PropertyInformation *info)
+template <typename T> static T *addStaticInterface(PropertyInformation *info)
   {
+  T* t = TypeRegistry::interfaceAllocator()->create<T>();
+
   typedef typename T::InterfaceType IfcType;
   TypeRegistry::addInterfaceFactory(
         info,
         IfcType::InterfaceTypeId,
-        TypeRegistry::interfaceAllocator()->create<T>());
+        t);
+  return t;
   }
 
 template <typename PropType, typename T> static void addInheritedInterface()

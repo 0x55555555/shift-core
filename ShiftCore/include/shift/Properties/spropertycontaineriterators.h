@@ -109,7 +109,11 @@ public:
     }
 
   Iterator begin() { return Iterator(_cont, _info, _index, _fromDynamic); }
-  Iterator end() { return Iterator(0, _info, xMin(0U, (xsize)_info->childCount()), 0); }
+  Iterator end()
+    {
+    xsize lastChildIndex = xMin((xsize)_info->childCount()-1, (xsize)_info->childCount());
+    return Iterator(0, _info, lastChildIndex, 0);
+    }
   };
 
 #define WRAPPER_TYPE_FROM(T, CONT) PropertyContainerTypedIteratorWrapperFrom<T, CONT, PropertyContainerIterator<T, CONT> >

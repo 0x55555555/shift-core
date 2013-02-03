@@ -915,9 +915,7 @@ void Property::updateParent() const
 void Property::update() const
   {
   SProfileFunction
-  Database *db = const_cast<Database*>(database());
-  bool stateStorageEnabled = db->stateStorageEnabled();
-  db->setStateStorageEnabled(false);
+  StateStorageBlock ss(false, const_cast<Handler*>(handler()));
 
   Property *prop = const_cast<Property*>(this);
   prop->_flags.setFlag(PreGetting);
@@ -951,9 +949,6 @@ void Property::update() const
   // dirty can be set again in compute functions.
   prop->_flags.clearFlag(Dirty);
   prop->_flags.clearFlag(PreGetting);
-
-  db->setStateStorageEnabled(stateStorageEnabled);
-
   xAssert(!_flags.hasFlag(Dirty));
   }
 

@@ -42,9 +42,6 @@ public:
     return _temporaryMemory;
     }
 
-  bool stateStorageEnabled() const { return _stateStorageEnabled; }
-  void setStateStorageEnabled(bool enable) { _stateStorageEnabled = enable; }
-
 protected:
   void initiateInheritedDatabaseType(const PropertyInformation *info);
 
@@ -64,30 +61,10 @@ private:
   Eks::AllocatorBase *_memory;
   Eks::TemporaryAllocatorCore *_temporaryMemory;
 
-  bool _stateStorageEnabled;
 
   friend class Property;
   friend class PropertyContainer;
   friend class PropertyContainer::TreeChange;
-  };
-
-
-class SHIFT_EXPORT StateStorageBlock
-  {
-public:
-  StateStorageBlock(bool enable, Database *h) : _db(h), _oldValue(h->stateStorageEnabled())
-    {
-    _db->setStateStorageEnabled(enable);
-    }
-
-  ~StateStorageBlock()
-    {
-    _db->setStateStorageEnabled(_oldValue);
-    }
-
-private:
-  Database *_db;
-  bool _oldValue;
   };
 
 }

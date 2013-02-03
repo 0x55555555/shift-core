@@ -4,7 +4,7 @@
 namespace Shift
 {
 
-Handler::Handler() : _database(0), _blockLevel(0)
+Handler::Handler() : _database(0), _blockLevel(0), _stateStorageEnabled(false)
   {
   }
 

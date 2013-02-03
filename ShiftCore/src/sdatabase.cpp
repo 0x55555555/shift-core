@@ -58,7 +58,6 @@ Database::Database()
 #ifdef S_CENTRAL_CHANGE_HANDLER
   _handler = this;
 #else
-  _stateStorageEnabled = false;
   PropertyContainer::_database = this;
 #endif
   setDatabase(this);
