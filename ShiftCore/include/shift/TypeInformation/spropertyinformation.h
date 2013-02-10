@@ -93,8 +93,8 @@ XProperties:
   XProperty(xuint8, childCount, setChildCount);
 
   XProperty(xsize, size, setSize);
-  XProperty(xsize, dynamicInstanceInformationSize, setDynamicInstanceInformationSize);
-  XProperty(xsize, embeddedInstanceInformationSize, setEmbeddedInstanceInformationSize);
+  XByRefProperty(Eks::ResourceDescription, dynamicInstanceInformationFormat, setDynamicInstanceInformationFormat);
+  XByRefProperty(Eks::ResourceDescription, embeddedInstanceInformationFormat, setEmbeddedInstanceInformationFormat);
 
   XProperty(xsize, instances, setInstances);
 
@@ -135,7 +135,7 @@ public:
   const PropertyInformation *findAllocatableBase(xsize &offset) const;
 
   // size of the property type, and its instance information
-  xsize dynamicSize() const { return size() + dynamicInstanceInformationSize() + X_ALIGN_BYTE_COUNT; }
+  xsize dynamicSize() const { return size() + dynamicInstanceInformationFormat().allocatedSize(); }
 
   template <typename T> static PropertyInformation *createTypeInformation(
       const char *name,

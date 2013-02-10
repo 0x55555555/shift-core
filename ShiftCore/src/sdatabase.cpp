@@ -126,15 +126,21 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
   SProfileFunction
   xAssert(type);
 
-  void *propMem = _memory->alloc(type->dynamicSize());
+  xsize size = type->dynamicSize();
+  size = Eks::roundToAlignment(size, X_ALIGN_BYTE_COUNT);
+
+  void *propMem = _memory->alloc(size);
 
   // new the prop type
   Property *prop = type->functions().createProperty(propMem);
 
   // new the instance information
   xuint8 *alignedPtr = (xuint8*)(propMem) + type->size();
-  alignedPtr = Eks::roundToAlignment(alignedPtr);
-  xAssertIsAligned(alignedPtr);
+  const xsize alignment = type->dynamicInstanceInformationFormat().alignment();
+
+  alignedPtr = Eks::roundToAlignment(alignedPtr, alignment);
+  xAssertIsSpecificAligned(alignedPtr, alignment);
+
   PropertyInstanceInformation *instanceInfoMem = (PropertyInstanceInformation *)(alignedPtr);
   PropertyInstanceInformation *instanceInfo = type->functions().createDynamicInstanceInformation(instanceInfoMem, 0);
 

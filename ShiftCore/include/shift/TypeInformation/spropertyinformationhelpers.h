@@ -152,6 +152,12 @@ public:
           U AncestorPropType::* ptr,
           const PropertyNameArg &name)
     {
+    // this isnt always true, but normally is.
+    // when adding extended child properties things get weird.
+    //
+    //typedef std::is_base_of<AncestorPropType, PropType> Inherits;
+    //xCompileTimeAssert(Inherits::value == true);
+
     xptrdiff location = findLocation(ptr);
 
     xsize offset = 0;
@@ -343,8 +349,10 @@ private:
 
     info->setVersion(PropType::Version);
     info->setSize(sizeof(PropType));
-    info->setDynamicInstanceInformationSize(sizeof(typename PropType::DynamicInstanceInformation));
-    info->setEmbeddedInstanceInformationSize(sizeof(typename PropType::EmbeddedInstanceInformation));
+    info->setDynamicInstanceInformationFormat(
+      Eks::ResourceDescriptionTypeHelper<typename PropType::DynamicInstanceInformation>::createFor());
+    info->setEmbeddedInstanceInformationFormat(
+      Eks::ResourceDescriptionTypeHelper<typename PropType::EmbeddedInstanceInformation>::createFor());
 
     PropType *offset = (PropType*)1;
     Property *propertyData = offset;

@@ -46,8 +46,8 @@ void PropertyInformation::initiate(PropertyInformation *info, const PropertyInfo
 
   info->setSize(from->size());
   info->setPropertyDataOffset(from->propertyDataOffset());
-  info->setDynamicInstanceInformationSize(from->dynamicInstanceInformationSize());
-  info->setEmbeddedInstanceInformationSize(from->embeddedInstanceInformationSize());
+  info->setDynamicInstanceInformationFormat(from->dynamicInstanceInformationFormat());
+  info->setEmbeddedInstanceInformationFormat(from->embeddedInstanceInformationFormat());
 
   info->_instances = 0;
   info->_extendedParent = 0;

@@ -121,7 +121,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::overrid
 
   EmbeddedPropertyInstanceInformation* def =
       EmbeddedPropertyInstanceInformation::allocate(
-        _data.allocator, newType->embeddedInstanceInformationSize());
+        _data.allocator, newType->embeddedInstanceInformationFormat());
 
   PropertyInstanceInformation *inst = fns.createEmbeddedInstanceInformation(def, oldInst);
   xAssert(inst == def);
@@ -186,7 +186,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
 
   EmbeddedPropertyInstanceInformation* def =
       EmbeddedPropertyInstanceInformation::allocate(
-        _data.allocator, newChildType->embeddedInstanceInformationSize());
+        _data.allocator, newChildType->embeddedInstanceInformationFormat());
 
   newChildType->functions().createEmbeddedInstanceInformation(def, 0);
 

@@ -116,10 +116,10 @@ EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation(
 
 EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::allocate(
     Eks::AllocatorBase *allocator,
-    xsize size)
+    const Eks::ResourceDescription &fmt)
   {
   xAssert(allocator);
-  void *ptr = allocator->alloc(size);
+  void *ptr = allocator->alloc(fmt);
 
   xAssert(ptr);
   return (EmbeddedPropertyInstanceInformation*)ptr;
