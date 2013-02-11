@@ -102,7 +102,7 @@ DatabaseModel::~DatabaseModel()
 
 QModelIndex DatabaseModel::index(const Property *p) const
   {
-  return createIndex(p->parent()->index(p), 0, (Property *)p);
+  return createIndex((int)p->parent()->index(p), 0, (Property *)p);
   }
 
 bool DatabaseModel::isEqual(const QModelIndex &a, const QModelIndex &b) const
@@ -170,14 +170,14 @@ int DatabaseModel::rowCount( const QModelIndex &parent ) const
       xAssert(container != _currentTreeChange->property());
       if(container == _currentTreeChange->after())
         {
-        return container->size() - 1;
+        return (int)(container->size() - 1);
         }
       else if(container == _currentTreeChange->before())
         {
-        return container->size() + 1;
+        return (int)(container->size() + 1);
         }
       }
-    return container->size();
+    return (int)container->size();
     }
 
   return 0;
@@ -226,7 +226,7 @@ QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent
         }
       else if(container == _currentTreeChange->after())
         {
-        xsize newRow = xMin(container->size()-1, _currentTreeChange->index());
+        xuint8 newRow = xMin((xuint8)(container->size()-1), _currentTreeChange->index());
         if((xsize)row >= newRow)
           {
           ++row;
@@ -269,11 +269,11 @@ QModelIndex DatabaseModel::parent( const QModelIndex &child ) const
       if(_options.hasFlag(EntitiesOnly))
         {
         Entity *ent = parent->entity();
-        return createIndex(ent->parent()->index(ent), 0, (Property*)ent);
+        return createIndex((int)ent->parent()->index(ent), 0, (Property*)ent);
         }
       else
         {
-        return createIndex(parent->parent()->index(parent), 0, (Property*)parent);
+        return createIndex((int)parent->parent()->index(parent), 0, (Property*)parent);
         }
       }
     }
@@ -291,7 +291,7 @@ int DatabaseModel::columnCount( const QModelIndex &parent ) const
 
   if(_options.hasFlag(ShowValues) && prop)
     {
-    xsize columns = 1;
+    int columns = 1;
 
     const PropertyContainer *cont = prop->castTo<PropertyContainer>();
     if(cont)
@@ -392,7 +392,7 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
     Property *inp = prop->input();
     if(inp)
       {
-      return QVariant::fromValue(createIndex(inp->parent()->index(inp), 0, inp));
+      return QVariant::fromValue(createIndex((int)inp->parent()->index(inp), 0, inp));
       }
     else
       {
@@ -569,13 +569,13 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
 
     if(tC->after(back) == 0)
       {
-      changePersistentIndex(createIndex(tC->index(), 0, tC->property()), QModelIndex());
+      changePersistentIndex(createIndex((int)tC->index(), 0, tC->property()), QModelIndex());
 
       const PropertyContainer *parent = tC->before(back);
       xAssert(parent);
 
-      xsize i = tC->index();
-      Q_EMIT beginRemoveRows(createIndex(parent->parent()->index(parent), 0, (Property*)parent), i, i);
+      xuint8 i = tC->index();
+      Q_EMIT beginRemoveRows(createIndex((int)parent->parent()->index(parent), 0, (Property*)parent), (int)i, (int)i);
       _currentTreeChange = 0;
       Q_EMIT endRemoveRows();
       }
@@ -584,8 +584,8 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
       const PropertyContainer *parent = tC->after(back);
       xAssert(parent);
 
-      xsize i = xMin(parent->size()-1, tC->index());
-      Q_EMIT beginInsertRows(createIndex(parent->parent()->index(parent), 0, (Property*)parent), i, i);
+      xuint8 i = xMin((xuint8)(parent->size()-1), tC->index());
+      Q_EMIT beginInsertRows(createIndex((int)parent->parent()->index(parent), 0, (Property*)parent), (int)i, (int)i);
       _currentTreeChange = 0;
       Q_EMIT endInsertRows();
       }

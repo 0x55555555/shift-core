@@ -88,7 +88,8 @@ PropertyInformation *PropertyInformation::derive(
     children[i] = inst;
     }
 
-  copy->setChildCount(childCount);
+  xAssert(childCount < X_UINT8_SENTINEL);
+  copy->setChildCount((xuint8)childCount);
   copy->setChildData(children);
 
 

@@ -21,12 +21,12 @@ public:
     return addProperty(T::staticTypeInformation(), index, name)->castTo<T>();
     }
 
-  Property *add(const PropertyInformation *info, const PropertyNameArg &name, PropertyInstanceInformationInitialiser *init, xsize index=X_SIZE_SENTINEL)
+  Property *add(const PropertyInformation *info, const PropertyNameArg &name, PropertyInstanceInformationInitialiser *init, xuint8 index=X_UINT8_SENTINEL)
     {
     return PropertyContainer::addProperty(info, index, name, init);
     }
 
-  Property *add(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const PropertyNameArg &name=PropertyNameArg())
+  Property *add(const PropertyInformation *info, xuint8 index=X_UINT8_SENTINEL, const PropertyNameArg &name=PropertyNameArg())
     {
     return PropertyContainer::addProperty(info, index, name, 0);
     }

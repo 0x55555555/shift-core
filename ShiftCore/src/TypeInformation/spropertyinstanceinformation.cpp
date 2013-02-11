@@ -169,10 +169,10 @@ void EmbeddedPropertyInstanceInformation::initiate(const PropertyInformation *in
   n.toName(name());
 
   xAssert(location < X_UINT16_SENTINEL);
-  setLocation(location);
+  setLocation((xuint16)location);
 
   xAssert(index < X_UINT16_SENTINEL);
-  setIndex(index);
+  setIndex((xuint8)index);
   }
 
 void EmbeddedPropertyInstanceInformation::setCompute(ComputeFunction fn)
@@ -252,7 +252,7 @@ const EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::
 
   Eks::String name;
   bool escape = false;
-  for(int i = 0, s = path.size(); i < s; ++i)
+  for(xsize i = 0, s = path.size(); i < s; ++i)
     {
     Eks::Char c = path[i];
 

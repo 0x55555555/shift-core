@@ -28,7 +28,7 @@ void PropertyContainer::createTypeInformation(PropertyInformationTyped<PropertyC
 
     static XScript::ClassDef<0,1,0> cls = {
       {
-      api->property<xsize, &PropertyContainer::size>("length")
+      api->property<xuint8, &PropertyContainer::size>("length")
       }
     };
 
@@ -36,7 +36,7 @@ void PropertyContainer::createTypeInformation(PropertyInformationTyped<PropertyC
     }
   }
 
-PropertyContainer::TreeChange::TreeChange(PropertyContainer *b, PropertyContainer *a, Property *ent, xsize index)
+PropertyContainer::TreeChange::TreeChange(PropertyContainer *b, PropertyContainer *a, Property *ent, xuint8 index)
   : _before(b), _after(a), _property(ent), _index(index), _owner(false)
   {
   }
@@ -115,17 +115,17 @@ bool PropertyContainer::TreeChange::inform(bool back)
   }
 
 PropertyContainer::PropertyContainer()
-  : Property(), _dynamicChild(0), _containedProperties(0)
+  : Property(), _dynamicChild(0)
 #ifndef S_CENTRAL_CHANGE_HANDLER
     , _database(0)
 #endif
   {
   }
 
-xsize PropertyContainer::size() const
+xuint8 PropertyContainer::size() const
   {
   preGet();
-  xsize s = typeInformation()->childCount();
+  xuint8 s = typeInformation()->childCount();
   const Property *c = firstDynamicChild();
   while(c)
     {
@@ -134,6 +134,11 @@ xsize PropertyContainer::size() const
     }
 
   return s;
+  }
+
+xuint8 PropertyContainer::containedProperties() const
+  {
+  return typeInformation()->childCount();
   }
 
 void PropertyContainer::disconnectTree()
@@ -199,17 +204,19 @@ PropertyContainer::~PropertyContainer()
   }
 
 void PropertyContainer::clear()
-{
+  {
 #ifdef S_CENTRAL_CHANGE_HANDLER
   xAssert(handler());
 #endif
   Block b(handler());
 
+  xuint8 containedProps = containedProperties();
+
   Property *prop = _dynamicChild;
   while(prop)
     {
     xAssert(prop->parent() == this);
-    if(index(prop) >= _containedProperties)
+    if(index(prop) >= containedProps)
       {
       removeProperty(prop);
       }
@@ -249,9 +256,9 @@ PropertyName PropertyContainer::makeUniqueName(const PropertyNameArg &name) cons
   return newName;
   }
 
-Property *PropertyContainer::addProperty(const PropertyInformation *info, xsize index, const PropertyNameArg& name, PropertyInstanceInformationInitialiser *init)
+Property *PropertyContainer::addProperty(const PropertyInformation *info, xuint8 index, const PropertyNameArg& name, PropertyInstanceInformationInitialiser *init)
   {
-  xAssert(index >= _containedProperties);
+  xAssert(index >= containedProperties());
 
 
   Property *newProp = database()->createDynamicProperty(info, this, init);
@@ -281,11 +288,11 @@ void PropertyContainer::moveProperty(PropertyContainer *c, Property *p)
     Block b(database());
 
     p->setName(c->makeUniqueName(name));
-    PropertyDoChange(TreeChange, this, c, p, X_SIZE_SENTINEL);
+    PropertyDoChange(TreeChange, this, c, p, X_UINT8_SENTINEL);
     }
   else
     {
-    PropertyDoChange(TreeChange, this, c, p, X_SIZE_SENTINEL);
+    PropertyDoChange(TreeChange, this, c, p, X_UINT8_SENTINEL);
     }
   }
 
@@ -321,18 +328,20 @@ void PropertyContainer::internalInsertProperty(Property *newProp, xsize index)
   xAssert(newPropInstInfo->parent() == 0);
   xAssert(newPropInstInfo->nextSibling() == 0);
 
-  xsize propIndex = 0;
+  const xuint8 containedProps = containedProperties();
+
+  xuint8 propIndex = 0;
 
   if(_dynamicChild && index > 0)
     {
-    xsize propIndex = containedProperties();
+    propIndex = containedProperties();
     Property *prop = _dynamicChild;
     while(prop)
       {
       DynamicPropertyInstanceInformation *propInstInfo =
           const_cast<DynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
 
-      if((index == (propIndex+1) && index > _containedProperties) ||
+      if((index == (propIndex+1) && index > containedProps) ||
          !propInstInfo->nextSibling())
         {
         newPropInstInfo->setParent(this);
@@ -420,12 +429,12 @@ void PropertyContainer::internalRemoveProperty(Property *oldProp)
   DynamicPropertyInstanceInformation *oldPropInstInfo =
       const_cast<DynamicPropertyInstanceInformation*>(oldProp->dynamicBaseInstanceInformation());
 
-  xsize oldIndex = oldProp->baseInstanceInformation()->index();
+  xuint8 oldIndex = oldProp->baseInstanceInformation()->index();
   DynamicPropertyInstanceInformation *indexUpdate = 0;
 
   if(oldProp == _dynamicChild)
     {
-    xAssert(_containedProperties == 0);
+    xAssert(containedProperties() == 0);
 
     _dynamicChild = oldPropInstInfo->nextSibling();
 
@@ -450,7 +459,7 @@ void PropertyContainer::internalRemoveProperty(Property *oldProp)
 
       if(oldProp == propInstInfo->nextSibling())
         {
-        xAssert((propIndex+1) >= _containedProperties);
+        xAssert((propIndex+1) >= containedProperties());
 
         removed = true;
         oldPropInstInfo->setInvalidIndex();
@@ -574,7 +583,7 @@ const Property *PropertyContainer::lastChild() const
   }
 
 
-xsize PropertyContainer::index(const Property* prop) const
+xuint8 PropertyContainer::index(const Property* prop) const
   {
   SProfileFunction
   preGet();

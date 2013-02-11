@@ -215,7 +215,7 @@ Property *PropertyBaseTraits::loadProperty(PropertyContainer *parent, Loader &l)
   Property *prop = 0;
   if(dynamic != 0)
     {
-    prop = parent->addProperty(type, X_SIZE_SENTINEL, name, &initialiser);
+    prop = parent->addProperty(type, X_UINT8_SENTINEL, name, &initialiser);
     xAssert(prop);
     }
   else
@@ -297,7 +297,7 @@ void PropertyContainerTraits::assignProperty(const Property *f, Property *t)
 
   if(from->containedProperties() == to->containedProperties())
     {
-    xsize index = 0;
+    xuint8 index = 0;
     auto tChildIt = to->walker().begin();
     xForeach(auto fChild, from->walker())
       {
@@ -355,7 +355,7 @@ Property *PropertyContainerTraits::loadProperty(PropertyContainer *parent, Loade
 bool PropertyContainerTraits::shouldSavePropertyValue(const Property *p)
   {
   const PropertyContainer *ptr = p->uncheckedCastTo<PropertyContainer>();
-  if(ptr->_containedProperties < ptr->size())
+  if(ptr->containedProperties() < ptr->size())
     {
     return true;
     }

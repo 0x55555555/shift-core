@@ -114,7 +114,7 @@ QTextStream &operator>>(QTextStream &s, SStringVector &v)
 QTextStream &operator<<(QTextStream &s, const SStringVector &v)
   {
   s << "[ ";
-  for(int i=0, count=v.size(); i<count; ++i)
+  for(xsize i=0, count=v.size(); i<count; ++i)
     {
     Utils::writeEscapedQuotedString(s, v[i]);
     if(i<(count-1))

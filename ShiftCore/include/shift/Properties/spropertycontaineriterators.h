@@ -229,7 +229,7 @@ inline WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer) PropertyContainer::wa
     }
   else
     {
-    idx = xMin(0U, (xsize)info->childCount());
+    idx = xMin((xuint8)0, info->childCount());
     dyProp = prop;
     }
 

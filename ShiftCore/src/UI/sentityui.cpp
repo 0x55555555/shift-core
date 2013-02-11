@@ -89,7 +89,7 @@ bool EntityUI::canCreateWidget(Property *prop) const
 int EntityUI::addWidgetCreator(WidgetCreator fn)
   {
   _types << fn;
-  return _types.size()-1;
+  return (int)(_types.size()-1);
   }
 
 void EntityUI::setUIType(const PropertyInformation *type, int widgetType)

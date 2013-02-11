@@ -783,7 +783,7 @@ Property *Property::resolvePath(const Eks::String &path)
 
   Eks::String name;
   bool escape = false;
-  for(int i = 0, s = path.size(); i < s; ++i)
+  for(xsize i = 0, s = path.size(); i < s; ++i)
     {
     Eks::String::Char c = path[i];
 

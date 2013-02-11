@@ -18,10 +18,11 @@ PropertyInformationChildrenCreator::PropertyInformationChildrenCreator(
 PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
   {
   const PropertyInformation *parent = _information->parentTypeInformation();
-  
+
   xsize childCount = _properties.size();
 
-  _information->setChildCount(childCount);
+  xAssert(childCount < X_UINT8_SENTINEL)
+  _information->setChildCount((xuint8)childCount);
   if(childCount == 0)
     {
     _information->setChildData(0);
