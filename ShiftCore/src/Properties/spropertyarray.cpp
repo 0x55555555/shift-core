@@ -15,7 +15,7 @@ void PropertyArray::createTypeInformation(PropertyInformationTyped<PropertyArray
     auto* api = info->apiInterface();
 
     typedef XScript::MethodToInCa<PropertyArray,
-        Property *(const PropertyInformation *, xuint8, const PropertyNameArg &),
+        Property *(const PropertyInformation *, xsize, const PropertyNameArg &),
         &PropertyArray::add> AddType;
 
     static XScript::ClassDef<0,0,1> cls = {

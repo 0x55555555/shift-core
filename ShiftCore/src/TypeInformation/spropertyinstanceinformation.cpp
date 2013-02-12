@@ -18,7 +18,6 @@ PropertyInstanceInformation::PropertyInstanceInformation(const PropertyInstanceI
   {
   _childInformation = c.childInformation();
   _name = c.name();
-  _index = c.index();
   _mode = c.mode();
   _isDynamic = c.isDynamic();
 
@@ -68,11 +67,6 @@ void PropertyInstanceInformation::setModeString(const Eks::String &s)
   _mode = Default;
   }
 
-void PropertyInstanceInformation::setInvalidIndex()
-  {
-  setIndex(X_UINT16_SENTINEL);
-  }
-
 PropertyInstanceInformation::Mode PropertyInstanceInformation::mode() const
   {
   return Mode(_mode);
@@ -109,7 +103,8 @@ EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation(
     _compute(o.compute()),
     _affects(o.affects()),
     _affectsOwner(false),
-    _isExtraClassMember(false)
+    _isExtraClassMember(false),
+    _index(o._index)
   {
   xAssert(!o.isExtraClassMember())
   }
@@ -171,7 +166,7 @@ void EmbeddedPropertyInstanceInformation::initiate(const PropertyInformation *in
   xAssert(location < X_UINT16_SENTINEL);
   setLocation((xuint16)location);
 
-  xAssert(index < X_UINT16_SENTINEL);
+  xAssert(index < X_UINT8_SENTINEL);
   setIndex((xuint8)index);
   }
 
@@ -183,38 +178,6 @@ void EmbeddedPropertyInstanceInformation::setCompute(ComputeFunction fn)
     _mode = Computed;
     }
   }
-/*
-void EmbeddedPropertyInstanceInformation::addAffects(
-    const PropertyInformationCreateData &data,
-    const EmbeddedPropertyInstanceInformation *info)
-  {
-  xsize *oldAffects = _affects;
-  xsize affectsSize = 0;
-  if(oldAffects)
-    {
-    xAssert(info);
-
-    xsize *current = _affects;
-    while(*current)
-      {
-      current++;
-      affectsSize++;
-      }
-    }
-
-  xAssert(!_affects);
-  ###
-  _affects = new xsize[affectsSize+2]; // one for the new one, one for the end 0
-
-  if(oldAffects)
-    {
-    memcpy(_affects, oldAffects, sizeof(xsize)*affectsSize);
-    delete oldAffects;
-    }
-
-  _affects[affectsSize] = info->location();
-  _affects[affectsSize+1] = 0;
-  }*/
 
 void EmbeddedPropertyInstanceInformation::setAffects(
     const PropertyInformationCreateData &data,
@@ -387,8 +350,14 @@ DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation(
     const DynamicPropertyInstanceInformation &o)
     : PropertyInstanceInformation(o),
     _parent(0),
-    _nextSibling(0)
+    _nextSibling(0),
+    _index(o._index)
   {
+  }
+
+void DynamicPropertyInstanceInformation::setInvalidIndex()
+  {
+  setIndex(X_SIZE_SENTINEL);
   }
 
 }

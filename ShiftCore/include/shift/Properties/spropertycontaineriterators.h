@@ -155,12 +155,12 @@ template <typename Res, typename T, typename Cont>  Res makeWalkerFrom(Cont *c, 
 
   if(!prop->isDynamic())
     {
-    idx = prop->baseInstanceInformation()->index();
+    idx = prop->dynamicInstanceInformation()->index();
     dyProp = c->firstDynamicChild<T>();
     }
   else
     {
-    idx = xMin(0U, (xsize)info->childCount());
+    idx = xMin((xsize)0U, (xsize)info->childCount());
     dyProp = prop;
     }
 
@@ -218,13 +218,13 @@ template <typename Res, typename T, typename Cont> Res makeWalkerFromNext(Cont *
 inline WRAPPER_TYPE_FROM_BASE(Property, PropertyContainer) PropertyContainer::walkerFrom(Property *prop)
   {
   xAssert(prop->parent() == this);
-  xsize idx = 0;
+  xuint8 idx = 0;
   Property *dyProp = 0;
   const PropertyInformation *info = typeInformation();
 
   if(!prop->isDynamic())
     {
-    idx = prop->baseInstanceInformation()->index();
+    idx = prop->embeddedInstanceInformation()->index();
     dyProp = firstDynamicChild();
     }
   else

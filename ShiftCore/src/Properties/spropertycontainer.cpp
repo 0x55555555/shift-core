@@ -28,7 +28,7 @@ void PropertyContainer::createTypeInformation(PropertyInformationTyped<PropertyC
 
     static XScript::ClassDef<0,1,0> cls = {
       {
-      api->property<xuint8, &PropertyContainer::size>("length")
+      api->property<xsize, &PropertyContainer::size>("length")
       }
     };
 
@@ -36,7 +36,7 @@ void PropertyContainer::createTypeInformation(PropertyInformationTyped<PropertyC
     }
   }
 
-PropertyContainer::TreeChange::TreeChange(PropertyContainer *b, PropertyContainer *a, Property *ent, xuint8 index)
+PropertyContainer::TreeChange::TreeChange(PropertyContainer *b, PropertyContainer *a, Property *ent, xsize index)
   : _before(b), _after(a), _property(ent), _index(index), _owner(false)
   {
   }
@@ -122,10 +122,10 @@ PropertyContainer::PropertyContainer()
   {
   }
 
-xuint8 PropertyContainer::size() const
+xsize PropertyContainer::size() const
   {
   preGet();
-  xuint8 s = typeInformation()->childCount();
+  xsize s = typeInformation()->childCount();
   const Property *c = firstDynamicChild();
   while(c)
     {
@@ -256,7 +256,7 @@ PropertyName PropertyContainer::makeUniqueName(const PropertyNameArg &name) cons
   return newName;
   }
 
-Property *PropertyContainer::addProperty(const PropertyInformation *info, xuint8 index, const PropertyNameArg& name, PropertyInstanceInformationInitialiser *init)
+Property *PropertyContainer::addProperty(const PropertyInformation *info, xsize index, const PropertyNameArg& name, PropertyInstanceInformationInitialiser *init)
   {
   xAssert(index >= containedProperties());
 
@@ -330,7 +330,7 @@ void PropertyContainer::internalInsertProperty(Property *newProp, xsize index)
 
   const xuint8 containedProps = containedProperties();
 
-  xuint8 propIndex = 0;
+  xsize propIndex = 0;
 
   if(_dynamicChild && index > 0)
     {
@@ -429,7 +429,7 @@ void PropertyContainer::internalRemoveProperty(Property *oldProp)
   DynamicPropertyInstanceInformation *oldPropInstInfo =
       const_cast<DynamicPropertyInstanceInformation*>(oldProp->dynamicBaseInstanceInformation());
 
-  xuint8 oldIndex = oldProp->baseInstanceInformation()->index();
+  xsize oldIndex = oldProp->dynamicInstanceInformation()->index();
   DynamicPropertyInstanceInformation *indexUpdate = 0;
 
   if(oldProp == _dynamicChild)
@@ -583,12 +583,18 @@ const Property *PropertyContainer::lastChild() const
   }
 
 
-xuint8 PropertyContainer::index(const Property* prop) const
+xsize PropertyContainer::index(const Property* prop) const
   {
   SProfileFunction
   preGet();
 
-  return prop->baseInstanceInformation()->index();
+  const PropertyInstanceInformation* bInfo = prop->baseInstanceInformation();
+  if(bInfo->isDynamic())
+    {
+    return bInfo->dynamicInfo()->index();
+    }
+
+  return bInfo->embeddedInfo()->index();
   }
 
 }

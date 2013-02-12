@@ -226,7 +226,7 @@ QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent
         }
       else if(container == _currentTreeChange->after())
         {
-        xuint8 newRow = xMin((xuint8)(container->size()-1), _currentTreeChange->index());
+        int newRow = xMin((int)(container->size()-1), (int)_currentTreeChange->index());
         if((xsize)row >= newRow)
           {
           ++row;
@@ -574,7 +574,7 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
       const PropertyContainer *parent = tC->before(back);
       xAssert(parent);
 
-      xuint8 i = tC->index();
+      xsize i = tC->index();
       Q_EMIT beginRemoveRows(createIndex((int)parent->parent()->index(parent), 0, (Property*)parent), (int)i, (int)i);
       _currentTreeChange = 0;
       Q_EMIT endRemoveRows();
@@ -584,7 +584,7 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
       const PropertyContainer *parent = tC->after(back);
       xAssert(parent);
 
-      xuint8 i = xMin((xuint8)(parent->size()-1), tC->index());
+      int i = xMin((int)(parent->size()-1), (int)tC->index());
       Q_EMIT beginInsertRows(createIndex((int)parent->parent()->index(parent), 0, (Property*)parent), (int)i, (int)i);
       _currentTreeChange = 0;
       Q_EMIT endInsertRows();
@@ -597,7 +597,7 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
   if(nameChange)
     {
     const Property *prop = nameChange->property();
-    QModelIndex ind = createIndex(prop->parent()->index(prop), 0, (Property*)prop);
+    QModelIndex ind = createIndex((int)prop->parent()->index(prop), 0, (Property*)prop);
     Q_EMIT dataChanged(ind, ind);
     }
   }
@@ -633,7 +633,7 @@ void DatabaseModel::setRoot(Entity *ent)
     }
   endResetModel();
 
-  Q_EMIT dataChanged(index(0, 0), index(_root->children.size(), 0));
+  Q_EMIT dataChanged(index(0, 0), index((int)_root->children.size(), 0));
   }
 
 void DatabaseModel::setDatabase(Database *db, Entity *root)

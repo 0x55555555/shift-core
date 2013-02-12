@@ -38,7 +38,7 @@ public:
     {
     S_CHANGE(TreeChange, Change, 52)
   public:
-    TreeChange(PropertyContainer *b, PropertyContainer *a, Property *ent, xuint8 index);
+    TreeChange(PropertyContainer *b, PropertyContainer *a, Property *ent, xsize index);
     ~TreeChange();
     PropertyContainer *before(bool back=false)
       {
@@ -74,13 +74,13 @@ public:
       }
 
     Property *property() const {return _property;}
-    xuint8 index() const { return _index; }
+    xsize index() const { return _index; }
 
   private:
     PropertyContainer *_before;
     PropertyContainer *_after;
     Property *_property;
-    xuint8 _index;
+    xsize _index;
     bool _owner;
     bool apply();
     bool unApply();
@@ -168,7 +168,7 @@ public:
 
   bool isEmpty() const { return size() != 0; }
 
-  xuint8 size() const;
+  xsize size() const;
   xuint8 containedProperties() const;
 
   Property *at(xsize i);
@@ -179,7 +179,7 @@ public:
 
   bool contains(const Property *) const;
 
-  xuint8 index(const Property* prop) const;
+  xsize index(const Property* prop) const;
 
   // iterator members, can be used like for (auto prop : container->walker())
   template <typename T> PropertyContainerTypedIteratorWrapperFrom<T, PropertyContainer, PropertyContainerIterator<T, PropertyContainer> > walker();
@@ -199,7 +199,7 @@ protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
   // you cannot add another contained property once dynamic properties have been added, this bool
   // should really be left alone and not exposed in sub classes
-  Property *addProperty(const PropertyInformation *info, xuint8 index=X_UINT8_SENTINEL, const PropertyNameArg& name=PropertyNameArg(), PropertyInstanceInformationInitialiser *inst=0);
+  Property *addProperty(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const PropertyNameArg& name=PropertyNameArg(), PropertyInstanceInformationInitialiser *inst=0);
   void removeProperty(Property *);
 
   void clear();
