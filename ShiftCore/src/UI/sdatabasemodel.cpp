@@ -227,7 +227,7 @@ QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent
       else if(container == _currentTreeChange->after())
         {
         int newRow = xMin((int)(container->size()-1), (int)_currentTreeChange->index());
-        if((xsize)row >= newRow)
+        if(row >= newRow)
           {
           ++row;
           }
