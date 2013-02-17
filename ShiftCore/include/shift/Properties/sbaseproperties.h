@@ -144,6 +144,12 @@ public:
       return _data;
       }
 
+    ComputeLock &operator=(const T &x)
+      {
+      *_data = x;
+      return *this;
+      }
+
   private:
     PODPropertyBase<T, DERIVED> *_ptr;
     T* _data;
