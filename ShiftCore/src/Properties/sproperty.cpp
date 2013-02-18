@@ -296,6 +296,15 @@ const XScript::InterfaceBase *Property::staticApiInterface()
   return staticTypeInformation()->apiInterface();
   }
 
+Eks::TemporaryAllocatorCore *Property::temporaryAllocator() const
+  {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  return handler()->temporaryAllocator();
+#else
+  return TypeRegistry::temporaryAllocator();
+#endif
+  }
+
 bool Property::inheritsFromType(const PropertyInformation *type) const
   {
   SProfileFunction

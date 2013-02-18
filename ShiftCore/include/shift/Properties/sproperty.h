@@ -7,6 +7,11 @@
 #include "XFlags"
 #include "XInterface.h"
 
+namespace Eks
+{
+class TemporaryAllocatorCore;
+}
+
 namespace Shift
 {
 
@@ -209,6 +214,8 @@ public:
 
   const XScript::InterfaceBase *apiInterface() const;
   static const XScript::InterfaceBase *staticApiInterface();
+
+  Eks::TemporaryAllocatorCore *temporaryAllocator() const;
 
 private:
   X_DISABLE_COPY(Property);
