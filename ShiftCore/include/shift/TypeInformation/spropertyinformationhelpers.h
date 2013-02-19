@@ -22,7 +22,7 @@ template <typename T> class PropertyInformationTyped;
     &_##myName##StaticTypeInformation, myName::bootstrapStaticTypeInformation); \
   const Shift::PropertyInformation *myName::staticTypeInformation() { return _##myName##StaticTypeInformation.information; } \
   const Shift::PropertyInformation *myName::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator) \
-  { Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
+  { Shift::ApiHelper<myName>::checkType(); Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
   #myName, myName::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
 
 #define S_IMPLEMENT_ABSTRACT_PROPERTY(myName, grp) \
@@ -42,6 +42,12 @@ public:
 
     XScript::Interface<PropType> *templ = XScript::Interface<PropType>::createWithParent(info->typeName(), parentTempl, baseTempl);
     info->setApiInterface(templ);
+    }
+
+  static void checkType()
+    {
+    typedef std::is_base_of<PropType::ParentType, PropType> Inherits;
+    xCompileTimeAssert(Inherits::value == true);
     }
   };
 
