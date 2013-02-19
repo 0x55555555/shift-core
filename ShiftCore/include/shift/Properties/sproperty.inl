@@ -30,6 +30,7 @@ inline const Property::EmbeddedInstanceInformation *Property::embeddedBaseInstan
   xAssert(_instanceInfo);
   return _instanceInfo->embeddedInfo();
   }
+
 inline const Property::DynamicInstanceInformation *Property::dynamicBaseInstanceInformation() const
   {
   xAssert(_instanceInfo);
