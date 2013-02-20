@@ -933,7 +933,8 @@ void Property::update() const
   prop->_flags.clearFlag(Dirty);
   
   // if the parent is computed or has input, we need to update it,
-  // which may update us.
+  // which may update us. Note that we should be made dirty recursively
+  // when the parent is dirtied, so its safe to do this in update not preGet.
   if(prop->_flags.hasFlag(ParentHasInput))
     {
     updateParent();
