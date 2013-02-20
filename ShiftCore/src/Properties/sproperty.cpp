@@ -931,7 +931,13 @@ void Property::update() const
 
   // this is a const function, but because we delay computation we may need to assign here
   prop->_flags.clearFlag(Dirty);
-
+  
+  // if the parent is computed or has input, we need to update it,
+  // which may update us.
+  if(prop->_flags.hasFlag(ParentHasInput))
+    {
+    updateParent();
+    }
 
 
   if(!isDynamic())
