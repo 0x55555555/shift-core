@@ -47,8 +47,6 @@ SOURCES += \
     src/Serialisation/sjsonio.cpp \
     src/Serialisation/sloader.cpp \
     src/Utilities/spropertyname.cpp \
-    src/UI/moc_spropertydefaultui.cpp \
-    src/UI/moc_sdatabasemodel.cpp \
     src/TypeInformation/spropertyinformationhelpers.cpp
 
 HEADERS += \
@@ -88,9 +86,7 @@ HEADERS += \
     include/shift/Utilities/siterator.h \
     include/shift/Utilities/sresourcedescription.h \
     include/shift/Utilities/spropertyname.h \
-    include/shift/TypeInformation/spropertytraits.h
-
-OTHER_FILES += \
+    include/shift/TypeInformation/spropertytraits.h \
     include/shift/UI/spropertydefaultui.h \
     include/shift/UI/sdatabasemodel.h \
 
