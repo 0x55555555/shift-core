@@ -4,7 +4,7 @@
 #include "XGlobal"
 #include "XProfiler"
 
-#if defined(SHIFT_BUILD)
+#if defined(SHIFTCORE_BUILD)
 #  define SHIFT_EXPORT Q_DECL_EXPORT
 #else
 #  define SHIFT_EXPORT Q_DECL_IMPORT
