@@ -27,4 +27,4 @@ INCLUDEPATH += $$ROOT/shift/GraphicsCore \
     $$ROOT/Shift/ShiftCore/include \
     $$ROOT/shift/MeshCore
 
-LIBS += -lshift -lEksCore -lEks3D -lEksScript -lShiftGraphicsCore
+LIBS += -lShiftCore -lEksCore -lEks3D -lEksScript -lShiftGraphicsCore

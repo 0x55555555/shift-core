@@ -2,7 +2,7 @@
 # Project created by QtCreator 2010-06-09T09:04:56
 # -------------------------------------------------
 
-TARGET = shift
+TARGET = ShiftCore
 TEMPLATE = lib
 
 QT += widgets
