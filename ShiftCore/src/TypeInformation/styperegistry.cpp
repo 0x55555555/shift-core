@@ -40,7 +40,7 @@ struct TypeData
   Eks::TemporaryAllocatorCore temporaryAllocator;
   };
 
-static TypeData *_internalTypes = 0;;
+static TypeData *_internalTypes = 0;
 
 TypeRegistry::TypeRegistry()
   {
