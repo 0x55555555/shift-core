@@ -155,7 +155,7 @@ template <typename Res, typename T, typename Cont>  Res makeWalkerFrom(Cont *c, 
 
   if(!prop->isDynamic())
     {
-    idx = prop->dynamicInstanceInformation()->index();
+    idx = prop->embeddedInstanceInformation()->index();
     dyProp = c->firstDynamicChild<T>();
     }
   else

@@ -47,16 +47,17 @@ template <typename T> const EmbeddedPropertyInstanceInformation *PropertyInforma
 template <typename T> const EmbeddedPropertyInstanceInformation *PropertyInformation::nextChild(xsize *i) const
   {
   const PropertyInformation *info = T::staticTypeInformation();
-  for(const EmbeddedPropertyInstanceInformation *next = _childData[*i];
-      next;
-      ++(*i))
+  for(; (*i) < _childCount; ++(*i))
     {
+    const EmbeddedPropertyInstanceInformation *next = _childData[*i];
+
     const PropertyInformation *nextInfo = next->childInformation();
     if(nextInfo->inheritsFromType(info))
       {
       return next;
       }
     }
+
   *i = X_SIZE_SENTINEL;
   return 0;
   }
