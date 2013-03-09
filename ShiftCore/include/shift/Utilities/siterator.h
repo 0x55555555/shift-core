@@ -284,6 +284,10 @@ public:
 
   inline void first(Iterator& i) const
     {
+    if(!property())
+      {
+      return;
+      }
     ChildTreeExtraData &d = i.data();
     d._currentParent = property()->parent();
     d._root = d._currentParent;
