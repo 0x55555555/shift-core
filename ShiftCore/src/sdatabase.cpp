@@ -12,7 +12,7 @@
 #include "QDebug"
 
 #ifdef X_DEBUG
-# include "XMemoryTracker"
+# include "XLoggingAllocator"
 #endif
 
 namespace Shift
@@ -49,7 +49,7 @@ Database::Database()
 
 #ifdef X_DEBUG
   Eks::AllocatorBase* oldAllocator = _memory;
-  _memory = TypeRegistry::generalPurposeAllocator()->create<Eks::MemoryTracker>(oldAllocator);
+  _memory = TypeRegistry::generalPurposeAllocator()->create<Eks::LoggingAllocator>(oldAllocator);
 #endif
   xAssert(_memory);
 
@@ -72,14 +72,9 @@ Database::~Database()
   clearChanges();
 
 #ifdef X_DEBUG
-  Eks::MemoryTracker* tracker = dynamic_cast<Eks::MemoryTracker*>(_memory);
+  Eks::LoggingAllocator* tracker = dynamic_cast<Eks::LoggingAllocator*>(_memory);
   xAssert(tracker);
 
-  if(!tracker->empty())
-    {
-    //_memory.debugDump();
-    xAssertFail();
-    }
   TypeRegistry::generalPurposeAllocator()->destroy(_memory);
   _memory = 0;
 #endif
@@ -168,28 +163,19 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
   return prop;
   }
 
-void Database::deleteProperty(Property *prop)
+void Database::deleteDynamicProperty(Property *prop)
   {
+  xAssert(prop->isDynamic());
+  X_HEAP_CHECK
   xAssert(!prop->_flags.hasFlag(PreGetting));
   uninitiateProperty(prop);
 
-  if(!prop->isDynamic())
-    {
-    const EmbeddedPropertyInstanceInformation *inst = prop->embeddedBaseInstanceInformation();
-    if(inst->isExtraClassMember())
-      {
-      const PropertyInformation *info = inst->childInformation();
-      info->functions().destroyProperty(prop);
-      }
-    }
-  }
+  const PropertyInformation *info = prop->typeInformation();
+  void *mem = info->functions().destroyProperty(prop);
 
-void Database::deleteDynamicProperty(Property *prop)
-  {
   X_HEAP_CHECK
-  deleteProperty(prop);
-  X_HEAP_CHECK
-  _memory->free(prop);
+
+  _memory->free(mem);
   X_HEAP_CHECK
   }
 

@@ -17,9 +17,9 @@ public:
     {
     TypeTraitsCreation::createPropertyInPlace(ptr);
     }
-  static void destroyProperty(Property *ptr)
+  static void *destroyProperty(Property *ptr)
     {
-    TypeTraitsCreation::destroyProperty(ptr);
+    return TypeTraitsCreation::destroyProperty(ptr);
     }
   };
 
@@ -89,17 +89,22 @@ public:
     {
     static Property *createProperty(void *ptr)
       {
-      return new(ptr) Type();
+      Type *t = new(ptr) Type();
+      xAssert(t == ptr);
+
+      return t;
       }
     static void createPropertyInPlace(Property *ptr)
       {
       Type* t = static_cast<Type*>(ptr);
       new(t) Type();
       }
-    static void destroyProperty(Property *ptr)
+    static void *destroyProperty(Property *ptr)
       {
       (void)ptr;
       ((Type*)ptr)->~Type();
+
+      return (Type*)ptr;
       }
     };
 

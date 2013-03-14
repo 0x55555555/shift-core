@@ -41,7 +41,7 @@ struct PropertyInformationFunctions
   {
   typedef Property *(*CreatePropertyFunction)(void *data);
   typedef void (*CreatePropertyInPlaceFunction)(Property *data);
-  typedef void (*DestroyPropertyFunction)(Property *data);
+  typedef void *(*DestroyPropertyFunction)(Property *data);
   typedef void (*PostCreateFunction)(Property *data);
   typedef void (*PostSetFunction)(PropertyContainer *cont, Property *data);
   typedef void (*SaveFunction)( const Property *, Saver & );

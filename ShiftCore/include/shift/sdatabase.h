@@ -48,7 +48,6 @@ protected:
 private:
   Property *createDynamicProperty(const PropertyInformation *info, PropertyContainer *parentToBe, PropertyInstanceInformationInitialiser *inst);
   void deleteDynamicProperty(Property *);
-  void deleteProperty(Property *);
 
   DynamicInstanceInformation _instanceInfoData;
 
