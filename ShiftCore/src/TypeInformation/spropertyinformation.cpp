@@ -23,11 +23,6 @@ void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *al
       allocator->free(inst->affects());
       }
 
-    PropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
-      inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
-
-    destroy(inst);
-
     PropertyInstanceInformation::destroy(allocator, inst);
     }
 

@@ -29,7 +29,7 @@ struct TypeData
     }
 
   Eks::Vector<const PropertyGroup *> groups;
-  Eks::Vector<const PropertyInformation *> types;
+  Eks::Vector<PropertyInformation *> types;
   Eks::Vector<TypeRegistry::Observer *> observers;
   Eks::BucketAllocator bucketAllocator;
 
@@ -64,6 +64,19 @@ void TypeRegistry::initiate(
 
 void TypeRegistry::terminate()
   {
+  Eks::AllocatorBase* alloc = _internalTypes->baseAllocator;
+
+  xForeach(PropertyInformation *info, _internalTypes->types)
+  {
+    PropertyInformation::destroyInstanceInformation(info, alloc);
+  }
+
+  xForeach(PropertyInformation *info, _internalTypes->types)
+    {
+    PropertyInformation::destroy(info, alloc);
+    }
+  _internalTypes->types.clear();
+
   _internalTypes->baseAllocator->destroy(_internalTypes);
 
   // script engine needs to access type info.
@@ -104,13 +117,13 @@ const Eks::Vector<const PropertyGroup *> &TypeRegistry::groups()
 
 const Eks::Vector<const PropertyInformation *> &TypeRegistry::types()
   {
-  return _internalTypes->types;
+  return reinterpret_cast<Eks::Vector<const PropertyInformation *> &>(_internalTypes->types);
   }
 
-void TypeRegistry::addType(const PropertyInformation *t)
+void TypeRegistry::addType(PropertyInformation *t)
   {
   internalAddType(t);
-  Q_FOREACH(Observer *o, _internalTypes->observers)
+  xForeach(Observer *o, _internalTypes->observers)
     {
     o->typeAdded(t);
     }
@@ -126,7 +139,7 @@ void TypeRegistry::removeTypeObserver(Observer *o)
   _internalTypes->observers.removeAll(o);
   }
 
-void TypeRegistry::internalAddType(const PropertyInformation *t)
+void TypeRegistry::internalAddType(PropertyInformation *t)
   {
   xAssert(t);
   xAssert(!findType(t->typeName()));
@@ -139,7 +152,7 @@ void TypeRegistry::internalAddType(const PropertyInformation *t)
 const PropertyInformation *TypeRegistry::findType(const PropertyNameArg &in)
   {
   SProfileFunction
-  Q_FOREACH(const PropertyInformation *info, _internalTypes->types)
+  xForeach(const PropertyInformation *info, _internalTypes->types)
     {
     if(in == info->typeName())
       {

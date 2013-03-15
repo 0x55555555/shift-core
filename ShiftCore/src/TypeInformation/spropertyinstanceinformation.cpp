@@ -26,13 +26,19 @@ PropertyInstanceInformation::PropertyInstanceInformation(const PropertyInstanceI
 
 void PropertyInstanceInformation::destroy(
     Eks::AllocatorBase *allocator,
-    PropertyInstanceInformation *d)
+    PropertyInstanceInformation *inst)
   {
-  --d->_referenceCount;
-  if(d->referenceCount() == 0)
+  --inst->_referenceCount;
+  if(inst->referenceCount() == 0)
     {
     xAssert(allocator);
-    allocator->free(d);
+
+    PropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
+      inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
+
+    void *data = destroy(inst);
+
+    allocator->free(data);
     }
   }
 

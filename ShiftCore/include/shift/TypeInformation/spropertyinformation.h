@@ -50,7 +50,7 @@ struct PropertyInformationFunctions
   typedef bool (*SaveQueryFunction)( const Property * );
   typedef void (*CreateTypeInformationFunction)(PropertyInformation *, const PropertyInformationCreateData &);
   typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(void *data, const PropertyInstanceInformation *copy);
-  typedef void (*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
+  typedef void *(*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
 
   CreateInstanceInformationFunction createEmbeddedInstanceInformation;
   CreateInstanceInformationFunction createDynamicInstanceInformation;

@@ -185,11 +185,12 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
   {
   xAssert(newChildType);
 
-  EmbeddedPropertyInstanceInformation* def =
+  void *mem =
       EmbeddedPropertyInstanceInformation::allocate(
         _data.allocator, newChildType->embeddedInstanceInformationFormat());
 
-  newChildType->functions().createEmbeddedInstanceInformation(def, 0);
+  EmbeddedPropertyInstanceInformation *def
+    = static_cast<EmbeddedPropertyInstanceInformation*>(newChildType->functions().createEmbeddedInstanceInformation(mem, 0));
 
   def->initiate(newChildType, name, _properties.size(), location);
 

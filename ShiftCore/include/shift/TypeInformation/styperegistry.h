@@ -41,7 +41,7 @@ public:
   static const Eks::Vector<const PropertyInformation *> &types();
 
   static void addPropertyGroup(PropertyGroup &);
-  static void addType(const PropertyInformation *);
+  static void addType(PropertyInformation *);
 
   static const PropertyInformation *findType(const PropertyNameArg &);
 
@@ -59,7 +59,7 @@ private:
   TypeRegistry();
   X_DISABLE_COPY(TypeRegistry);
 
-  static void internalAddType(const PropertyInformation *);
+  static void internalAddType(PropertyInformation *);
 
   friend class PropertyGroup;
   };

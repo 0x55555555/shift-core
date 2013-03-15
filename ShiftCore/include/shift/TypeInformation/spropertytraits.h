@@ -130,13 +130,15 @@ public:
 
     return new(allocation) StInst;
     }
-  static void destroyDynamicInstanceInformation(PropertyInstanceInformation *allocation)
+  static void *destroyDynamicInstanceInformation(PropertyInstanceInformation *allocation)
     {
     ((DyInst*)allocation)->~DyInst();
+    return ((DyInst*)allocation);
     }
-  static void destroyEmbeddedInstanceInformation(PropertyInstanceInformation *allocation)
+  static void *destroyEmbeddedInstanceInformation(PropertyInstanceInformation *allocation)
     {
     ((StInst*)allocation)->~StInst();
+    return ((StInst*)allocation);
     }
   };
 
