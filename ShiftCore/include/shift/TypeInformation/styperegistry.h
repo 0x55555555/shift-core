@@ -50,10 +50,9 @@ public:
       const PropertyInformation *info,
       xuint32 typeId);
 
-  static void addInterfaceFactory(
-      const PropertyInformation *info,
+  static void addInterfaceFactory(const PropertyInformation *info,
       xuint32 typeId,
-      InterfaceBaseFactory *factory);
+      InterfaceBaseFactory *factory, xptrdiff offset);
 
 private:
   TypeRegistry();

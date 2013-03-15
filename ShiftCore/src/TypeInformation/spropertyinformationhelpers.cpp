@@ -22,6 +22,7 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
   xsize childCount = _properties.size();
 
   xAssert(childCount < X_UINT8_SENTINEL)
+  xAssert(!_information->childData());
   _information->setChildCount((xuint8)childCount);
   if(childCount == 0)
     {

@@ -67,9 +67,9 @@ void TypeRegistry::terminate()
   Eks::AllocatorBase* alloc = _internalTypes->baseAllocator;
 
   xForeach(PropertyInformation *info, _internalTypes->types)
-  {
-    PropertyInformation::destroyInstanceInformation(info, alloc);
-  }
+    {
+    PropertyInformation::destroyChildren(info, alloc);
+    }
 
   xForeach(PropertyInformation *info, _internalTypes->types)
     {
@@ -77,7 +77,14 @@ void TypeRegistry::terminate()
     }
   _internalTypes->types.clear();
 
+  xForeach(InterfaceBaseFactory *fac, _internalTypes->interfaces)
+    {
+    void *location = (xuint8*)fac + fac->offset();
+    interfaceAllocator()->destroy(location);
+    }
+
   _internalTypes->baseAllocator->destroy(_internalTypes);
+
 
   // script engine needs to access type info.
   XScript::Engine::terminate();
@@ -172,8 +179,10 @@ const InterfaceBaseFactory *TypeRegistry::interfaceFactory(
 void TypeRegistry::addInterfaceFactory(
     const PropertyInformation *info,
     xuint32 typeId,
-    InterfaceBaseFactory *factory)
+    InterfaceBaseFactory *factory,
+    xptrdiff offset)
   {
+  factory->setOffset(offset);
   _internalTypes->interfaces[TypeData::InterfaceKey(info, typeId)] = factory;
   }
 

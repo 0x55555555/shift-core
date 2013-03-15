@@ -106,6 +106,7 @@ XProperties:
 public:
   PropertyInformation() { }
   static PropertyInformation *allocate(Eks::AllocatorBase *allocator);
+  static void destroyChildren(PropertyInformation *, Eks::AllocatorBase *allocator);
   static void destroy(PropertyInformation *, Eks::AllocatorBase *allocator);
 
   template <typename T> bool inheritsFromType() const
@@ -151,7 +152,10 @@ public:
       const PropertyInformationCreateData &data,
       EmbeddedPropertyInstanceInformation *inst);
 
-  static PropertyInformation *derive(const PropertyInformation *obj, Eks::AllocatorBase *allocator);
+  static PropertyInformation *derive(
+      const PropertyInformation *obj,
+      Eks::AllocatorBase *allocator,
+      bool addChildren);
   static void initiate(PropertyInformation *info, const PropertyInformation *from);
 
   template <typename Cont, typename Member> class Walker

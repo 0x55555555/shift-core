@@ -11,24 +11,23 @@ PropertyInformation *PropertyInformation::allocate(Eks::AllocatorBase *allocator
   return allocator->create<PropertyInformation>();
   }
 
-void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *allocator)
+void PropertyInformation::destroyChildren(PropertyInformation *d, Eks::AllocatorBase *allocator)
   {
   for(xuint8 i = 0; i < d->childCount(); ++i)
     {
     EmbeddedPropertyInstanceInformation *inst =
         const_cast<EmbeddedPropertyInstanceInformation*>(d->_childData[i]);
 
-    if(inst->affectsOwner())
-      {
-      allocator->free(inst->affects());
-      }
-
-    PropertyInstanceInformation::destroy(allocator, inst);
+    EmbeddedPropertyInstanceInformation::destroy(allocator, inst);
     }
 
+  allocator->free(d->_childData);
   d->_childData = 0;
   d->_childCount = 0;
+  }
 
+void PropertyInformation::destroy(PropertyInformation *d, Eks::AllocatorBase *allocator)
+  {
   allocator->destroy(d);
   }
 
@@ -54,7 +53,8 @@ void PropertyInformation::initiate(PropertyInformation *info, const PropertyInfo
 
 PropertyInformation *PropertyInformation::derive(
     const PropertyInformation *from,
-    Eks::AllocatorBase *allocator)
+    Eks::AllocatorBase *allocator,
+    bool addChildren)
   {
   PropertyInformationCreateData data(allocator);
 
@@ -62,31 +62,38 @@ PropertyInformation *PropertyInformation::derive(
 
   PropertyInformation::initiate(copy, from);
 
-  xsize childCount = from->childCount();
-  xsize childByteCount = childCount * sizeof(EmbeddedPropertyInstanceInformation *);
-
-  const EmbeddedPropertyInstanceInformation **children =
-    (const EmbeddedPropertyInstanceInformation **)
-      allocator->alloc(childByteCount);
-
-  for(xsize i = 0, s = from->childCount(); i < s; ++i)
+  if (addChildren)
     {
-    EmbeddedPropertyInstanceInformation* inst =
-        const_cast<EmbeddedPropertyInstanceInformation*>(from->childFromIndex(i));
+    xsize childCount = from->childCount();
+    xsize childByteCount = childCount * sizeof(EmbeddedPropertyInstanceInformation *);
 
-    auto ref = inst->referenceCount();
-    xAssert(ref < X_UINT8_SENTINEL);
-    ++ref;
+    const EmbeddedPropertyInstanceInformation **children =
+      (const EmbeddedPropertyInstanceInformation **)
+        allocator->alloc(childByteCount);
 
-    inst->setReferenceCount(ref);
+    for(xsize i = 0, s = from->childCount(); i < s; ++i)
+      {
+      EmbeddedPropertyInstanceInformation* inst =
+          const_cast<EmbeddedPropertyInstanceInformation*>(from->childFromIndex(i));
 
-    children[i] = inst;
+      auto ref = inst->referenceCount();
+      xAssert(ref < X_UINT8_SENTINEL);
+      ++ref;
+
+      inst->setReferenceCount(ref);
+
+      children[i] = inst;
+      }
+
+    xAssert(childCount < X_UINT8_SENTINEL);
+    copy->setChildCount((xuint8)childCount);
+    copy->setChildData(children);
     }
-
-  xAssert(childCount < X_UINT8_SENTINEL);
-  copy->setChildCount((xuint8)childCount);
-  copy->setChildData(children);
-
+  else
+    {
+    copy->setChildCount(0);
+    copy->setChildData(0);
+    }
 
   copy->_parentTypeInformation = from;
 
@@ -105,7 +112,7 @@ PropertyInformation *PropertyInformation::extendContainedProperty(
     EmbeddedPropertyInstanceInformation *inst)
   {
   const PropertyInformation *oldInst = inst->childInformation();
-  PropertyInformation *info = PropertyInformation::derive(oldInst, data.allocator);
+  PropertyInformation *info = PropertyInformation::derive(oldInst, data.allocator, false);
 
   info->setExtendedParent(inst);
   inst->setChildInformation(info);

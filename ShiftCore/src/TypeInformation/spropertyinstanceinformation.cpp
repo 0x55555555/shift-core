@@ -33,10 +33,19 @@ void PropertyInstanceInformation::destroy(
     {
     xAssert(allocator);
 
+    const PropertyInformation *info = inst->childInformation();
+    bool destroyInfo = info->extendedParent() == inst;
+
     PropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
       inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
 
     void *data = destroy(inst);
+    
+    if(destroyInfo)
+      {
+      PropertyInformation::destroyChildren(const_cast<PropertyInformation*>(info), allocator);
+      PropertyInformation::destroy(const_cast<PropertyInformation*>(info), allocator);
+      }
 
     allocator->free(data);
     }
@@ -132,6 +141,18 @@ EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::alloca
   return (EmbeddedPropertyInstanceInformation*)ptr;
   }
 
+void EmbeddedPropertyInstanceInformation::destroy(
+    Eks::AllocatorBase *allocator,
+    EmbeddedPropertyInstanceInformation *inst)
+  {
+  if(inst->referenceCount() == 1 && inst->affectsOwner())
+    {
+    allocator->free(inst->affects());
+    }
+
+  PropertyInstanceInformation::destroy(allocator, inst);
+  }
+
 void EmbeddedPropertyInstanceInformation::initiateProperty(Property *propertyToInitiate) const
   {
   if(defaultInput())
@@ -206,7 +227,7 @@ void EmbeddedPropertyInstanceInformation::setAffects(
     const EmbeddedPropertyInstanceInformation **info,
     xsize size)
   {
-  setAffects(PropertyInformationChildrenCreator::createAffects(data.allocator, info, size), false);
+  setAffects(PropertyInformationChildrenCreator::createAffects(data.allocator, info, size), true);
   }
 
 void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects, bool affectsOwner)

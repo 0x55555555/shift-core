@@ -17,6 +17,9 @@ class InterfaceBaseFactory
   {
   S_INTERFACE_FACTORY_TYPE(InterfaceBase);
 
+XProperties:
+  XProperty(xptrdiff, offset, setOffset);
+
 public:
   virtual ~InterfaceBaseFactory() { }
   virtual InterfaceBase *classInterface(Property *) { return 0; }
@@ -58,10 +61,14 @@ template <typename PropType, typename T> static T *addStaticInterface()
   {
   T* t = TypeRegistry::interfaceAllocator()->create<T>();
 
+  InterfaceBaseFactory *fac = t;
+  xptrdiff offset = (xuint8*)t - (xuint8*)fac;
+
   TypeRegistry::addInterfaceFactory(
         PropType::staticTypeInformation(),
         T::InterfaceType::InterfaceTypeId,
-        t);
+        t,
+        offset);
   return t;
   }
 
@@ -79,11 +86,15 @@ template <typename T> static T *addStaticInterface(PropertyInformation *info)
   {
   T* t = TypeRegistry::interfaceAllocator()->create<T>();
 
+  InterfaceBaseFactory *fac = t;
+  xptrdiff offset = (xuint8*)t - (xuint8*)fac;
+
   typedef typename T::InterfaceType IfcType;
   TypeRegistry::addInterfaceFactory(
         info,
         IfcType::InterfaceTypeId,
-        t);
+        t,
+        offset);
   return t;
   }
 

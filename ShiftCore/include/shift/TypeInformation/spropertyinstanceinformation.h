@@ -87,6 +87,7 @@ public:
   static EmbeddedPropertyInstanceInformation *allocate(
     Eks::AllocatorBase *allocator,
     const Eks::ResourceDescription &fmt);
+  static void destroy(Eks::AllocatorBase *allocator, EmbeddedPropertyInstanceInformation *);
 
   void setMode(Mode);
 
