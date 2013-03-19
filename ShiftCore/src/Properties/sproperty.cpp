@@ -110,8 +110,9 @@ void Property::setDependantsDirty()
       }
     }
 
-  // ?  || isComputed()
-  if(input() || _flags.hasFlag(Property::ParentHasInput))
+  // if there is an input, a parent input or this is computed,
+  // then when we are dirtied we need to dirty our children
+  if(input() || _flags.hasFlag(Property::ParentHasInput) || isComputed())
     {
     PropertyContainer *c = castTo<PropertyContainer>();
     if(c)
@@ -900,7 +901,10 @@ void Property::setDirty()
   if(!_flags.hasAnyFlags(Dirty|PreGetting))
   {
     _flags.setFlag(Dirty);
+
+    xAssert(_flags.hasFlag(Dirty));
     setDependantsDirty();
+    xAssert(_flags.hasFlag(Dirty));
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
     Entity *ent = entity();
