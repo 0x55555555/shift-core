@@ -117,8 +117,12 @@ void Property::setDependantsDirty()
     PropertyContainer *c = castTo<PropertyContainer>();
     if(c)
       {
-      xForeach(auto child, c->walker())
+      const PropertyInformation *info = c->typeInformation();
+      for(xsize i = 0, s = info->childCount(); i < s; ++i)
         {
+        const EmbeddedPropertyInstanceInformation *inst = info->childFromIndex(i);
+        Property *child = inst->locateProperty(c);
+
         child->setDirty();
         }
       }
@@ -902,7 +906,6 @@ void Property::setDirty()
   {
     _flags.setFlag(Dirty);
 
-    xAssert(_flags.hasFlag(Dirty));
     setDependantsDirty();
     xAssert(_flags.hasFlag(Dirty));
 
@@ -935,7 +938,7 @@ void Property::update() const
 
   // this is a const function, but because we delay computation we may need to assign here
   prop->_flags.clearFlag(Dirty);
-  
+
   // if the parent is computed or has input, we need to update it,
   // which may update us. Note that we should be made dirty recursively
   // when the parent is dirtied, so its safe to do this in update not preGet.
