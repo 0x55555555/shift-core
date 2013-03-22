@@ -16,8 +16,24 @@ class TemporaryAllocatorCore;
 namespace Shift
 {
 
-class Change;
-
+/** \brief A database.
+ 
+  \section Introduction
+  An Database represents the full database, it holds every element created. There should only need to be single
+  database for most applications. A database can contain multiple Handlers, which can (optionally) manage their
+  own changes (implementing Undo), or share some common Change architecture.
+  
+  \sa Handler
+  
+  \section Creating a Database
+  Databases can be created on the stack. A database should be created after the TypeRegistry is initialised. As a
+  database inherits from Entity, once created, entities can be added, and data can be built up.
+  
+  \section Deriving from Database
+  Deriving from database is similar to deriving from Entity, except as the database is the root object, its type must
+  be explicitly stated by calling initiateInheritedDatabaseType in the constructor with the typeInformation() of
+  the derived type passed in.  
+ */
 class SHIFT_EXPORT Database : public Entity, public Handler
   {
   S_ENTITY(Database, Entity, 0);
