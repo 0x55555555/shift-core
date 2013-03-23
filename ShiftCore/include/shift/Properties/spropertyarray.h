@@ -89,6 +89,21 @@ public:
 
     return 0;
     }
+
+  const ElementType *operator[](xsize i) const { return at(i); }
+  const ElementType *at(xsize i) const
+    {
+    xForeach(auto child, walker<ElementType>())
+      {
+      if(i == 0)
+        {
+        return child;
+        }
+      --i;
+      }
+
+    return 0;
+    }
   };
 
 }

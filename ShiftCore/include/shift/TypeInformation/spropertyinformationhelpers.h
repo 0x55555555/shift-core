@@ -173,6 +173,39 @@ public:
     return add<U>(location, name);
     }
 
+
+  template <typename U, typename AncestorPropType, xsize SIZE>
+      void addArray(
+          U (AncestorPropType::* ptr)[SIZE],
+          const PropertyNameArg &name,
+          PropertyInstanceInformationTyped<PropType, U> **inst)
+    {
+    PropertyName str;
+    name.toName(str);
+    const xsize nameLength = str.length();
+
+    AncestorPropType *prop = (AncestorPropType *)0x0;
+
+    for(xsize i = 0; i < SIZE; ++i)
+      {
+      str.appendType(i);
+
+      union
+        {
+        U *in;
+        U AncestorPropType::*out;
+        } conv;
+
+      conv.in = &((prop->*ptr)[i]);
+
+      U AncestorPropType::* elem = conv.out;
+
+      inst[i] = add(elem, str);
+
+      str.resize(nameLength, '\0');
+      }
+    }
+
   // add a dynamic child, ie it is embedded in the container when created,
   // but not accessible via a member.
   // this will fail and go crazy if you try to aggregate an entity with dynamic members...
@@ -201,6 +234,7 @@ public:
 
     return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
     }
+
 
   template <typename T> xsize *createAffects(T a, xsize i)
     {
