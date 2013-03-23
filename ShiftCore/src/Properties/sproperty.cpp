@@ -667,6 +667,8 @@ void Property::connectInternal(Property *prop) const
   while(*output)
     {
     Property **nextOp = &((*output)->_nextOutput);
+
+    xAssert(*nextOp != prop);
     output = nextOp;
     }
 
@@ -694,15 +696,15 @@ void Property::disconnectInternal(Property *prop) const
   Property **output = (Property**)&_output;
   while(*output)
     {
+    xAssert(*output != (*output)->_nextOutput);
+
     if((*output) == prop)
       {
       (*output) = (*output)->_nextOutput;
       break;
       }
-    else
-      {
-      output = &((*output)->_nextOutput);
-      }
+
+    output = &((*output)->_nextOutput);
     }
 
   prop->_nextOutput = 0;

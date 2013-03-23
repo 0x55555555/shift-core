@@ -165,7 +165,11 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
 
 void Database::deleteDynamicProperty(Property *prop)
   {
+  xAssert(!prop->_input);
+  xAssert(!prop->_output);
+  xAssert(!prop->_nextOutput);
   xAssert(prop->isDynamic());
+
   X_HEAP_CHECK
   xAssert(!prop->_flags.hasFlag(PreGetting));
   uninitiateProperty(prop);
