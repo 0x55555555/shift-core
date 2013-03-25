@@ -329,7 +329,7 @@ void EmbeddedPropertyInstanceInformation::setDefaultInput(const EmbeddedProperty
   sourceOffset += location();
 
   // cannot add a default input between to separate allocatable types.
-  xAssert(targetBase == sourceBase);
+  xAssert(sourceBase->inheritsFromType(targetBase));
 
   xptrdiff inp = (xptrdiff)targetOffset - (xptrdiff)sourceOffset;
   xAssert(inp < X_INT16_MAX && inp > X_INT16_MIN)
