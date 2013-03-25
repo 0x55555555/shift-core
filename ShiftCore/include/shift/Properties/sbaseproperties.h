@@ -395,7 +395,7 @@ template <typename T> class FlagsProperty : public IntProperty
 public:
   void setFlag(T t, bool onOff)
     {
-    XFlags<T> val(_value);
+    Eks::Flags<T> val(_value);
     val.setFlag(t, onOff);
     assign(*val);
     }

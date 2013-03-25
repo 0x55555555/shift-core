@@ -46,7 +46,7 @@ public:
     //DisableUpdates = 2,
     ShowValues = 4
     };
-  typedef XFlags<OptionsFlags> Options;
+  typedef Eks::Flags<OptionsFlags> Options;
 
   enum
     {

@@ -47,7 +47,8 @@ SOURCES += \
     src/Serialisation/sjsonio.cpp \
     src/Serialisation/sloader.cpp \
     src/Utilities/spropertyname.cpp \
-    src/TypeInformation/spropertyinformationhelpers.cpp
+    src/TypeInformation/spropertyinformationhelpers.cpp \
+    src/UI/sdebugger.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -89,6 +90,7 @@ HEADERS += \
     include/shift/TypeInformation/spropertytraits.h \
     include/shift/UI/spropertydefaultui.h \
     include/shift/UI/sdatabasemodel.h \
+    include/shift/UI/sdebugger.h
 
 
 

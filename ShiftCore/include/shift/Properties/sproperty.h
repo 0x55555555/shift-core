@@ -234,7 +234,7 @@ private:
     ParentHasOutput = 4,
     PreGetting = 8
     };
-  XFlags<Flags, xuint8> _flags;
+  Eks::Flags<Flags, Eks::detail::Atomic<xuint8> > _flags;
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
   Handler *_handler;
