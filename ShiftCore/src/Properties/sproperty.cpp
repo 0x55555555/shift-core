@@ -1037,4 +1037,19 @@ const InterfaceBase *Property::interface(xuint32 typeId) const
   return 0;
   }
 
+NoUpdateBlock::NoUpdateBlock(Property *p) : _prop(p)
+  {
+  _oldDirty = _prop->isDirty();
+  _prop->_flags.clearFlag(Property::Dirty);
+  }
+
+NoUpdateBlock::~NoUpdateBlock()
+  {
+  xAssert(!_prop->isDirty());
+  if(_oldDirty)
+    {
+    _prop->_flags.setFlag(Property::Dirty);
+    }
+  }
+
 }

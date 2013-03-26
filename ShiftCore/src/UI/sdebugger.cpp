@@ -3,6 +3,7 @@
 #include "QtWidgets/QVBoxLayout"
 #include "QtWidgets/QGraphicsView"
 #include "QtWidgets/QGraphicsScene"
+#include "QtWidgets/QGraphicsSceneMouseEvent"
 #include "shift/sdatabase.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/spropertycontaineriterators.h"
@@ -32,6 +33,8 @@ Debugger::Debugger(Shift::Database *db, QWidget *parent) : QWidget(parent)
 
   QGraphicsView *view = new QGraphicsView(_scene, this);
   layout->addWidget(view);
+  view->setRenderHints(QPainter::Antialiasing);
+  view->setDragMode(QGraphicsView::ScrollHandDrag);
   }
 
 void Debugger::snapshot()
@@ -41,18 +44,24 @@ void Debugger::snapshot()
   _scene->addItem(snapshot);
   }
 
-QGraphicsItem *Debugger::createItemForProperty(Property *prop)
+DebugPropertyItem *Debugger::createItemForProperty(Property *prop)
   {
-  QString text = prop->name().toQString();
+  QString text = "name: " + prop->name().toQString() + "<br>type: " + prop->typeInformation()->typeName().toQString();
   PropertyVariantInterface *ifc = prop->interface<PropertyVariantInterface>();
   if(ifc)
     {
-    text + "\nvalue: " + ifc->asString(prop).toQString();
+    NoUpdateBlock b(prop);
+    text += "<br>value: " + ifc->asString(prop).toQString();
     }
+
+  bool dirty = prop->isDirty();
+  text += "<br>dirty: ";
+  text += (dirty ? "true" : "false");
 
   enum
     {
-    ChildOffsetX = 100,
+    OffsetX = 20,
+    GapX = 5,
     ChildOffsetY = 50
     };
 
@@ -61,12 +70,15 @@ QGraphicsItem *Debugger::createItemForProperty(Property *prop)
   PropertyContainer *c = prop->castTo<PropertyContainer>();
   if(c)
     {
-    xsize index = 0;
+    xsize posX = OffsetX;
     xForeach(auto p, c->walker())
       {
-      QGraphicsItem *childItem = createItemForProperty(p);
-      childItem->setPos(index * ChildOffsetX, ChildOffsetY);
+      DebugPropertyItem *childItem = createItemForProperty(p);
+      childItem->setPos(posX, ChildOffsetY);
       childItem->setParentItem(item);
+      posX += GapX + childItem->boundingRect().width();
+
+      new ConnectionItem(item, childItem, Qt::black);
       }
     }
 
@@ -77,21 +89,77 @@ QGraphicsItem *Debugger::createItemForProperty(Property *prop)
 DebugPropertyItem::DebugPropertyItem(const QString &text)
     : _info(text)
   {
-  setAcceptedMouseButtons(Qt::LeftButton)
+  setAcceptedMouseButtons(Qt::LeftButton);
+  setFlag(QGraphicsItem::ItemIsMovable);
   }
 
 QRectF DebugPropertyItem::boundingRect() const
   {
   qreal penWidth = 1;
-  return QRectF(-10 - penWidth / 2, -10 - penWidth / 2,
-                20 + penWidth, 20 + penWidth);
+  QSizeF size = _info.size();
+
+  QRectF bnds(-5 - (penWidth / 2), - 5 - (penWidth / 2), size.width() + 10 + penWidth, size.height() + 10  + penWidth);
+
+  return bnds;
+  }
+
+void DebugPropertyItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+  {
+  QPointF initialPos = event->lastScenePos();
+  QPointF nowPos = event->scenePos();
+
+  QPointF diff = nowPos - initialPos;
+
+  setPos(pos() + diff);
   }
 
 void DebugPropertyItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
   {
-  painter->setPen(QPen(Qt::red));
-  painter->setBrush(Qt::blue);
-  painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
+  painter->setPen(QPen(Qt::black));
+  painter->setBrush(Qt::white);
+
+  QSizeF size = _info.size();
+  painter->drawRoundedRect(-5, -5, size.width()+10, size.height()+10, 2, 2);
+
+  painter->drawStaticText(0, 0, _info);
+  }
+
+ConnectionItem::ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, QColor col)
+  : QGraphicsObject(owner), _colour(col), _from(from), _owner(owner)
+  {
+  xAssert(_owner);
+  xAssert(_from);
+
+  connect(_owner, SIGNAL(xChanged()), this, SLOT(updateEndPoints()));
+  connect(_owner, SIGNAL(yChanged()), this, SLOT(updateEndPoints()));
+  connect(_from, SIGNAL(xChanged()), this, SLOT(updateEndPoints()));
+  connect(_from, SIGNAL(yChanged()), this, SLOT(updateEndPoints()));
+  }
+
+void ConnectionItem::updateEndPoints()
+  {
+  prepareGeometryChange();
+  update();
+  }
+
+QRectF ConnectionItem::boundingRect() const
+  {
+  QPointF ptA = mapFromItem(_owner, 0, 0);
+  QPointF ptB = mapFromItem(_from, 0, 0);
+
+  QSizeF s(2, 2);
+
+  return QRectF(ptA, s) | QRectF(ptB, s);
+  }
+
+void ConnectionItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+  {
+  painter->setPen(QPen(Qt::black));
+
+  QPointF ptA = mapFromItem(_owner, 0, 0);
+  QPointF ptB = mapFromItem(_from, 0, 0);
+
+  painter->drawLine(ptA, ptB);
   }
 
 }

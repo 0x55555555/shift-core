@@ -59,7 +59,6 @@ public:
 #if X_QT_INTEROP
   virtual Eks::String asString(const Property *p) const
     {
-    xAssertFail(); // this is bad code.
     QString d;
       {
       QTextStream s(&d);

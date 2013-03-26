@@ -12,6 +12,7 @@ namespace Shift
 {
 
 class Database;
+class DebugPropertyItem;
 
 class SHIFT_EXPORT Debugger : public QWidget
   {
@@ -24,13 +25,13 @@ private slots:
   void snapshot();
 
 private:
-  QGraphicsItem *createItemForProperty(Property *prop);
+  DebugPropertyItem *createItemForProperty(Property *prop);
 
   QGraphicsScene *_scene;
   Database *_db;
   };
 
-class DebugPropertyItem : public QGraphicsItem
+class DebugPropertyItem : public QGraphicsObject
   {
 public:
   DebugPropertyItem(const QString &text);
@@ -39,8 +40,31 @@ public:
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
+protected:
+  void mouseMoveEvent(QGraphicsSceneMouseEvent * event) X_OVERRIDE;
+
 private:
   QStaticText _info;
+  };
+
+class ConnectionItem : public QGraphicsObject
+  {
+  Q_OBJECT
+public:
+  ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, QColor colour);
+
+  QRectF boundingRect() const;
+
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+private slots:
+  void updateEndPoints();
+
+private:
+  DebugPropertyItem *_owner;
+  DebugPropertyItem *_from;
+
+  QColor _colour;
   };
 
 }

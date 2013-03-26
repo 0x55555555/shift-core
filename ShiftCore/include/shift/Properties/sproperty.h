@@ -253,6 +253,18 @@ private:
   friend class PropertyConnectionChange;
   friend class PropertyNameChange;
   friend class detail::PropertyBaseTraits;
+  friend class NoUpdateBlock;
+  };
+
+class NoUpdateBlock
+  {
+public:
+  NoUpdateBlock(Property *);
+  ~NoUpdateBlock();
+
+private:
+  Property *_prop;
+  bool _oldDirty;
   };
 
 template <typename T> inline const XScript::InterfaceBase *findPropertyInterface(const T* prop)
