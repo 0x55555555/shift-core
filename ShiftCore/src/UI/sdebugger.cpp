@@ -39,12 +39,33 @@ Debugger::Debugger(Shift::Database *db, QWidget *parent) : QWidget(parent)
 
 void Debugger::snapshot()
   {
-  QGraphicsItem *snapshot = createItemForProperty(_db);
+  Eks::TemporaryAllocator alloc(Shift::TypeRegistry::temporaryAllocator());
+  Eks::UnorderedMap<Property *, DebugPropertyItem *> props(&alloc);
+  QGraphicsItem *snapshot = createItemForProperty(_db, &props);
+  
+  connectProperties(props);
 
   _scene->addItem(snapshot);
   }
+  
+void connectProperties(const Eks::UnorderedMap<Property *, DebugPropertyItem *> &itemsOut)
+  {
+  Eks::UnorderedMap<Property *, DebugPropertyItem *>::iterator it = itemsOut.begin();
+  Eks::UnorderedMap<Property *, DebugPropertyItem *>::iterator end = itemsOut.end();
+  for(; it != end; ++it)
+    {
+    Property *p = it->first;
+    if(p->input())
+      {
+      const auto &inItem = itemsOut[p->input()];
+      xAssert(inItem);
+      
+      new ConnectionItem(inItem, p, Qt::red);
+      }
+    }
+  }
 
-DebugPropertyItem *Debugger::createItemForProperty(Property *prop)
+DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::UnorderedMap<Property *, DebugPropertyItem *> *itemsOut)
   {
   QString text = "name: " + prop->name().toQString() + "<br>type: " + prop->typeInformation()->typeName().toQString();
   PropertyVariantInterface *ifc = prop->interface<PropertyVariantInterface>();
@@ -57,37 +78,48 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop)
   bool dirty = prop->isDirty();
   text += "<br>dirty: ";
   text += (dirty ? "true" : "false");
-
-  enum
+  
+  PropertyContainer *c = prop->castTo<PropertyContainer>();
+  if(c)
     {
-    OffsetX = 20,
-    GapX = 5,
-    ChildOffsetY = 50
-    };
+    int count = c->size();
+    int embCount = c->typeInformation->childCount();
+    text += "<br>embedded children: " + QString::number(embCount);
+    text += "<br>dynamic children: " + QString::number(count-embCount);
+    }
 
-  DebugPropertyItem *item = new DebugPropertyItem(text);
+  QColor colour = Qt::black;
+  if(prop->isDynamic())
+    {
+    colour = Qt::blue;
+    }
+
+  DebugPropertyItem *item = new DebugPropertyItem(text, colour);
+  if(itemsOut)
+    {
+    (*itemsOut)[prop] = item;
+    }
 
   PropertyContainer *c = prop->castTo<PropertyContainer>();
   if(c)
     {
-    xsize posX = OffsetX;
     xForeach(auto p, c->walker())
       {
-      DebugPropertyItem *childItem = createItemForProperty(p);
-      childItem->setPos(posX, ChildOffsetY);
+      DebugPropertyItem *childItem = createItemForProperty(p, itemsOut);
       childItem->setParentItem(item);
-      posX += GapX + childItem->boundingRect().width();
 
       new ConnectionItem(item, childItem, Qt::black);
       }
     }
 
   item->setPos(width()/2, height()/2);
+  item->layout();
+  
   return item;
   }
 
-DebugPropertyItem::DebugPropertyItem(const QString &text)
-    : _info(text)
+DebugPropertyItem::DebugPropertyItem(const QString &text, const QColor &colour)
+    : _info(text), _colour(colour)
   {
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemIsMovable);
@@ -113,15 +145,77 @@ void DebugPropertyItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
   setPos(pos() + diff);
   }
 
+void DebugPropertyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
+  {
+  QMenu menu;
+  menu.addAction("Hide Children", this, SLOT(hideChildren()));
+  menu.addAction("Show Children", this, SLOT(showChildren())));
+  
+  menu.popup();
+  }
+  
+void DebugPropertyItem::hideChildren()
+  {
+  xForeach(auto child, childItems())
+    {
+    child->setVisible(false);
+    }
+  }
+  
+void DebugPropertyItem::showChildren()
+  {
+  xForeach(auto child, childItems())
+    {
+    child->setVisible(true);
+    }
+  }
+
 void DebugPropertyItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
   {
-  painter->setPen(QPen(Qt::black));
+  painter->setPen(_colour);
   painter->setBrush(Qt::white);
 
   QSizeF size = _info.size();
   painter->drawRoundedRect(-5, -5, size.width()+10, size.height()+10, 2, 2);
 
+  painter->setPen(Qt::black);
   painter->drawStaticText(0, 0, _info);
+  }
+  
+float DebugPropertyItem::layout()
+  {
+  float childWidth = 0.0f;
+  xsize children = 0;
+  xForeach(auto child, childItems())
+    {
+    DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
+    if(childItem)
+      {
+      childWidth += childItem->layout();
+      ++children;
+      }
+    }
+    
+  enum
+    {
+    GapX = 5,
+    ChildOffsetY = 50
+    };
+    
+  float fullWidth = childWidth + ((chilren-1) * GapX);
+  
+  float currentX = fullWidth/2.0f;
+  xForeach(auto child, childItems())
+    {
+    DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
+    if(childItem)
+      {
+      childItem->setPos(currentX, ChildOffsetY);
+      currentX += childItem->boundingRect().width() + GapX;
+      }
+    }
+    
+  return fullWidth;
   }
 
 ConnectionItem::ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, QColor col)

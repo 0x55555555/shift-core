@@ -24,8 +24,10 @@ public:
 private slots:
   void snapshot();
 
+
 private:
-  DebugPropertyItem *createItemForProperty(Property *prop);
+  DebugPropertyItem *createItemForProperty(Property *prop, Eks::UnorderedMap<Property *, DebugPropertyItem *> *itemsOut = 0);
+  void connectProperties(const Eks::UnorderedMap<Property *, DebugPropertyItem *> &itemsOut);
 
   QGraphicsScene *_scene;
   Database *_db;
@@ -33,18 +35,26 @@ private:
 
 class DebugPropertyItem : public QGraphicsObject
   {
+  Q_OBJECT
 public:
-  DebugPropertyItem(const QString &text);
+  DebugPropertyItem(const QString &text, const QColor &colour);
 
   QRectF boundingRect() const;
+  
+  float layout();
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
+protected slots:
+  void hideChildren();
+  void showChildren();
+  
 protected:
   void mouseMoveEvent(QGraphicsSceneMouseEvent * event) X_OVERRIDE;
 
 private:
   QStaticText _info;
+  QColour _outerColour;
   };
 
 class ConnectionItem : public QGraphicsObject
