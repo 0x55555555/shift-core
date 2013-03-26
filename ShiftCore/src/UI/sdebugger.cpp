@@ -3,11 +3,13 @@
 #include "QtWidgets/QVBoxLayout"
 #include "QtWidgets/QGraphicsView"
 #include "QtWidgets/QGraphicsScene"
+#include "QtWidgets/QMenu"
 #include "QtWidgets/QGraphicsSceneMouseEvent"
 #include "shift/sdatabase.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/spropertycontaineriterators.h"
 #include "shift/TypeInformation/sinterfaces.h"
+#include "XTemporaryAllocator"
 
 namespace Shift
 {
@@ -41,26 +43,54 @@ void Debugger::snapshot()
   {
   Eks::TemporaryAllocator alloc(Shift::TypeRegistry::temporaryAllocator());
   Eks::UnorderedMap<Property *, DebugPropertyItem *> props(&alloc);
-  QGraphicsItem *snapshot = createItemForProperty(_db, &props);
+  DebugPropertyItem *snapshot = createItemForProperty(_db, &props);
   
   connectProperties(props);
+  
+
+  snapshot->setPos(width()/2, height()/2);
+  snapshot->layout();
 
   _scene->addItem(snapshot);
   }
   
-void connectProperties(const Eks::UnorderedMap<Property *, DebugPropertyItem *> &itemsOut)
+void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugPropertyItem *> &itemsOut)
   {
-  Eks::UnorderedMap<Property *, DebugPropertyItem *>::iterator it = itemsOut.begin();
-  Eks::UnorderedMap<Property *, DebugPropertyItem *>::iterator end = itemsOut.end();
+  Eks::UnorderedMap<Property *, DebugPropertyItem *>::const_iterator it = itemsOut.begin();
+  Eks::UnorderedMap<Property *, DebugPropertyItem *>::const_iterator end = itemsOut.end();
   for(; it != end; ++it)
     {
-    Property *p = it->first;
+    const Property *p = it.key();
     if(p->input())
       {
       const auto &inItem = itemsOut[p->input()];
       xAssert(inItem);
+      xAssert(it.value());
       
-      new ConnectionItem(inItem, p, Qt::red);
+      new ConnectionItem(inItem, it.value(), true, Qt::red);
+      }
+
+    if(!p->isDynamic())
+      {
+      const EmbeddedPropertyInstanceInformation *child = p->baseInstanceInformation()->embeddedInfo();
+      xAssert(child);
+
+      const xsize *affectsLocations = child->affects();
+      if(affectsLocations)
+        {
+        xuint8* parentLocation = (xuint8*)p;
+        parentLocation -= child->location();
+
+        for(;*affectsLocations; ++affectsLocations)
+          {
+          const xuint8* affectedLocation = parentLocation + *affectsLocations;
+          Property *affectsProp = (Property *)affectedLocation;
+
+          const auto &affectItem = itemsOut[affectsProp];
+
+          new ConnectionItem(it.value(), affectItem, true, Qt::blue);
+          }
+        }
       }
     }
   }
@@ -83,7 +113,7 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::Unordere
   if(c)
     {
     int count = c->size();
-    int embCount = c->typeInformation->childCount();
+    int embCount = c->typeInformation()->childCount();
     text += "<br>embedded children: " + QString::number(embCount);
     text += "<br>dynamic children: " + QString::number(count-embCount);
     }
@@ -100,7 +130,6 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::Unordere
     (*itemsOut)[prop] = item;
     }
 
-  PropertyContainer *c = prop->castTo<PropertyContainer>();
   if(c)
     {
     xForeach(auto p, c->walker())
@@ -108,20 +137,17 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::Unordere
       DebugPropertyItem *childItem = createItemForProperty(p, itemsOut);
       childItem->setParentItem(item);
 
-      new ConnectionItem(item, childItem, Qt::black);
+      new ConnectionItem(item, childItem, false, Qt::black);
       }
     }
-
-  item->setPos(width()/2, height()/2);
-  item->layout();
   
   return item;
   }
 
 DebugPropertyItem::DebugPropertyItem(const QString &text, const QColor &colour)
-    : _info(text), _colour(colour)
+    : _info(text), _outerColour(colour)
   {
-  setAcceptedMouseButtons(Qt::LeftButton);
+  setAcceptedMouseButtons(Qt::LeftButton|Qt::RightButton);
   setFlag(QGraphicsItem::ItemIsMovable);
   }
 
@@ -135,6 +161,21 @@ QRectF DebugPropertyItem::boundingRect() const
   return bnds;
   }
 
+QRectF DebugPropertyItem::boundingRectWithChildProperties() const
+  {
+  QRectF r = boundingRect();
+  xForeach(auto child, childItems())
+    {
+    DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
+    if(childItem)
+      {
+      r |= childItem->boundingRect();
+      }
+    }
+
+  return r;
+  }
+
 void DebugPropertyItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
   {
   QPointF initialPos = event->lastScenePos();
@@ -145,20 +186,44 @@ void DebugPropertyItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
   setPos(pos() + diff);
   }
 
-void DebugPropertyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
+void DebugPropertyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   {
   QMenu menu;
+  menu.addAction("Hide", this, SLOT(hide()));
   menu.addAction("Hide Children", this, SLOT(hideChildren()));
-  menu.addAction("Show Children", this, SLOT(showChildren())));
+  menu.addAction("Hide Siblings", this, SLOT(hideSiblings()));
+  menu.addAction("Show Children", this, SLOT(showChildren()));
+  menu.addAction("Auto Layout", this, SLOT(layout()));
   
-  menu.popup();
+  menu.exec(event->screenPos());
   }
-  
+
+void DebugPropertyItem::hide()
+  {
+  setVisible(false);
+  }
+
 void DebugPropertyItem::hideChildren()
   {
   xForeach(auto child, childItems())
     {
-    child->setVisible(false);
+    DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
+    if(childItem)
+      {
+      child->setVisible(false);
+      }
+    }
+  }
+
+void DebugPropertyItem::hideSiblings()
+  {
+  xForeach(auto child, parentItem()->childItems())
+    {
+    DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
+    if(childItem && child != this)
+      {
+      child->setVisible(false);
+      }
     }
   }
   
@@ -172,7 +237,7 @@ void DebugPropertyItem::showChildren()
 
 void DebugPropertyItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
   {
-  painter->setPen(_colour);
+  painter->setPen(_outerColour);
   painter->setBrush(Qt::white);
 
   QSizeF size = _info.size();
@@ -182,44 +247,51 @@ void DebugPropertyItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
   painter->drawStaticText(0, 0, _info);
   }
   
-float DebugPropertyItem::layout()
+void DebugPropertyItem::layout()
   {
   float childWidth = 0.0f;
+  float childHeight = 0.0f;
   xsize children = 0;
   xForeach(auto child, childItems())
     {
     DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
     if(childItem)
       {
-      childWidth += childItem->layout();
+      childItem->layout();
+
+      QRectF bnds = boundingRectWithChildProperties();
+
+      childWidth += bnds.width();
+      childHeight = xMax(childHeight, (float)bnds.height());
       ++children;
       }
     }
     
   enum
     {
-    GapX = 5,
-    ChildOffsetY = 50
+    GapX = 10,
+    GapY = 10
     };
     
-  float fullWidth = childWidth + ((chilren-1) * GapX);
+  float fullWidth =
+      xMax((float)boundingRect().width(), childWidth + (float)(xMin(children-1, 0U) * GapX));
   
-  float currentX = fullWidth/2.0f;
+  childHeight += GapY;
+
+  float currentX = -fullWidth/2.0f;
   xForeach(auto child, childItems())
     {
     DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
     if(childItem)
       {
-      childItem->setPos(currentX, ChildOffsetY);
-      currentX += childItem->boundingRect().width() + GapX;
+      childItem->setPos(currentX, childHeight);
+      currentX += boundingRectWithChildProperties().width(); + GapX;
       }
     }
-    
-  return fullWidth;
   }
 
-ConnectionItem::ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, QColor col)
-  : QGraphicsObject(owner), _colour(col), _from(from), _owner(owner)
+ConnectionItem::ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, bool h, QColor col)
+  : QGraphicsObject(owner), _colour(col), _from(from), _owner(owner), _horizontal(h)
   {
   xAssert(_owner);
   xAssert(_from);
@@ -236,10 +308,33 @@ void ConnectionItem::updateEndPoints()
   update();
   }
 
+void ConnectionItem::points(QPointF &from, QPointF &to) const
+  {
+  QRectF rA = _owner->boundingRect();
+  QRectF rB = _from->boundingRect();
+
+  QPointF ptA;
+  QPointF ptB;
+  if(_horizontal)
+    {
+    ptA = QPointF(rA.left(), Eks::lerp(rA.top(), rA.bottom(), 0.5f));
+    ptB = QPointF(rB.right(), Eks::lerp(rB.top(), rB.bottom(), 0.5f));
+    }
+  else
+    {
+    ptA = QPointF(Eks::lerp(rA.left(), rA.right(), 0.5f), rA.top());
+    ptB = QPointF(Eks::lerp(rB.left(), rB.right(), 0.5f), rB.bottom());
+    }
+
+  from = mapFromItem(_owner, ptA);
+  to = mapFromItem(_from, ptB);
+  }
+
 QRectF ConnectionItem::boundingRect() const
   {
-  QPointF ptA = mapFromItem(_owner, 0, 0);
-  QPointF ptB = mapFromItem(_from, 0, 0);
+  QPointF ptA;
+  QPointF ptB;
+  points(ptA, ptB);
 
   QSizeF s(2, 2);
 
@@ -248,10 +343,16 @@ QRectF ConnectionItem::boundingRect() const
 
 void ConnectionItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
   {
-  painter->setPen(QPen(Qt::black));
+  if(!_from->isVisible())
+    {
+    return;
+    }
 
-  QPointF ptA = mapFromItem(_owner, 0, 0);
-  QPointF ptB = mapFromItem(_from, 0, 0);
+  painter->setPen(QPen(_colour));
+
+  QPointF ptA;
+  QPointF ptB;
+  points(ptA, ptB);
 
   painter->drawLine(ptA, ptB);
   }

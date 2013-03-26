@@ -40,39 +40,53 @@ public:
   DebugPropertyItem(const QString &text, const QColor &colour);
 
   QRectF boundingRect() const;
-  
-  float layout();
+  QRectF boundingRectWithChildProperties() const;
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
+  enum { Type = UserType + 1 };
+  int type() const { return Type; }
+
+public slots:
+  void layout();
+
 protected slots:
+  void hide();
   void hideChildren();
+  void hideSiblings();
   void showChildren();
   
 protected:
   void mouseMoveEvent(QGraphicsSceneMouseEvent * event) X_OVERRIDE;
+  void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) X_OVERRIDE;
 
 private:
   QStaticText _info;
-  QColour _outerColour;
+  QColor _outerColour;
   };
 
 class ConnectionItem : public QGraphicsObject
   {
   Q_OBJECT
 public:
-  ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, QColor colour);
+  ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, bool horizontal, QColor colour);
 
   QRectF boundingRect() const;
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
+  enum { Type = UserType + 2 };
+  int type() const { return Type; }
+
 private slots:
   void updateEndPoints();
 
 private:
+  void points(QPointF &from, QPointF &to) const;
   DebugPropertyItem *_owner;
   DebugPropertyItem *_from;
+
+  bool _horizontal;
 
   QColor _colour;
   };
