@@ -211,6 +211,8 @@ public:
   static const XScript::InterfaceBase *staticApiInterface();
 
   Eks::TemporaryAllocatorCore *temporaryAllocator() const;
+  Eks::AllocatorBase *persistentBlockAllocator() const;
+  Eks::AllocatorBase *generalPurposeAllocator() const;
 
 private:
   X_DISABLE_COPY(Property);

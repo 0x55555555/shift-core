@@ -310,6 +310,25 @@ Eks::TemporaryAllocatorCore *Property::temporaryAllocator() const
 #endif
   }
 
+Eks::AllocatorBase *Property::persistentBlockAllocator() const
+  {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  return handler()->persistentBlockAllocator();
+#else
+  return TypeRegistry::persistentBlockAllocator();
+#endif
+  }
+
+Eks::AllocatorBase *Property::generalPurposeAllocator() const
+  {
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  return handler()->generalPurposeAllocator();
+#else
+  return TypeRegistry::generalPurposeAllocator();
+#endif
+  }
+
+
 bool Property::inheritsFromType(const PropertyInformation *type) const
   {
   SProfileFunction

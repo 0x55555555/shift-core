@@ -53,7 +53,7 @@ void PropertyInstanceInformation::destroy(
 
 const Eks::String &_modeString(xsize i)
   {
-  X_HACK("static global")
+  X_HACK(0, "static global", "allocate somewhere nice.")
   static Eks::String g_modeStrings[] = {
     /* Internal      */ "internal",
     /* InputOutput   */ "inputoutput",
