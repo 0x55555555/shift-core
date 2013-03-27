@@ -106,7 +106,9 @@ template <typename PropType, typename T> static void addInheritedInterface()
   public:
     InterfaceBase *classInterface(Property *prop) X_OVERRIDE
       {
-      return prop->castTo<PropType>();
+      PropType *type = prop->castTo<PropType>();
+      T *t = type;
+      return t;
       }
     };
 
