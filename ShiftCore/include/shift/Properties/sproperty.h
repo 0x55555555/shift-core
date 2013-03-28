@@ -172,17 +172,17 @@ public:
     return 0;
     }
 
-  InterfaceBase *interface(xuint32 typeId);
-  const InterfaceBase *interface(xuint32 typeId) const;
+  InterfaceBase *findInterface(xuint32 typeId);
+  const InterfaceBase *findInterface(xuint32 typeId) const;
 
-  template <typename T> T *interface()
+  template <typename T> T *findInterface()
     {
-    return static_cast<T *>(interface(T::InterfaceTypeId));
+    return static_cast<T *>(findInterface(T::InterfaceTypeId));
     }
 
-  template <typename T> const T *interface() const
+  template <typename T> const T *findInterface() const
     {
-    return static_cast<const T *>(interface(T::InterfaceTypeId));
+    return static_cast<const T *>(findInterface(T::InterfaceTypeId));
     }
 
 #ifdef S_PROPERTY_USER_DATA

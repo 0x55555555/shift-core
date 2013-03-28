@@ -24,7 +24,7 @@ void Handler::clearChanges()
 
 Handler *Handler::findHandler(PropertyContainer *parent, Property *prop)
   {
-  Handler *handler = prop->interface<Handler>();
+  Handler *handler = prop->findInterface<Handler>();
   if(handler)
     {
     handler->setDatabase(parent->database());

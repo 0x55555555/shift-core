@@ -877,7 +877,7 @@ const Property *Property::resolvePath(const Eks::String &path) const
 
 QVariant Property::value() const
   {
-  const PropertyVariantInterface *varInt = interface<PropertyVariantInterface>();
+  const PropertyVariantInterface *varInt = findInterface<PropertyVariantInterface>();
 
   if(varInt)
     {
@@ -888,7 +888,7 @@ QVariant Property::value() const
 
 void Property::setValue(const QVariant &val)
   {
-  const PropertyVariantInterface *varInt = interface<PropertyVariantInterface>();
+  const PropertyVariantInterface *varInt = findInterface<PropertyVariantInterface>();
 
   if(varInt)
     {
@@ -898,7 +898,7 @@ void Property::setValue(const QVariant &val)
 
 Eks::String Property::valueAsString() const
   {
-  const PropertyVariantInterface *varInt = interface<PropertyVariantInterface>();
+  const PropertyVariantInterface *varInt = findInterface<PropertyVariantInterface>();
 
   if(varInt)
     {
@@ -1036,7 +1036,7 @@ void Property::removeUserData(UserData *userData)
   }
 #endif
 
-InterfaceBase *Property::interface(xuint32 typeId)
+InterfaceBase *Property::findInterface(xuint32 typeId)
   {
   const InterfaceBaseFactory* factory = TypeRegistry::interfaceFactory(typeInformation(), typeId);
   if(factory)
@@ -1046,7 +1046,7 @@ InterfaceBase *Property::interface(xuint32 typeId)
   return 0;
   }
 
-const InterfaceBase *Property::interface(xuint32 typeId) const
+const InterfaceBase *Property::findInterface(xuint32 typeId) const
   {
   const InterfaceBaseFactory* factory = TypeRegistry::interfaceFactory(typeInformation(), typeId);
   if(factory)

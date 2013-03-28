@@ -44,16 +44,16 @@ void Debugger::snapshot()
   Eks::TemporaryAllocator alloc(Shift::TypeRegistry::temporaryAllocator());
   Eks::UnorderedMap<Property *, DebugPropertyItem *> props(&alloc);
   DebugPropertyItem *snapshot = createItemForProperty(_db, &props);
-  
+
   connectProperties(props);
-  
+
 
   snapshot->setPos(width()/2, height()/2);
   snapshot->layout();
 
   _scene->addItem(snapshot);
   }
-  
+
 void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugPropertyItem *> &itemsOut)
   {
   Eks::UnorderedMap<Property *, DebugPropertyItem *>::const_iterator it = itemsOut.begin();
@@ -66,7 +66,7 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugProper
       const auto &inItem = itemsOut[p->input()];
       xAssert(inItem);
       xAssert(it.value());
-      
+
       new ConnectionItem(inItem, it.value(), true, Qt::red);
       }
 
@@ -98,7 +98,7 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugProper
 DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::UnorderedMap<Property *, DebugPropertyItem *> *itemsOut)
   {
   QString text = "name: " + prop->name().toQString() + "<br>type: " + prop->typeInformation()->typeName().toQString();
-  PropertyVariantInterface *ifc = prop->interface<PropertyVariantInterface>();
+  PropertyVariantInterface *ifc = prop->findInterface<PropertyVariantInterface>();
   if(ifc)
     {
     NoUpdateBlock b(prop);
@@ -108,7 +108,7 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::Unordere
   bool dirty = prop->isDirty();
   text += "<br>dirty: ";
   text += (dirty ? "true" : "false");
-  
+
   PropertyContainer *c = prop->castTo<PropertyContainer>();
   if(c)
     {
@@ -140,7 +140,7 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::Unordere
       new ConnectionItem(item, childItem, false, Qt::black);
       }
     }
-  
+
   return item;
   }
 
@@ -194,7 +194,7 @@ void DebugPropertyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   menu.addAction("Hide Siblings", this, SLOT(hideSiblings()));
   menu.addAction("Show Children", this, SLOT(showChildren()));
   menu.addAction("Auto Layout", this, SLOT(layout()));
-  
+
   menu.exec(event->screenPos());
   }
 
@@ -226,7 +226,7 @@ void DebugPropertyItem::hideSiblings()
       }
     }
   }
-  
+
 void DebugPropertyItem::showChildren()
   {
   xForeach(auto child, childItems())
@@ -246,7 +246,7 @@ void DebugPropertyItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
   painter->setPen(Qt::black);
   painter->drawStaticText(0, 0, _info);
   }
-  
+
 void DebugPropertyItem::layout()
   {
   float childWidth = 0.0f;
@@ -266,16 +266,16 @@ void DebugPropertyItem::layout()
       ++children;
       }
     }
-    
+
   enum
     {
     GapX = 10,
     GapY = 10
     };
-    
+
   float fullWidth =
       xMax((float)boundingRect().width(), childWidth + (float)(xMin(children-1, 0U) * GapX));
-  
+
   childHeight += GapY;
 
   float currentX = -fullWidth/2.0f;

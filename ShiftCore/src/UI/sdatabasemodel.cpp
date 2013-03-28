@@ -299,8 +299,8 @@ int DatabaseModel::columnCount( const QModelIndex &parent ) const
       xForeach(auto child, cont->walker())
         {
         // this could maybe be improved, but we dont want to show the values for complex widgets...
-        const PropertyVariantInterface *interface = child->interface<PropertyVariantInterface>();
-        if(interface)
+        const PropertyVariantInterface *ifc = child->findInterface<PropertyVariantInterface>();
+        if(ifc)
           {
           columns = 2;
           break;
@@ -320,10 +320,10 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
     {
     if(role == PropertyColourRole)
       {
-      const PropertyColourInterface *interface = _root->interface<PropertyColourInterface>();
-      if(interface)
+      const PropertyColourInterface *ifc = _root->findInterface<PropertyColourInterface>();
+      if(ifc)
         {
-        return interface->colour(_root).toLDRColour();
+        return ifc->colour(_root).toLDRColour();
         }
       return QColor();
       }
@@ -337,10 +337,10 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
     {
     if(_options.hasFlag(ShowValues) && index.column() == 1)
       {
-      const PropertyVariantInterface *interface = prop->interface<PropertyVariantInterface>();
-      if(interface)
+      const PropertyVariantInterface *ifc = prop->findInterface<PropertyVariantInterface>();
+      if(ifc)
         {
-        return interface->asVariant(prop);
+        return ifc->asVariant(prop);
         }
       return QVariant();
       }
@@ -353,37 +353,37 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
     }
   else if(role == PropertyPositionRole)
     {
-    const PropertyPositionInterface *interface = prop->interface<PropertyPositionInterface>();
-    if(interface)
+    const PropertyPositionInterface *ifc = prop->findInterface<PropertyPositionInterface>();
+    if(ifc)
       {
-      return toQt(interface->position(prop));
+      return toQt(ifc->position(prop));
       }
     return QVector3D();
     }
   else if(role == EntityInputPositionRole)
     {
-    const PropertyPositionInterface *interface = prop->interface<PropertyPositionInterface>();
-    if(interface)
+    const PropertyPositionInterface *ifc = prop->findInterface<PropertyPositionInterface>();
+    if(ifc)
       {
-      return toQt(interface->inputsPosition(prop));
+      return toQt(ifc->inputsPosition(prop));
       }
     return QVector3D();
     }
   else if(role == EntityOutputPositionRole)
     {
-    const PropertyPositionInterface *interface = prop->interface<PropertyPositionInterface>();
-    if(interface)
+    const PropertyPositionInterface *ifc = prop->findInterface<PropertyPositionInterface>();
+    if(ifc)
       {
-      return toQt(interface->outputsPosition(prop));
+      return toQt(ifc->outputsPosition(prop));
       }
     return QVector3D();
     }
   else if(role == PropertyColourRole)
     {
-    const PropertyColourInterface *interface = prop->interface<PropertyColourInterface>();
-    if(interface)
+    const PropertyColourInterface *ifc = prop->findInterface<PropertyColourInterface>();
+    if(ifc)
       {
-      return interface->colour(prop).toLDRColour();
+      return ifc->colour(prop).toLDRColour();
       }
     return QColor();
     }
@@ -445,10 +445,10 @@ bool DatabaseModel::setData(const QModelIndex &index, const QVariant &val, int r
       {
       if(_options.hasFlag(ShowValues) && index.column() == 1)
         {
-        PropertyVariantInterface *interface = prop->interface<PropertyVariantInterface>();
-        if(interface)
+        PropertyVariantInterface *ifc = prop->findInterface<PropertyVariantInterface>();
+        if(ifc)
           {
-          interface->setVariant(prop, val);
+          ifc->setVariant(prop, val);
           return true;
           }
         }
@@ -460,31 +460,31 @@ bool DatabaseModel::setData(const QModelIndex &index, const QVariant &val, int r
       }
     else if(role == PropertyPositionRole)
       {
-      PropertyPositionInterface *interface = prop->interface<PropertyPositionInterface>();
-      if(interface)
+      PropertyPositionInterface *ifc = prop->findInterface<PropertyPositionInterface>();
+      if(ifc)
         {
         QVector3D vec = val.value<QVector3D>();
-        interface->setPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
+        ifc->setPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
         return true;
         }
       }
     else if(role == EntityInputPositionRole)
       {
-      PropertyPositionInterface *interface = prop->interface<PropertyPositionInterface>();
-      if(interface)
+      PropertyPositionInterface *ifc = prop->findInterface<PropertyPositionInterface>();
+      if(ifc)
         {
         QVector3D vec = val.value<QVector3D>();
-        interface->setInputsPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
+        ifc->setInputsPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
         return true;
         }
       }
     else if(role == EntityOutputPositionRole)
       {
-      PropertyPositionInterface *interface = prop->interface<PropertyPositionInterface>();
-      if(interface)
+      PropertyPositionInterface *ifc = prop->findInterface<PropertyPositionInterface>();
+      if(ifc)
         {
         QVector3D vec = val.value<QVector3D>();
-        interface->setOutputsPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
+        ifc->setOutputsPosition(prop, Eks::Vector3D(vec.x(), vec.y(), vec.z()));
         return true;
         }
       }
