@@ -320,10 +320,6 @@ void PropertyContainerTraits::assignProperty(const Property *f, Property *t)
       ++index;
       }
     }
-  else
-    {
-    xAssertFail();
-    }
   }
 
 void PropertyContainerTraits::saveProperty(const Property *p, Saver &l)
