@@ -76,6 +76,10 @@ public:
       const PropertyInformation* info = It::_info;
       ++index;
       info->nextChild<T>(&index);
+      if(index == X_SIZE_SENTINEL)
+        {
+        index = lastIndex;
+        }
       }
     else
       {
