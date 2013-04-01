@@ -118,6 +118,8 @@ protected:
     };
 
 public:
+  typedef T PODType;
+
   class ComputeLock
     {
   public:
@@ -320,7 +322,6 @@ class EXPORT_MODE name : public Shift::PODProperty<type, name> { public: \
     EmbeddedInstanceInformation() \
     : Shift::PODProperty<type, name>::EmbeddedInstanceInformation(defaultDefault) { } }; \
   enum { TypeId = typeID }; \
-  typedef type PODType; \
   S_PROPERTY(name, Property, 0); \
   name &operator=(const type &in) { \
     assign(in); \
