@@ -6,7 +6,7 @@
 
 class TestVector : public Shift::PropertyContainer
   {
-  S_ENTITY(TestEntity, Entity, 0)
+  S_ENTITY(TestVector, Entity, 0)
 public:
 
   Shift::FloatProperty x;
@@ -89,7 +89,7 @@ ShiftCoreComputeTest::ShiftCoreComputeTest()
   }
 
 void ShiftCoreComputeTest::simpleDirty()
-  {  
+  {
   Shift::Database db;
 
   // create an entity, everything should be dirty

@@ -112,8 +112,8 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::Unordere
   PropertyContainer *c = prop->castTo<PropertyContainer>();
   if(c)
     {
-    int count = c->size();
-    int embCount = c->typeInformation()->childCount();
+    xsize count = c->size();
+    xsize embCount = c->typeInformation()->childCount();
     text += "<br>embedded children: " + QString::number(embCount);
     text += "<br>dynamic children: " + QString::number(count-embCount);
     }
@@ -274,7 +274,7 @@ void DebugPropertyItem::layout()
     };
 
   float fullWidth =
-      xMax((float)boundingRect().width(), childWidth + (float)(xMin(children-1, 0U) * GapX));
+      xMax((float)boundingRect().width(), childWidth + (float)(xMin(children-1, (xsize)0) * GapX));
 
   childHeight += GapY;
 
