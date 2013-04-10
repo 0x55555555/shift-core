@@ -47,14 +47,19 @@ public:
   enum { Type = UserType + 1 };
   int type() const { return Type; }
 
+signals:
+  void showConnected();
+
 public slots:
   void layout();
+  void show();
 
 protected slots:
   void hide();
   void hideChildren();
   void hideSiblings();
-  void showChildren();
+  void showChildren();  
+  void isolate();
   
 protected:
   void mouseMoveEvent(QGraphicsSceneMouseEvent * event) X_OVERRIDE;

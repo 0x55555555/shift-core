@@ -127,6 +127,7 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
   void *propMem = _memory->alloc(size);
 
   // new the prop type
+  xAssert(type->functions().createProperty);
   Property *prop = type->functions().createProperty(propMem);
 
   // new the instance information

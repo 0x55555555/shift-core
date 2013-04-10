@@ -67,6 +67,9 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugProper
       xAssert(inItem);
       xAssert(it.value());
 
+      connect(it.value(), SIGNAL(showConnected()), inItem, SLOT(show()));
+      connect(inItem, SIGNAL(showConnected()), it.value(), SLOT(show()));
+
       new ConnectionItem(inItem, it.value(), true, Qt::red);
       }
 
@@ -89,6 +92,9 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugProper
           const auto &affectItem = itemsOut[affectsProp];
 
           new ConnectionItem(it.value(), affectItem, true, Qt::blue);
+
+          connect(it.value(), SIGNAL(showConnected()), affectItem, SLOT(show()));
+          connect(affectItem, SIGNAL(showConnected()), it.value(), SLOT(show()));
           }
         }
       }
@@ -193,6 +199,8 @@ void DebugPropertyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   menu.addAction("Hide Children", this, SLOT(hideChildren()));
   menu.addAction("Hide Siblings", this, SLOT(hideSiblings()));
   menu.addAction("Show Children", this, SLOT(showChildren()));
+  menu.addAction("Show Connected", this, SIGNAL(showConnected()));
+  menu.addAction("Isolate", this, SLOT(isolate()));
   menu.addAction("Auto Layout", this, SLOT(layout()));
 
   menu.exec(event->screenPos());
@@ -215,8 +223,28 @@ void DebugPropertyItem::hideChildren()
     }
   }
 
+void DebugPropertyItem::isolate()
+  {
+  QGraphicsItem *item = this;
+  while(item)
+    {
+    DebugPropertyItem* prop = qgraphicsitem_cast<DebugPropertyItem*>(item);
+    if(prop)
+      {
+      prop->hideSiblings();
+      }
+
+    item = item->parentItem();
+    }
+  }
+
 void DebugPropertyItem::hideSiblings()
   {
+  if(!parentItem())
+    {
+    return;
+    }
+
   xForeach(auto child, parentItem()->childItems())
     {
     DebugPropertyItem *childItem = qgraphicsitem_cast<DebugPropertyItem*>(child);
@@ -287,6 +315,16 @@ void DebugPropertyItem::layout()
       childItem->setPos(currentX, childHeight);
       currentX += boundingRectWithChildProperties().width(); + GapX;
       }
+    }
+  }
+
+void DebugPropertyItem::show()
+  {
+  QGraphicsItem *item = this;
+  while(item)
+    {
+    item->setVisible(true);
+    item = item->parentItem();
     }
   }
 
