@@ -8,6 +8,7 @@
 #include "shift/sdatabase.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "XTemporaryAllocator"
 
@@ -60,7 +61,7 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugProper
   Eks::UnorderedMap<Property *, DebugPropertyItem *>::const_iterator end = itemsOut.end();
   for(; it != end; ++it)
     {
-    const Property *p = it.key();
+    Property *p = it.key();
     if(p->input())
       {
       const auto &inItem = itemsOut[p->input()];
@@ -78,24 +79,16 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugProper
       const EmbeddedPropertyInstanceInformation *child = p->baseInstanceInformation()->embeddedInfo();
       xAssert(child);
 
-      const xsize *affectsLocations = child->affects();
-      if(affectsLocations)
+
+      auto walker = child->affectsWalker(p->parent());
+      xForeach(Property *affectsProp, walker)
         {
-        xuint8* parentLocation = (xuint8*)p;
-        parentLocation -= child->location();
+        const auto &affectItem = itemsOut[affectsProp];
 
-        for(;*affectsLocations; ++affectsLocations)
-          {
-          const xuint8* affectedLocation = parentLocation + *affectsLocations;
-          Property *affectsProp = (Property *)affectedLocation;
+        new ConnectionItem(it.value(), affectItem, true, Qt::blue);
 
-          const auto &affectItem = itemsOut[affectsProp];
-
-          new ConnectionItem(it.value(), affectItem, true, Qt::blue);
-
-          connect(it.value(), SIGNAL(showConnected()), affectItem, SLOT(show()));
-          connect(affectItem, SIGNAL(showConnected()), it.value(), SLOT(show()));
-          }
+        connect(it.value(), SIGNAL(showConnected()), affectItem, SLOT(show()));
+        connect(affectItem, SIGNAL(showConnected()), it.value(), SLOT(show()));
         }
       }
     }

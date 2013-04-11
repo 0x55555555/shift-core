@@ -84,6 +84,7 @@ public:
   void disconnect() const;
 
   bool isDirty() const { return _flags.hasFlag(Dirty); }
+  bool isUpdating() const { return _flags.hasFlag(PreGetting); }
   bool isComputed() const;
   bool hasInput() const { return _input; }
   bool hasOutputs() const { return _output; }
@@ -112,13 +113,12 @@ public:
   void setDependantsDirty();
   void preGet() const
     {
-    if(_flags.hasFlag(Dirty))
+    if(isDirty())
       {
       update();
       }
     }
-  void update() const;
-  void updateParent() const;
+  void concurrentPreGet() const;
 
   inline bool isDynamic() const;
 
@@ -216,6 +216,10 @@ public:
 
 private:
   X_DISABLE_COPY(Property);
+
+  void concurrentUpdate() const;
+  void update() const;
+  void updateParent() const;
 
   void setDirty();
   void internalSetName(const PropertyNameArg &name);

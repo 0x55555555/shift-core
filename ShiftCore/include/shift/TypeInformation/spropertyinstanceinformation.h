@@ -14,6 +14,7 @@ class PropertyInformation;
 class PropertyInstanceInformation;
 class EmbeddedPropertyInstanceInformation;
 class DynamicPropertyInstanceInformation;
+template <typename R, typename T> class PropertyAffectsWalker;
 
 class PropertyInstanceInformationInitialiser
   {
@@ -122,6 +123,9 @@ public:
                 xsize s);
 
   void setDefaultInput(const EmbeddedPropertyInstanceInformation *info);
+
+  PropertyAffectsWalker<Property, PropertyContainer> affectsWalker(PropertyContainer *c) const;
+  PropertyAffectsWalker<const Property, const PropertyContainer> affectsWalker(const PropertyContainer *c) const;
   };
 
 class SHIFT_EXPORT DynamicPropertyInstanceInformation : public PropertyInstanceInformation

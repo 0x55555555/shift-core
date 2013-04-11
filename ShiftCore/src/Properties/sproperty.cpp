@@ -14,6 +14,7 @@
 #include "XProfiler"
 #include "XStringBuffer"
 #include "XConvertScriptSTL.h"
+#include <QtConcurrent/QtConcurrentRun>
 
 namespace Shift
 {
@@ -83,6 +84,8 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
 
 void Property::setDependantsDirty()
   {
+  xAssert(!isUpdating());
+
   for(Property *o=output(); o; o = o->nextOutput())
     {
     xAssert(o != o->nextOutput());
@@ -968,6 +971,12 @@ void Property::update() const
     updateParent();
     }
 
+  concurrentUpdate();
+  }
+
+void Property::concurrentUpdate() const
+  {
+  Property *prop = const_cast<Property*>(this);
 
   if(!isDynamic())
     {
@@ -994,6 +1003,40 @@ void Property::update() const
   prop->_flags.clearFlag(Dirty);
   prop->_flags.clearFlag(PreGetting);
   xAssert(!_flags.hasFlag(Dirty));
+  }
+
+void Property::concurrentPreGet() const
+  {
+  if(!isDirty())
+    {
+    return;
+    }
+
+  // this is a const function, but because we delay computation we may need to assign here
+  Property *prop = const_cast<Property*>(this);
+  prop->_flags.setFlag(PreGetting);
+  prop->_flags.clearFlag(Dirty);
+
+  const PropertyContainer *par = parent();
+  const PropertyInformation *info = par->typeInformation();
+  xForeach(const EmbeddedInstanceInformation *inst, info->childWalker())
+    {
+    auto walker = inst->affectsWalker(parent());
+    xForeach(const Property *affectsProp, walker)
+      {
+      if(affectsProp == this)
+        {
+        affectsProp->preGet();
+        }
+      }
+    }
+
+  if(_flags.hasFlag(ParentHasInput))
+    {
+    updateParent();
+    }
+
+  QtConcurrent::run(this, &Property::concurrentUpdate);
   }
 
 #ifdef S_PROPERTY_USER_DATA

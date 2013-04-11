@@ -415,6 +415,62 @@ private:
     }
   };
 
+template <typename R, typename T> class PropertyAffectsWalker
+  {
+public:
+  PropertyAffectsWalker(T *c, const xsize *aff) : _affects(aff), _container(c)
+    {
+    }
+
+  class Iterator
+    {
+  public:
+    Iterator(const xsize *s, T *c) : _affects(s), _container(c)
+      {
+      }
+
+    void operator++()
+      {
+      ++_affects;
+      }
+
+    R *operator*() const
+      {
+      xuint8* parentLocation = (xuint8*)_container;
+
+      const xuint8* affectedLocation = parentLocation + *_affects;
+      return (R*)affectedLocation;
+      }
+
+    bool operator!=(const Iterator &i) const
+      {
+      return _affects != i._affects;
+      }
+
+  private:
+    const xsize *_affects;
+    T *_container;
+    };
+
+  Iterator begin() const { return Iterator(_affects, _container); }
+  Iterator end() const { return Iterator(0, _container); }
+
+private:
+  const xsize *_affects;
+  T *_container;
+  };
+
+inline PropertyAffectsWalker<Property, PropertyContainer>
+  EmbeddedPropertyInstanceInformation::affectsWalker(PropertyContainer *c) const
+  {
+  return PropertyAffectsWalker<Property, PropertyContainer>(c, _affects);
+  }
+
+inline PropertyAffectsWalker<const Property, const PropertyContainer>
+  EmbeddedPropertyInstanceInformation::affectsWalker(const PropertyContainer *c) const
+  {
+  return PropertyAffectsWalker<const Property, const PropertyContainer>(c, _affects);
+  }
 }
 
 namespace XScript
