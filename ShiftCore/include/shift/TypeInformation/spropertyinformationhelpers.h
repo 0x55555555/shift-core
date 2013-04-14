@@ -444,7 +444,9 @@ public:
 
     bool operator!=(const Iterator &i) const
       {
-      return _affects != i._affects;
+      xsize a = _affects ? *_affects : 0;
+      xsize b = i._affects ? *i._affects : 0;
+      return a != b;
       }
 
   private:

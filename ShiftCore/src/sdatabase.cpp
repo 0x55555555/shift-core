@@ -172,7 +172,7 @@ void Database::deleteDynamicProperty(Property *prop)
   xAssert(prop->isDynamic());
 
   X_HEAP_CHECK
-  xAssert(!prop->_flags.hasFlag(PreGetting));
+  xAssert(!prop->isUpdating());
   uninitiateProperty(prop);
 
   const PropertyInformation *info = prop->typeInformation();

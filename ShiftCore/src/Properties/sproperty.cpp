@@ -9,6 +9,7 @@
 #include "shift/Changes/shandler.inl"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Utilities/sprocessmanager.h"
+#include "shift/Utilities/satomichelper.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "XProfiler"
@@ -18,6 +19,8 @@
 
 namespace Shift
 {
+
+xCompileTimeAssert(sizeof(Property) <= sizeof(void*)*5);
 
 static PropertyGroup::Information _sPropertyTypeInformation =
   Shift::propertyGroup().registerPropertyInformation(&_sPropertyTypeInformation,
@@ -58,7 +61,7 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
         api->property<Property *, &Property::output>("firstOutput"),
         api->property<Property *, &Property::nextOutput>("nextOutput"),
 
-        api->property<Eks::String, &Property::mode>("mode"),
+        api->property<const Eks::String&, &Property::mode>("mode"),
         api->property<bool, &Property::isDynamic>("dynamic"),
         api->property<const PropertyName &, const PropertyNameArg &, &Property::name, &Property::setName>("name"),
 
@@ -84,8 +87,6 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
 
 void Property::setDependantsDirty()
   {
-  xAssert(!isUpdating());
-
   for(Property *o=output(); o; o = o->nextOutput())
     {
     xAssert(o != o->nextOutput());
@@ -134,24 +135,26 @@ void Property::setDependantsDirty()
   // if we know the parent has an output
   if(_flags.hasFlag(Property::ParentHasOutput))
     {
-    Property *parent = this;
+    Property *parentProp = parent();
 
-    if(_flags.hasFlag(Dirty))
+    if(_dirty)
       {
-      while(parent->_flags.hasFlag(Property::ParentHasOutput)
-            && !parent->_flags.hasFlag(PreGetting))
+      while(parentProp &&
+            (parentProp->_flags.hasFlag(Property::ParentHasOutput) || parentProp->output()) &&
+            !parentProp->isUpdating())
         {
-        parent = parent->parent();
+        parentProp->setDirty();
 
-        parent->setDirty();
+        parentProp = parentProp->parent();
         }
       }
 
-    while(parent->_flags.hasFlag(Property::ParentHasOutput))
+    while(parentProp &&
+          (parentProp->_flags.hasFlag(Property::ParentHasOutput) || parentProp->output()))
       {
-      parent = parent->parent();
+      parentProp->setDependantsDirty();
 
-      parent->setDependantsDirty();
+      parentProp = parentProp->parent();
       }
     }
   }
@@ -179,7 +182,7 @@ bool Property::NameChange::inform(bool backwards)
   }
 
 Property::Property() : _input(0), _output(0), _nextOutput(0),
-    _instanceInfo(0), _flags(Dirty)
+  _instanceInfo(0), _updating(false), _flags(0), _dirty(true)
 #ifdef S_CENTRAL_CHANGE_HANDLER
     , _handler(0)
   #endif
@@ -189,7 +192,7 @@ Property::Property() : _input(0), _output(0), _nextOutput(0),
   {
   }
 
-Property::Property(const Property &) : _flags(Dirty)
+Property::Property(const Property &) : _updating(false), _flags(0), _dirty(true)
   {
   xAssertFail();
   }
@@ -547,7 +550,11 @@ bool Property::ConnectionChange::apply()
       setParentHasInputConnection(_driven);
       setParentHasOutputConnection(_driver);
       }
-    _driver->setDependantsDirty();
+
+    if(!_driver->isUpdating() && !_driven->isUpdating())
+      {
+      _driver->setDependantsDirty();
+      }
     }
   else if(_mode == Disconnect)
     {
@@ -575,7 +582,11 @@ bool Property::ConnectionChange::unApply()
       setParentHasInputConnection(_driven);
       setParentHasOutputConnection(_driver);
       }
-    _driver->setDependantsDirty();
+
+    if(!_driver->isUpdating() && !_driven->isUpdating())
+      {
+      _driver->setDependantsDirty();
+      }
     }
   return true;
   }
@@ -791,7 +802,7 @@ Eks::String Property::path(const Property *from) const
   return "";
   }
 
-Eks::String Property::mode() const
+const Eks::String &Property::mode() const
   {
   return baseInstanceInformation()->modeString();
   }
@@ -918,20 +929,24 @@ void Property::internalSetName(const PropertyNameArg &name)
 void Property::postSet()
   {
   SProfileFunction
-  setDependantsDirty();
+  if(!_updating)
+    {
+    setDependantsDirty();
+    }
 
-  _flags.clearFlag(Dirty);
+  _dirty = false;
   }
 
 void Property::setDirty()
   {
   SProfileFunction
-  if(!_flags.hasAnyFlags(Dirty|PreGetting))
-  {
-    _flags.setFlag(Dirty);
+
+  if(!_dirty)
+    {
+    _dirty = true;
 
     setDependantsDirty();
-    xAssert(_flags.hasFlag(Dirty));
+    xAssert(isDirty());
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
     Entity *ent = entity();
@@ -952,26 +967,51 @@ void Property::updateParent() const
     }
   }
 
+bool Property::beginUpdate() const
+  {
+  // this is a const function, but because we delay computation we may need to assign here
+  Property *prop = const_cast<Property*>(this);
+
+  bool success = AtomicHelper::trySet(&prop->_updating, 1, 0);
+
+  if(!success)
+    {
+    return false;
+    }
+
+  prop->_dirty = false;
+  return true;
+  }
+
+void Property::endUpdate() const
+  {
+  Property *prop = const_cast<Property*>(this);
+  bool success = AtomicHelper::trySet(&prop->_updating, 0, 1);
+  xAssert(success);
+  }
+
 void Property::update() const
   {
   SProfileFunction
   StateStorageBlock ss(false, const_cast<Handler*>(handler()));
 
-  Property *prop = const_cast<Property*>(this);
-  prop->_flags.setFlag(PreGetting);
-
-  // this is a const function, but because we delay computation we may need to assign here
-  prop->_flags.clearFlag(Dirty);
+  if(!beginUpdate())
+    {
+    return;
+    }
 
   // if the parent is computed or has input, we need to update it,
   // which may update us. Note that we should be made dirty recursively
   // when the parent is dirtied, so its safe to do this in update not preGet.
-  if(prop->_flags.hasFlag(ParentHasInput))
+  if(_flags.hasFlag(ParentHasInput))
     {
     updateParent();
     }
 
   concurrentUpdate();
+
+  // dirty can be set again in compute functions.
+  xAssert(!isDirty());
   }
 
 void Property::concurrentUpdate() const
@@ -999,23 +1039,15 @@ void Property::concurrentUpdate() const
     prop->assign(input());
     }
 
-  // dirty can be set again in compute functions.
-  prop->_flags.clearFlag(Dirty);
-  prop->_flags.clearFlag(PreGetting);
-  xAssert(!_flags.hasFlag(Dirty));
+  endUpdate();
   }
 
 void Property::concurrentPreGet() const
   {
-  if(!isDirty())
+  if(!isDirty() || !beginUpdate())
     {
     return;
     }
-
-  // this is a const function, but because we delay computation we may need to assign here
-  Property *prop = const_cast<Property*>(this);
-  prop->_flags.setFlag(PreGetting);
-  prop->_flags.clearFlag(Dirty);
 
   const PropertyContainer *par = parent();
   const PropertyInformation *info = par->typeInformation();
@@ -1102,15 +1134,15 @@ const InterfaceBase *Property::findInterface(xuint32 typeId) const
 NoUpdateBlock::NoUpdateBlock(Property *p) : _prop(p)
   {
   _oldDirty = _prop->isDirty();
-  _prop->_flags.clearFlag(Property::Dirty);
+  _prop->beginUpdate();
   }
 
 NoUpdateBlock::~NoUpdateBlock()
   {
-  xAssert(!_prop->isDirty());
+  _prop->endUpdate();
   if(_oldDirty)
     {
-    _prop->_flags.setFlag(Property::Dirty);
+    _prop->_dirty = true;
     }
   }
 

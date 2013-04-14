@@ -48,7 +48,8 @@ SOURCES += \
     src/Serialisation/sloader.cpp \
     src/Utilities/spropertyname.cpp \
     src/TypeInformation/spropertyinformationhelpers.cpp \
-    src/UI/sdebugger.cpp
+    src/UI/sdebugger.cpp \
+    src/Utilities/satomichelper.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -90,7 +91,8 @@ HEADERS += \
     include/shift/TypeInformation/spropertytraits.h \
     include/shift/UI/spropertydefaultui.h \
     include/shift/UI/sdatabasemodel.h \
-    include/shift/UI/sdebugger.h
+    include/shift/UI/sdebugger.h \
+    include/shift/Utilities/satomichelper.h
 
 
 

@@ -4,6 +4,7 @@
 #include "shift/sglobal.h"
 #include "shift/Properties/spropertymacros.h"
 #include "shift/Utilities/spropertyname.h"
+#include "shift/Utilities/satomichelper.h"
 #include "XFlags"
 #include "XInterface.h"
 
@@ -83,8 +84,8 @@ public:
   void disconnect(Property *) const;
   void disconnect() const;
 
-  bool isDirty() const { return _flags.hasFlag(Dirty); }
-  bool isUpdating() const { return _flags.hasFlag(PreGetting); }
+  bool isDirty() const { return _dirty; }
+  bool isUpdating() const { return _updating; }
   bool isComputed() const;
   bool hasInput() const { return _input; }
   bool hasOutputs() const { return _output; }
@@ -131,7 +132,7 @@ public:
   Property *resolvePath(const Eks::String &path);
   const Property *resolvePath(const Eks::String &path) const;
 
-  Eks::String mode() const;
+  const Eks::String &mode() const;
 
   QVariant value() const;
   void setValue(const QVariant &);
@@ -217,6 +218,9 @@ public:
 private:
   X_DISABLE_COPY(Property);
 
+  bool beginUpdate() const;
+  void endUpdate() const;
+
   void concurrentUpdate() const;
   void update() const;
   void updateParent() const;
@@ -233,14 +237,14 @@ private:
 
   const BaseInstanceInformation *_instanceInfo;
 
+  AtomicHelper::Type _updating;
   enum Flags
     {
-    Dirty = 1,
-    ParentHasInput = 2,
-    ParentHasOutput = 4,
-    PreGetting = 8
+    ParentHasInput = 1,
+    ParentHasOutput = 2,
     };
-  Eks::Flags<Flags, Eks::detail::Atomic<xuint8> > _flags;
+  Eks::Flags<Flags, xuint8> _flags;
+  xuint8 _dirty;
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
   Handler *_handler;

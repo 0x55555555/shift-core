@@ -97,7 +97,6 @@ protected:
 
     bool apply()
       {
-      property()->postSet();
       return true;
       }
 
