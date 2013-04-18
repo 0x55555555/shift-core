@@ -36,7 +36,7 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
   xCompileTimeAssert(sizeof(_information->childCount()) == sizeof(xuint8));
   xAssert(childCount < X_UINT8_SENTINEL);
 
-  Eks::UnorderedMap<PropertyName, bool> names(&_temporaryAllocator);
+  Eks::UnorderedMap<Name, bool> names(&_temporaryAllocator);
 
   // copy into children, check for unique names
   // also adjust ref counts
@@ -49,7 +49,7 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
       }
     xAssert(!names.contains(inst->name()));
 
-    const PropertyName &name = inst->name();
+    const Name &name = inst->name();
 
     names.insert(name, true);
 
@@ -145,7 +145,7 @@ xsize *PropertyInformationChildrenCreator::createAffects(
 
 EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
     const PropertyInformation *newChildType,
-    const PropertyNameArg &name)
+    const NameArg &name)
   {
   xsize backwardsOffset = 0;
   PropertyInformation *allocatable = _information->findAllocatableBase(backwardsOffset);
@@ -171,7 +171,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
   EmbeddedPropertyInstanceInformation *def = add(newChildType, location, name, true);
 
 #ifdef X_DEBUG
-  const Property *prop = def->locateProperty((const PropertyContainer*)0);
+  const Attribute *prop = def->locate((const Container*)0);
   xAssert((backwardsOffset + (xsize)prop) == propertyDataLocation);
 #endif
 
@@ -181,7 +181,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
 EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
     const PropertyInformation *newChildType,
     xsize location,
-    const PropertyNameArg &name,
+    const NameArg &name,
     bool notClassMember)
   {
   xAssert(newChildType);

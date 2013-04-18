@@ -7,7 +7,7 @@
 #include "QtWidgets/QGraphicsSceneMouseEvent"
 #include "shift/sdatabase.h"
 #include "shift/Properties/sproperty.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontaineriterators.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "XTemporaryAllocator"
@@ -43,7 +43,7 @@ Debugger::Debugger(Shift::Database *db, QWidget *parent) : QWidget(parent)
 void Debugger::snapshot()
   {
   Eks::TemporaryAllocator alloc(Shift::TypeRegistry::temporaryAllocator());
-  Eks::UnorderedMap<Property *, DebugPropertyItem *> props(&alloc);
+  Eks::UnorderedMap<Attribute *, DebugPropertyItem *> props(&alloc);
   DebugPropertyItem *snapshot = createItemForProperty(_db, &props);
 
   connectProperties(props);
@@ -55,23 +55,26 @@ void Debugger::snapshot()
   _scene->addItem(snapshot);
   }
 
-void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugPropertyItem *> &itemsOut)
+void Debugger::connectProperties(const Eks::UnorderedMap<Attribute *, DebugPropertyItem *> &itemsOut)
   {
-  Eks::UnorderedMap<Property *, DebugPropertyItem *>::const_iterator it = itemsOut.begin();
-  Eks::UnorderedMap<Property *, DebugPropertyItem *>::const_iterator end = itemsOut.end();
+  Eks::UnorderedMap<Attribute *, DebugPropertyItem *>::const_iterator it = itemsOut.begin();
+  Eks::UnorderedMap<Attribute *, DebugPropertyItem *>::const_iterator end = itemsOut.end();
   for(; it != end; ++it)
     {
-    Property *p = it.key();
-    if(p->input())
+    Attribute *p = it.key();
+    if(Property *prop = p->castTo<Property>())
       {
-      const auto &inItem = itemsOut[p->input()];
-      xAssert(inItem);
-      xAssert(it.value());
+      if(prop->input())
+        {
+        const auto &inItem = itemsOut[prop->input()];
+        xAssert(inItem);
+        xAssert(it.value());
 
-      connect(it.value(), SIGNAL(showConnected()), inItem, SLOT(show()));
-      connect(inItem, SIGNAL(showConnected()), it.value(), SLOT(show()));
+        connect(it.value(), SIGNAL(showConnected()), inItem, SLOT(show()));
+        connect(inItem, SIGNAL(showConnected()), it.value(), SLOT(show()));
 
-      new ConnectionItem(inItem, it.value(), true, Qt::red);
+        new ConnectionItem(inItem, it.value(), true, Qt::red);
+        }
       }
 
     if(!p->isDynamic())
@@ -94,7 +97,7 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Property *, DebugProper
     }
   }
 
-DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::UnorderedMap<Property *, DebugPropertyItem *> *itemsOut)
+DebugPropertyItem *Debugger::createItemForProperty(Attribute *prop, Eks::UnorderedMap<Attribute *, DebugPropertyItem *> *itemsOut)
   {
   QString text = "name: " + prop->name().toQString() + "<br>type: " + prop->typeInformation()->typeName().toQString();
   PropertyVariantInterface *ifc = prop->findInterface<PropertyVariantInterface>();
@@ -104,11 +107,14 @@ DebugPropertyItem *Debugger::createItemForProperty(Property *prop, Eks::Unordere
     text += "<br>value: " + ifc->asString(prop).toQString();
     }
 
-  bool dirty = prop->isDirty();
-  text += "<br>dirty: ";
-  text += (dirty ? "true" : "false");
+  if(Property *p = prop->castTo<Property>())
+    {
+    bool dirty = p->isDirty();
+    text += "<br>dirty: ";
+    text += (dirty ? "true" : "false");
+    }
 
-  PropertyContainer *c = prop->castTo<PropertyContainer>();
+  Container *c = prop->castTo<Container>();
   if(c)
     {
     xsize count = c->size();

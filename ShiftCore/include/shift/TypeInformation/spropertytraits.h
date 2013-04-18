@@ -9,17 +9,17 @@ namespace Shift
 template <typename TypeTraitsCreation, bool Abstract> class PropertyCreateSelector
   {
 public:
-  static Property *createProperty(void *ptr)
+  static Attribute *create(void *ptr)
     {
-    return TypeTraitsCreation::createProperty(ptr);
+    return TypeTraitsCreation::create(ptr);
     }
-  static void createPropertyInPlace(Property *ptr)
+  static void createInPlace(Attribute *ptr)
     {
-    TypeTraitsCreation::createPropertyInPlace(ptr);
+    TypeTraitsCreation::createInPlace(ptr);
     }
-  static void *destroyProperty(Property *ptr)
+  static void *destroy(Attribute *ptr)
     {
-    return TypeTraitsCreation::destroyProperty(ptr);
+    return TypeTraitsCreation::destroy(ptr);
     }
   };
 
@@ -28,9 +28,9 @@ template <typename TypeTraits> class PropertyCreateSelector<TypeTraits, true>
 public:
   enum
     {
-    createProperty = 0,
-    createPropertyInPlace = 0,
-    destroyProperty = 0
+    create = 0,
+    createInPlace = 0,
+    destroy = 0
     };
   };
 
@@ -46,28 +46,28 @@ public:
     typedef typename TypeTraits::template Creation<PropType> TypeTraitsCreation;
     typedef PropertyCreateSelector<TypeTraitsCreation, PropType::IsAbstract> CreateSelection;
 
-    fns.createProperty =
-        (PropertyInformationFunctions::CreatePropertyFunction)
-          CreateSelection::createProperty;
-    fns.destroyProperty =
-        (PropertyInformationFunctions::DestroyPropertyFunction)
-          CreateSelection::destroyProperty;
-    fns.createPropertyInPlace =
-        (PropertyInformationFunctions::CreatePropertyInPlaceFunction)
-          CreateSelection::createPropertyInPlace;
+    fns.create =
+        (PropertyInformationFunctions::CreateFunction)
+          CreateSelection::create;
+    fns.destroy =
+        (PropertyInformationFunctions::DestroyFunction)
+          CreateSelection::destroy;
+    fns.createInPlace =
+        (PropertyInformationFunctions::CreateInPlaceFunction)
+          CreateSelection::createInPlace;
 
     fns.createEmbeddedInstanceInformation = TypeTraits::createEmbeddedInstanceInformation;
     fns.createDynamicInstanceInformation = TypeTraits::createDynamicInstanceInformation;
     fns.destroyEmbeddedInstanceInformation = TypeTraits::destroyEmbeddedInstanceInformation;
     fns.destroyDynamicInstanceInformation = TypeTraits::destroyDynamicInstanceInformation;
 
-    fns.save = Traits::saveProperty;
-    fns.load = Traits::loadProperty;
-    fns.shouldSave = Traits::shouldSaveProperty;
-    fns.shouldSaveValue = Traits::shouldSavePropertyValue;
+    fns.save = Traits::save;
+    fns.load = Traits::load;
+    fns.shouldSave = Traits::shouldSave;
+    fns.shouldSaveValue = Traits::shouldSaveValue;
     fns.assign =
         (PropertyInformationFunctions::AssignFunction)
-          Traits::assignProperty;
+          Traits::assign;
 
   #ifdef S_PROPERTY_POST_CREATE
     fns.postCreate = 0;
@@ -87,19 +87,19 @@ public:
 
   template <typename Type> struct Creation
     {
-    static Property *createProperty(void *ptr)
+    static Attribute *create(void *ptr)
       {
       Type *t = new(ptr) Type();
       xAssert(t == ptr);
 
       return t;
       }
-    static void createPropertyInPlace(Property *ptr)
+    static void createInPlace(Attribute *ptr)
       {
       Type* t = static_cast<Type*>(ptr);
       new(t) Type();
       }
-    static void *destroyProperty(Property *ptr)
+    static void *destroy(Attribute *ptr)
       {
       (void)ptr;
       ((Type*)ptr)->~Type();
@@ -145,20 +145,20 @@ public:
 class SHIFT_EXPORT PropertyBaseTraits
   {
 public:
-  static void assignProperty(const Property *, Property *);
-  static void saveProperty(const Property *, Saver & );
-  static Property *loadProperty(PropertyContainer *, Loader &);
+  static void assign(const Attribute *, Attribute *);
+  static void save(const Attribute *, Saver & );
+  static Attribute *load(Container *, Loader &);
 
   // should this properties value be saved, for example not when the value
   // is this property's value the default as it is when created.
-  static bool shouldSavePropertyValue(const Property *);
+  static bool shouldSaveValue(const Attribute *);
 
   // should the property definition itself be saved, note this function must be true if the above is true
   // but the above can be false when this is true.
-  static bool shouldSaveProperty(const Property *);
+  static bool shouldSave(const Attribute *);
 
   // helper for custom saving, allows not saving input specifically.
-  static void saveProperty(const Property *, Saver &, bool writeInput);
+  static void save(const Attribute *, Saver &, bool writeInput);
 
   // traits customised for each derived type
   template <typename T> struct TypeTraits
@@ -170,27 +170,27 @@ public:
 class SHIFT_EXPORT PropertyContainerTraits : public PropertyBaseTraits
   {
 public:
-  static void assignProperty(const Property *, Property *);
-  static void saveProperty(const Property *, Saver & );
-  static Property *loadProperty(PropertyContainer *, Loader &);
-  static bool shouldSavePropertyValue(const Property *);
+  static void assign(const Attribute *, Attribute *);
+  static void save(const Attribute *, Saver & );
+  static Attribute *load(Container *, Loader &);
+  static bool shouldSaveValue(const Attribute *);
   };
 
 template <typename T> class BasePODPropertyTraits : public PropertyBaseTraits
   {
 public:
-  static void saveProperty(const Property *p, Saver &l )
+  static void save(const Attribute *p, Saver &l )
     {
-    PropertyBaseTraits::saveProperty(p, l);
+    PropertyBaseTraits::save(p, l);
     }
 
-  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+  static Attribute *load(Container *parent, Loader &l)
     {
-    Property *prop = PropertyBaseTraits::loadProperty(parent, l);
+    Attribute *prop = PropertyBaseTraits::load(parent, l);
     return prop;
     }
 
-  static bool shouldSavePropertyValue(const Property *)
+  static bool shouldSaveValue(const Attribute *)
     {
     return false;
     }
@@ -204,26 +204,26 @@ public:
 template <typename T> class PODPropertyTraits : public BasePODPropertyTraits<T>
   {
 public:
-  static void saveProperty(const Property *p, Saver &l )
+  static void save(const Attribute *p, Saver &l )
     {
-    BasePODPropertyTraits<T>::saveProperty(p, l);
+    BasePODPropertyTraits<T>::save(p, l);
     const T *ptr = p->uncheckedCastTo<T>();
     writeValue(l, ptr->_value);
     }
 
-  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+  static Attribute *load(Container *parent, Loader &l)
     {
-    Property *prop = BasePODPropertyTraits<T>::loadProperty(parent, l);
+    Attribute *prop = BasePODPropertyTraits<T>::load(parent, l);
     T *ptr = prop->uncheckedCastTo<T>();
     readValue(l, ptr->_value);
     return prop;
     }
 
-  static bool shouldSavePropertyValue(const Property *p)
+  static bool shouldSaveValue(const Attribute *p)
     {
     const T *ptr = p->uncheckedCastTo<T>();
 
-    if(BasePODPropertyTraits<T>::shouldSavePropertyValue(p))
+    if(BasePODPropertyTraits<T>::shouldSaveValue(p))
       {
       using ::operator!=;
 
@@ -237,9 +237,9 @@ public:
     return false;
     }
 
-  static void assignProperty(const Shift::Property *p, Shift::Property *l )
+  static void assign(const Shift::Attribute *p, Shift::Attribute *l)
     {
-    T::assignProperty(p, l);
+    T::assignBetween(p, l);
     }
   };
 

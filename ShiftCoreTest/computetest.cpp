@@ -4,9 +4,13 @@
 #include "shift/sdatabase.h"
 #include "shift/Properties/sbaseproperties.h"
 
-class TestVector : public Shift::PropertyContainer
+// future tests
+// casting test, benchmarking shallow and deep hierarchies
+// iteration test, and benchmarks, including typing,,,
+
+class TestVector : public Shift::Container
   {
-  S_ENTITY(TestVector, Shift::PropertyContainer, 0)
+  S_ENTITY(TestVector, Container, 0)
 public:
 
   Shift::FloatProperty x;

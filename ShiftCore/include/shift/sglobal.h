@@ -5,6 +5,8 @@
 
 /** \mainpage Shift
 
+    \version 0.5
+
     \section intro_sec Introduction
 
     Shift is a database/graph library for saving and loading and computing data.
@@ -49,17 +51,10 @@ S_DEFINE_INTERFACE_TYPE(PropertyConnectionInterface, 5)
 namespace Shift
 {
 class Entity;
+class Attribute;
 class Property;
 class Observer;
-class TreeObserver;
-class DirtyObserver;
-class ConnectionObserver;
 class PropertyGroup;
-
-typedef Eks::Vector<Observer*> Observers;
-typedef Eks::Vector<TreeObserver*> TreeObservers;
-typedef Eks::Vector<DirtyObserver*> DirtyObservers;
-typedef Eks::Vector<ConnectionObserver*> ConnectionObservers;
 
 PropertyGroup &propertyGroup();
 }

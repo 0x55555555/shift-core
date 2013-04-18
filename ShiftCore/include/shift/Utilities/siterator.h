@@ -2,7 +2,7 @@
 #define SITERATOR_H
 
 #include "shift/sentity.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontaineriterators.h"
 
 namespace Shift
 {
@@ -16,18 +16,18 @@ public:
   typedef DerivedExtraData ExtraData;
   typedef ReturnTypeIn ReturnType;
 
-  inline Base() : _prop(0)
+  inline Base() : _attr(0)
     {
     }
 
-  inline void reset(Property *prop)
+  inline void reset(Attribute *prop)
     {
-    _prop = prop;
+    _attr = prop;
     }
 
-  inline Property *property() const
+  inline Attribute *attribute() const
     {
-    return _prop;
+    return _attr;
     }
 
   class IteratorBase
@@ -51,7 +51,7 @@ public:
       return _property;
       }
 
-    inline void setProperty(ReturnType *prop)
+    inline void setAttribute(ReturnType *prop)
       {
       _property = prop;
       }
@@ -116,7 +116,7 @@ public:
     }
 
 private:
-  Property *_prop;
+  Attribute *_attr;
   };
 
 struct NilExtraData
@@ -187,11 +187,11 @@ private:
 
       d._fwdData = fwdIt.data();
 
-      ret.setProperty(*fwdIt);
+      ret.setAttribute(*fwdIt);
       }
     else
       {
-      ret.setProperty(0);
+      ret.setAttribute(0);
       }
     }
 
@@ -223,36 +223,36 @@ public:
 
 struct ChildTreeExtraData
   {
-  PropertyContainer *_currentParent;
-  Property *_root;
+  Container *_currentParent;
+  Attribute *_root;
   };
 
-class ChildTree : public Base<ChildTree, Property, ChildTreeExtraData>
+class ChildTree : public Base<ChildTree, Attribute, ChildTreeExtraData>
   {
 public:
-  typedef Base<ChildTree, Property, ChildTreeExtraData>::Iterator Iterator;
+  typedef Base<ChildTree, Attribute, ChildTreeExtraData>::Iterator Iterator;
 
   inline void first(Iterator& it) const
     {
     ChildTreeExtraData &d = it.data();
-    d._root = property();
+    d._root = attribute();
     d._currentParent = d._root->parent();
-    it.setProperty(property());
+    it.setAttribute(attribute());
     }
 
   static void next(Iterator &i)
     {
-    Property *current = *i;
-    PropertyContainer *cont = current->castTo<PropertyContainer>();
+    Attribute *current = *i;
+    Container *cont = current->castTo<Container>();
     if(cont)
       {
-      Property *child = cont->firstChild();
+      Attribute *child = cont->firstChild();
       if(child)
         {
         ChildTreeExtraData &d = i.data();
         d._currentParent = cont;
 
-        i.setProperty(child);
+        i.setAttribute(child);
         return;
         }
       }
@@ -260,11 +260,11 @@ public:
     ChildTreeExtraData &d = i.data();
     auto walker = d._currentParent->walkerFrom(current);
     auto walkerIt = ++walker.begin();
-    Property *n = *walkerIt;
+    Attribute *n = *walkerIt;
 
     while(!n && d._currentParent != i.data()._root)
       {
-      PropertyContainer *parent = d._currentParent->parent();
+      Container *parent = d._currentParent->parent();
 
       auto walker = parent->walkerFrom(d._currentParent);
       auto walkerIt = ++walker.begin();
@@ -273,7 +273,7 @@ public:
       d._currentParent = parent;
       }
 
-    i.setProperty(n);
+    i.setAttribute(n);
     }
   };
 
@@ -284,15 +284,15 @@ public:
 
   inline void first(Iterator& i) const
     {
-    if(!property())
+    if(!attribute())
       {
       return;
       }
     ChildTreeExtraData &d = i.data();
-    d._currentParent = property()->parent();
+    d._currentParent = attribute()->parent();
     d._root = d._currentParent;
-    xAssert(property()->entity() == property());
-    i.setProperty(property()->entity());
+    xAssert(attribute()->entity() == attribute());
+    i.setAttribute(attribute()->entity());
     }
 
   inline static void next(Iterator &i)
@@ -308,7 +308,7 @@ public:
         ChildTreeExtraData &d = i.data();
         d._currentParent = &current->children;
 
-        i.setProperty(child);
+        i.setAttribute(child);
         return;
         }
 
@@ -322,7 +322,7 @@ public:
         // get the parent's (children member) parent (should be an entity,
         // in another children member) and get its next sibling.
         Entity* parentEntity = d._currentParent->parent()->castTo<Entity>();
-        PropertyContainer *parent = parentEntity->parent();
+        Container *parent = parentEntity->parent();
 
         auto walker = parent->walkerFrom<Entity>(parentEntity);
         auto walkerIt = ++walker.begin();
@@ -330,7 +330,7 @@ public:
         d._currentParent = parent;
         }
 
-      i.setProperty(n);
+      i.setAttribute(n);
       }
     }
   };
@@ -342,13 +342,13 @@ public:
 
   inline void first(Iterator &i) const
     {
-    Property *prop = Base<OfType<T>, T, NilExtraData>::property();
-    i.setProperty(prop->castTo<T>());
+    Attribute *prop = Base<OfType<T>, T, NilExtraData>::attribute();
+    i.setAttribute(prop->castTo<T>());
     }
 
   inline static void next(Iterator &i)
     {
-    i.setProperty(0);
+    i.setAttribute(0);
     }
   };
 

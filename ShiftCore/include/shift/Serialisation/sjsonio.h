@@ -20,7 +20,7 @@ XProperties:
 public:
   SJSONSaver();
 
-  void writeToDevice(QIODevice *device, const PropertyContainer *ent, bool includeRoot);
+  void writeToDevice(QIODevice *device, const Container *ent, bool includeRoot);
 
 private:
   void setType(const PropertyInformation *);
@@ -34,7 +34,7 @@ private:
   void endAttribute(const char *);
 
   QIODevice *_device;
-  const PropertyContainer *_root;
+  const Container *_root;
 
   QVector <bool> _commaStack;
 
@@ -48,7 +48,7 @@ public:
   SJSONLoader();
   ~SJSONLoader();
 
-  void readFromDevice(QIODevice *device, PropertyContainer *parent);
+  void readFromDevice(QIODevice *device, Container *parent);
 
 private:
   const PropertyInformation *type() const;
@@ -72,7 +72,7 @@ private:
   mutable bool _parseError;
   JSON_parser_struct* _jc;
   mutable QIODevice *_device;
-  PropertyContainer *_root;
+  Container *_root;
   QHash <QString, QByteArray> _currentAttributes;
   QByteArray _currentValue;
 

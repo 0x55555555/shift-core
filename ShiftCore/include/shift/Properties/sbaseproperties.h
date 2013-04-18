@@ -57,7 +57,7 @@ template <typename PROP, typename POD> class PODPropertyVariantInterface : publi
   {
 public:
 #if X_QT_INTEROP
-  virtual Eks::String asString(const Property *p) const
+  virtual Eks::String asString(const Attribute *p) const
     {
     QString d;
       {
@@ -66,12 +66,12 @@ public:
       }
     return Eks::String(d);
     }
-  virtual QVariant asVariant(const Property *p) const
+  virtual QVariant asVariant(const Attribute *p) const
     {
     return QVariant::fromValue<POD>(p->uncheckedCastTo<PROP>()->value());
     }
 
-  virtual void setVariant(Property *p, const QVariant &v) const
+  virtual void setVariant(Attribute *p, const QVariant &v) const
     {
     p->uncheckedCastTo<PROP>()->assign(v.value<POD>());
     }
@@ -184,9 +184,9 @@ public:
       {
       }
 
-    virtual void initiateProperty(Property *propertyToInitiate) const
+    virtual void initiateAttribute(Attribute *propertyToInitiate) const
       {
-      Property::EmbeddedInstanceInformation::initiateProperty(propertyToInitiate);
+      Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
       propertyToInitiate->uncheckedCastTo<DERIVED>()->_value = defaultValue();
       }
 
@@ -281,7 +281,7 @@ private:
 
     bool apply()
       {
-      Property *prop = ComputeChange::property();
+      Attribute *prop = ComputeChange::property();
       DERIVED* d = prop->uncheckedCastTo<DERIVED>();
       d->_value = after();
       ComputeChange::property()->postSet();
@@ -290,7 +290,7 @@ private:
 
     bool unApply()
       {
-      Property *prop = ComputeChange::property();
+      Attribute *prop = ComputeChange::property();
       DERIVED* d = prop->uncheckedCastTo<DERIVED>();
       d->_value = before();
       ComputeChange::property()->postSet();
@@ -325,7 +325,7 @@ class EXPORT_MODE name : public Shift::PODProperty<type, name> { public: \
   name &operator=(const type &in) { \
     assign(in); \
     return *this; } \
-  static void assignProperty(const Shift::Property *p, Shift::Property *l ); }; \
+  static void assignBetween(const Shift::Attribute *p, Shift::Attribute *l ); }; \
 template <> class Shift::PODInterface <type> { public: typedef name Type; \
   static void assign(name* s, const type& val) { s->assign(val); } \
   static const type& value(const name* s) { return s->value(); } };
@@ -379,9 +379,9 @@ public:
   class EmbeddedInstanceInformation : public UuidPropertyBase::EmbeddedInstanceInformation
     {
   public:
-    virtual void initiateProperty(Property *propertyToInitiate) const
+    virtual void initiateAttribute(Property *propertyToInitiate) const
       {
-      Property::EmbeddedInstanceInformation::initiateProperty(propertyToInitiate);
+      Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
       propertyToInitiate->uncheckedCastTo<UuidProperty>()->_value = QUuid::createUuid();
       }
     };

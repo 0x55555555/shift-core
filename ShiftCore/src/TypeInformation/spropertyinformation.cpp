@@ -1,7 +1,7 @@
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/styperegistry.h"
-#include "shift/Properties/spropertycontainer.h"
+#include "shift/Properties/scontainer.h"
 
 namespace Shift
 {
@@ -156,7 +156,7 @@ const EmbeddedPropertyInstanceInformation *PropertyInformation::child(xsize loca
   return 0;
   }
 
-const EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const PropertyNameArg &in) const
+const EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(const NameArg &in) const
   {
   xForeach(auto i, childWalker())
     {

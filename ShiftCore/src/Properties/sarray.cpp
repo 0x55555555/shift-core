@@ -1,22 +1,22 @@
-#include "shift/Properties/spropertyarray.h"
+#include "shift/Properties/sarray.h"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 
 namespace Shift
 {
 
-S_IMPLEMENT_PROPERTY(PropertyArray, Shift)
+S_IMPLEMENT_PROPERTY(Array, Shift)
 
-void PropertyArray::createTypeInformation(PropertyInformationTyped<PropertyArray> *info,
+void Array::createTypeInformation(PropertyInformationTyped<Array> *info,
                                            const PropertyInformationCreateData &data)
   {
   if(data.registerInterfaces)
     {
     auto* api = info->apiInterface();
 
-    typedef XScript::MethodToInCa<PropertyArray,
-        Property *(const PropertyInformation *, xsize, const PropertyNameArg &),
-        &PropertyArray::add> AddType;
+    typedef XScript::MethodToInCa<Array,
+        Attribute *(const PropertyInformation *, xsize, const NameArg &),
+        &Array::add> AddType;
 
     static XScript::ClassDef<0,0,1> cls = {
       {
@@ -28,9 +28,9 @@ void PropertyArray::createTypeInformation(PropertyInformationTyped<PropertyArray
     }
   }
 
-void PropertyArray::remove(Property *prop)
+void Array::remove(Attribute *prop)
   {
-  PropertyContainer::removeProperty(prop);
+  Container::removeAttribute(prop);
   }
 
 }

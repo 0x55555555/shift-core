@@ -167,7 +167,7 @@ void FilenameProperty::createTypeInformation(PropertyInformationTyped<FilenamePr
   {
   }
 
-void BoolProperty::assignProperty(const Property *f, Property *t)
+void BoolProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   BoolProperty *to = t->uncheckedCastTo<BoolProperty>();
 
@@ -221,7 +221,7 @@ void BoolProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void IntProperty::assignProperty(const Property *f, Property *t)
+void IntProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   IntProperty *to = t->uncheckedCastTo<IntProperty>();
 
@@ -275,7 +275,7 @@ void IntProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void LongIntProperty::assignProperty(const Property *f, Property *t)
+void LongIntProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   LongIntProperty *to = t->uncheckedCastTo<LongIntProperty>();
 
@@ -329,7 +329,7 @@ void LongIntProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void UnsignedIntProperty::assignProperty(const Property *f, Property *t)
+void UnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   UnsignedIntProperty *to = t->uncheckedCastTo<UnsignedIntProperty>();
 
@@ -383,7 +383,7 @@ void UnsignedIntProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void LongUnsignedIntProperty::assignProperty(const Property *f, Property *t)
+void LongUnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   LongUnsignedIntProperty *to = t->uncheckedCastTo<LongUnsignedIntProperty>();
 
@@ -437,7 +437,7 @@ void LongUnsignedIntProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void FloatProperty::assignProperty(const Property *f, Property *t)
+void FloatProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   FloatProperty *to = t->uncheckedCastTo<FloatProperty>();
 
@@ -491,7 +491,7 @@ void FloatProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void DoubleProperty::assignProperty(const Property *f, Property *t)
+void DoubleProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   DoubleProperty *to = t->uncheckedCastTo<DoubleProperty>();
 
@@ -545,7 +545,7 @@ void DoubleProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void Vector2DProperty::assignProperty(const Property *f, Property *t)
+void Vector2DProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   Vector2DProperty *to = t->uncheckedCastTo<Vector2DProperty>();
 
@@ -585,7 +585,7 @@ void Vector2DProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void Vector3DProperty::assignProperty(const Property *f, Property *t)
+void Vector3DProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   Vector3DProperty *to = t->uncheckedCastTo<Vector3DProperty>();
 
@@ -625,7 +625,7 @@ void Vector3DProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void Vector4DProperty::assignProperty(const Property *f, Property *t)
+void Vector4DProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
 
@@ -667,7 +667,7 @@ void Vector4DProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void QuaternionProperty::assignProperty(const Property *f, Property *t)
+void QuaternionProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
 
@@ -710,7 +710,7 @@ void QuaternionProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void ColourProperty::assignProperty(const Property *f, Property *t)
+void ColourProperty::assignBetween(const Attribute *f, Attribute *t)
   {
   ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
 
@@ -753,7 +753,7 @@ void ColourProperty::assignProperty(const Property *f, Property *t)
     }
   }
 
-void StringPropertyBase::assignProperty(const Property *f, Property *t)
+void StringPropertyBase::assignBetween(const Attribute *f, Attribute *t)
   {
   StringPropertyBase *to = t->uncheckedCastTo<StringPropertyBase>();
 
@@ -765,17 +765,17 @@ void StringPropertyBase::assignProperty(const Property *f, Property *t)
     }
   }
 
-void ByteArrayProperty::assignProperty(const Property *, Property *)
+void ByteArrayProperty::assignBetween(const Attribute *, Attribute *)
   {
   xAssertFail();
   }
 
-void UuidPropertyBase::assignProperty(const Property *, Property *)
+void UuidPropertyBase::assignBetween(const Attribute *, Attribute *)
   {
   xAssertFail();
   }
 
-void StringArrayProperty::assignProperty(const Property *, Property *)
+void StringArrayProperty::assignBetween(const Attribute *, Attribute *)
   {
   xAssertFail();
   }

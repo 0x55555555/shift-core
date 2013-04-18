@@ -13,9 +13,9 @@ class PropertyVariantInterface : public StaticInterfaceBase
   S_STATIC_INTERFACE_TYPE(PropertyVariantInterface, PropertyVariantInterface);
 
 public:
-  virtual Eks::String asString(const Property *) const = 0;
-  virtual QVariant asVariant(const Property *) const = 0;
-  virtual void setVariant(Property *, const QVariant &) const = 0;
+  virtual Eks::String asString(const Attribute *) const = 0;
+  virtual QVariant asVariant(const Attribute *) const = 0;
+  virtual void setVariant(Attribute *, const QVariant &) const = 0;
   };
 
 class PropertyPositionInterface : public StaticInterfaceBase
@@ -54,8 +54,8 @@ public:
   virtual void setOutputsPosition(Property *, const Eks::Vector3D &) const;
 
 private:
-  virtual Eks::Vector3D positionGeneric(const Property *, const PropertyNameArg &name) const;
-  virtual void setPositionGeneric(Property *, const Eks::Vector3D &, const PropertyNameArg &name) const;
+  virtual Eks::Vector3D positionGeneric(const Property *, const NameArg &name) const;
+  virtual void setPositionGeneric(Property *, const Eks::Vector3D &, const NameArg &name) const;
   };
 
 class PropertyColourInterface : public StaticInterfaceBase

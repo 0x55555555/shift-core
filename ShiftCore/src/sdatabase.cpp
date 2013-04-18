@@ -3,7 +3,7 @@
 #include "shift/Changes/schange.h"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontaineriterators.h"
 #include "shift/Serialisation/sjsonio.h"
 #include "xqtwrappers.h"
 #include "XConvertScriptSTL.h"
@@ -33,7 +33,7 @@ void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
 
     static XScript::ClassDef<0,0,2> cls = {
       {
-      api->method<QVector<Property *> (const QString &, QIODevice *, PropertyContainer *), &Database::load>("load"),
+      api->method<Eks::Vector<Attribute *> (const QString &, QIODevice *, Container *), &Database::load>("load"),
       api->method<void (const QString &, QIODevice *, Entity *, bool, bool), &Database::save>("save"),
       }
     };
@@ -58,7 +58,7 @@ Database::Database()
 #ifdef S_CENTRAL_CHANGE_HANDLER
   _handler = this;
 #else
-  PropertyContainer::_database = this;
+  Container::_database = this;
 #endif
   setDatabase(this);
   _instanceInfo = &_instanceInfoData;
@@ -66,7 +66,7 @@ Database::Database()
 
 Database::~Database()
   {
-  uninitiatePropertyFromMetaData(this, typeInformation());
+  uninitiateAttributeFromMetaData(this, typeInformation());
   _dynamicChild = 0;
 
   clearChanges();
@@ -80,14 +80,14 @@ Database::~Database()
 #endif
   }
 
-QVector<Property *> Database::load(const QString &type, QIODevice *device, PropertyContainer *loadRoot)
+Eks::Vector<Attribute *> Database::load(const QString &type, QIODevice *device, Container *loadRoot)
   {
   xAssert(type == "json");
   (void)type;
 
   SJSONLoader s;
 
-  Property *p = loadRoot->lastChild();
+  Attribute *p = loadRoot->lastChild();
 
   s.readFromDevice(device, loadRoot);
 
@@ -96,7 +96,7 @@ QVector<Property *> Database::load(const QString &type, QIODevice *device, Prope
     p = loadRoot->firstChild();
     }
 
-  QVector<Property *> ret;
+  Eks::Vector<Attribute *> ret;
   xForeach(auto c, loadRoot->walkerFrom(p))
     {
     ret << c;
@@ -116,7 +116,7 @@ void Database::save(const QString &type, QIODevice *device, Entity *saveRoot, bo
   s.writeToDevice(device, saveRoot, includeRoot);
   }
 
-Property *Database::createDynamicProperty(const PropertyInformation *type, PropertyContainer *parentToBe, PropertyInstanceInformationInitialiser *init)
+Attribute *Database::createDynamicAttribute(const PropertyInformation *type, Container *parentToBe, PropertyInstanceInformationInitialiser *init)
   {
   SProfileFunction
   xAssert(type);
@@ -127,8 +127,8 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
   void *propMem = _memory->alloc(size);
 
   // new the prop type
-  xAssert(type->functions().createProperty);
-  Property *prop = type->functions().createProperty(propMem);
+  xAssert(type->functions().create);
+  Attribute *prop = type->functions().create(propMem);
 
   // new the instance information
   xuint8 *alignedPtr = (xuint8*)(propMem) + type->size();
@@ -157,26 +157,33 @@ Property *Database::createDynamicProperty(const PropertyInformation *type, Prope
   (void)parentToBe;
 #endif
 
-  initiateProperty(prop);
-  xAssert(prop->isDirty());
-  postInitiateProperty(prop);
-  xAssert(prop->isDirty());
+  initiateAttribute(prop);
+  xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
+  postInitiateAttribute(prop);
+  xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
   return prop;
   }
 
-void Database::deleteDynamicProperty(Property *prop)
+void Database::deleteDynamicAttribute(Attribute *prop)
   {
-  xAssert(!prop->_input);
-  xAssert(!prop->_output);
-  xAssert(!prop->_nextOutput);
-  xAssert(prop->isDynamic());
-
   X_HEAP_CHECK
-  xAssert(!prop->isUpdating());
-  uninitiateProperty(prop);
+
+#if X_ASSERTS_ENABLED
+  if(Property *p = prop->castTo<Property>())
+    {
+    xAssert(!p->_input);
+    xAssert(!p->_output);
+    xAssert(!p->_nextOutput);
+    xAssert(p->isDynamic());
+
+    xAssert(!p->isUpdating());
+    }
+#endif
+
+  uninitiateAttribute(prop);
 
   const PropertyInformation *info = prop->typeInformation();
-  void *mem = info->functions().destroyProperty(prop);
+  void *mem = info->functions().destroy(prop);
 
   X_HEAP_CHECK
 
@@ -187,12 +194,12 @@ void Database::deleteDynamicProperty(Property *prop)
 void Database::initiateInheritedDatabaseType(const PropertyInformation *info)
   {
   _instanceInfoData.setChildInformation(info);
-  initiatePropertyFromMetaData(this, info);
+  initiateAttributeFromMetaData(this, info);
 
-  postInitiateProperty(this);
+  postInitiateAttribute(this);
   }
 
-void Database::initiatePropertyFromMetaData(PropertyContainer *container, const PropertyInformation *mD)
+void Database::initiateAttributeFromMetaData(Container *container, const PropertyInformation *mD)
   {
   xAssert(mD);
 
@@ -202,34 +209,34 @@ void Database::initiatePropertyFromMetaData(PropertyContainer *container, const 
     const PropertyInformation *childInformation = child->childInformation();
 
     // extract the properties location from the meta data.
-    Property *thisProp = child->locateProperty(container);
+    Attribute *thisProp = child->locate(container);
 
     if(child->isExtraClassMember())
       {
-      childInformation->functions().createPropertyInPlace(thisProp);
+      childInformation->functions().createInPlace(thisProp);
       }
 
     thisProp->_instanceInfo = child;
-    container->internalSetupProperty(thisProp);
-    initiateProperty(thisProp);
+    container->internalSetup(thisProp);
+    initiateAttribute(thisProp);
     }
   }
 
-void Database::uninitiatePropertyFromMetaData(PropertyContainer *container, const PropertyInformation *mD)
+void Database::uninitiateAttributeFromMetaData(Container *container, const PropertyInformation *mD)
   {
   xAssert(mD);
 
   xForeach(auto child, mD->childWalker())
     {
     // extract the properties location from the meta data.
-    Property *thisProp = child->locateProperty(container);
+    Attribute *thisProp = child->locate(container);
 
-    uninitiateProperty(thisProp);
+    uninitiateAttribute(thisProp);
 
     if(child->isExtraClassMember())
       {
       const PropertyInformation *info = thisProp->typeInformation();
-      info->functions().destroyProperty(thisProp);
+      info->functions().destroy(thisProp);
       }
     }
 
@@ -237,21 +244,21 @@ void Database::uninitiatePropertyFromMetaData(PropertyContainer *container, cons
   xAssert(container->_dynamicChild == 0);
   }
 
-void Database::initiateProperty(Property *prop)
+void Database::initiateAttribute(Attribute *prop)
   {
   prop->typeInformation()->reference();
 
-  PropertyContainer *container = prop->castTo<PropertyContainer>();
+  Container *container = prop->castTo<Container>();
   if(container)
     {
     const PropertyInformation *metaData = container->typeInformation();
     xAssert(metaData);
 
 #ifndef S_CENTRAL_CHANGE_HANDLER
-    container->_database = PropertyContainer::_database;
+    container->_database = Container::_database;
 #endif
 
-    initiatePropertyFromMetaData(container, metaData);
+    initiateAttributeFromMetaData(container, metaData);
     }
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
@@ -259,9 +266,9 @@ void Database::initiateProperty(Property *prop)
 #endif
   }
 
-void Database::postInitiateProperty(Property *prop)
+void Database::postInitiateAttribute(Attribute *prop)
   {
-  PropertyContainer *container = prop->castTo<PropertyContainer>();
+  Container *container = prop->castTo<Container>();
   if(container)
     {
     const PropertyInformation *metaData = container->typeInformation();
@@ -269,8 +276,8 @@ void Database::postInitiateProperty(Property *prop)
 
     xForeach(auto child, metaData->childWalker())
       {
-      Property *thisProp = child->locateProperty(container);
-      postInitiateProperty(thisProp);
+      Attribute *thisProp = child->locate(container);
+      postInitiateAttribute(thisProp);
       }
     }
 
@@ -278,7 +285,7 @@ void Database::postInitiateProperty(Property *prop)
     {
     const EmbeddedPropertyInstanceInformation *inst = prop->embeddedBaseInstanceInformation();
     xAssert(inst);
-    inst->initiateProperty(prop);
+    inst->initiateAttribute(prop);
     }
 
 #ifdef S_PROPERTY_POST_CREATE
@@ -299,17 +306,17 @@ void Database::postInitiateProperty(Property *prop)
 #endif
   }
 
-void Database::uninitiateProperty(Property *prop)
+void Database::uninitiateAttribute(Attribute *prop)
   {
   prop->typeInformation()->dereference();
 
-  PropertyContainer *container = prop->castTo<PropertyContainer>();
+  Container *container = prop->castTo<Container>();
   if(container)
     {
     const PropertyInformation *metaData = container->typeInformation();
     xAssert(metaData);
 
-    uninitiatePropertyFromMetaData(container, metaData);
+    uninitiateAttributeFromMetaData(container, metaData);
     }
 
   const PropertyInstanceInformation* inst = prop->baseInstanceInformation();

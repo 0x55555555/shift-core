@@ -26,8 +26,8 @@ private slots:
 
 
 private:
-  DebugPropertyItem *createItemForProperty(Property *prop, Eks::UnorderedMap<Property *, DebugPropertyItem *> *itemsOut = 0);
-  void connectProperties(const Eks::UnorderedMap<Property *, DebugPropertyItem *> &itemsOut);
+  DebugPropertyItem *createItemForProperty(Attribute *prop, Eks::UnorderedMap<Attribute *, DebugPropertyItem *> *itemsOut = 0);
+  void connectProperties(const Eks::UnorderedMap<Attribute *, DebugPropertyItem *> &itemsOut);
 
   QGraphicsScene *_scene;
   Database *_db;
@@ -58,9 +58,9 @@ protected slots:
   void hide();
   void hideChildren();
   void hideSiblings();
-  void showChildren();  
+  void showChildren();
   void isolate();
-  
+
 protected:
   void mouseMoveEvent(QGraphicsSceneMouseEvent * event) X_OVERRIDE;
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) X_OVERRIDE;

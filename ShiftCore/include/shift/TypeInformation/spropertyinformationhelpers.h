@@ -8,7 +8,7 @@
 #include "shift/TypeInformation/spropertygroup.h"
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/Properties/sproperty.h"
-#include "shift/Properties/sproperty.inl"
+#include "shift/Properties/sattribute.inl"
 #include "shift/Utilities/sresourcedescription.h"
 
 namespace Shift
@@ -51,12 +51,12 @@ public:
     }
   };
 
-template <> struct ApiHelper<Property>
+template <> struct ApiHelper<Attribute>
   {
 public:
   static void create(PropertyInformation *info)
     {
-    XScript::Interface<Property> *templ = XScript::Interface<Property>::create(info->typeName().data());
+    XScript::Interface<Attribute> *templ = XScript::Interface<Attribute>::create(info->typeName().data());
     info->setApiInterface(templ);
     }
   };
@@ -112,12 +112,12 @@ public:
   EmbeddedPropertyInstanceInformation *add(
       const PropertyInformation *newChildType,
       xsize location,
-      const PropertyNameArg &name,
+      const NameArg &,
       bool notClassMember);
 
   EmbeddedPropertyInstanceInformation *add(
       const PropertyInformation *newChildType,
-      const PropertyNameArg &name);
+      const NameArg &);
 
   xsize *createAffects(
       const EmbeddedPropertyInstanceInformation **info,
@@ -144,7 +144,7 @@ protected:
 
 private:
   X_DISABLE_COPY(PropertyInformationChildrenCreator);
-  
+
   Eks::TemporaryAllocator _temporaryAllocator;
   Eks::Vector<EmbeddedPropertyInstanceInformation *> _properties;
   };
@@ -156,7 +156,7 @@ public:
   template <typename U, typename AncestorPropType>
       PropertyInstanceInformationTyped<PropType, U> *add(
           U AncestorPropType::* ptr,
-          const PropertyNameArg &name)
+          const NameArg &name)
     {
     // this isnt always true, but normally is.
     // when adding extended child properties things get weird.
@@ -177,14 +177,14 @@ public:
   template <typename U, typename AncestorPropType, xsize SIZE>
       void addArray(
           U (AncestorPropType::* ptr)[SIZE],
-          const PropertyNameArg &name,
+          const NameArg &name,
           PropertyInstanceInformationTyped<PropType, U> **inst)
     {
-    PropertyName str;
+    Name str;
     name.toName(str);
     const xsize nameLength = str.length();
 
-    AncestorPropType *prop = (AncestorPropType *)0x0;
+   AncestorPropType *prop = (AncestorPropType *)0x0;
 
     for(xsize i = 0; i < SIZE; ++i)
       {
@@ -212,7 +212,7 @@ public:
   // i should fix this...
   template <typename T>
       PropertyInstanceInformationTyped<PropType, T> *add(
-          const PropertyNameArg &name)
+          const NameArg &name)
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
 
@@ -225,7 +225,7 @@ public:
   template <typename T>
       PropertyInstanceInformationTyped<PropType, T> *add(
           xsize location,
-          const PropertyNameArg &name)
+          const NameArg &name)
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
 
@@ -247,7 +247,7 @@ public:
     {
     // avoid special casing for zero static cast
     AncestorPropType *u = reinterpret_cast<AncestorPropType*>(1);
-    PropertyContainer *container = static_cast<PropertyContainer *>(u);
+    Container *container = static_cast<Container *>(u);
     U *offset = &(u->*ptr);
 
     Property *propOffset = offset;
@@ -395,7 +395,7 @@ private:
       Eks::ResourceDescriptionTypeHelper<typename PropType::EmbeddedInstanceInformation>::createFor());
 
     PropType *offset = (PropType*)1;
-    Property *propertyData = offset;
+    Attribute *propertyData = offset;
     xsize propertyDataOffset = (xsize)propertyData - 1;
 
     info->setPropertyDataOffset(propertyDataOffset);
@@ -462,16 +462,14 @@ private:
   T *_container;
   };
 
-inline PropertyAffectsWalker<Property, PropertyContainer>
-  EmbeddedPropertyInstanceInformation::affectsWalker(PropertyContainer *c) const
+inline PropertyAffectsWalker<Property, Container> EmbeddedPropertyInstanceInformation::affectsWalker(Container *c) const
   {
-  return PropertyAffectsWalker<Property, PropertyContainer>(c, _affects);
+  return PropertyAffectsWalker<Property, Container>(c, _affects);
   }
 
-inline PropertyAffectsWalker<const Property, const PropertyContainer>
-  EmbeddedPropertyInstanceInformation::affectsWalker(const PropertyContainer *c) const
+inline PropertyAffectsWalker<const Property, const Container> EmbeddedPropertyInstanceInformation::affectsWalker(const Container *c) const
   {
-  return PropertyAffectsWalker<const Property, const PropertyContainer>(c, _affects);
+  return PropertyAffectsWalker<const Property, const Container>(c, _affects);
   }
 }
 

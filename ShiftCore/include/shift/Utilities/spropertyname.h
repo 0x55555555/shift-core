@@ -12,21 +12,21 @@ enum
   NamePreallocSize = 32
   };
 
-typedef Eks::StringBase<Eks::Char, NamePreallocSize> PropertyName;
+typedef Eks::StringBase<Eks::Char, NamePreallocSize> Name;
 
-class SHIFT_EXPORT PropertyNameArg
+class SHIFT_EXPORT NameArg
   {
 public:
-  PropertyNameArg();
-  PropertyNameArg(PropertyNameArg &&);
-  PropertyNameArg& operator=(PropertyNameArg&& other);
+  NameArg();
+  NameArg(NameArg &&);
+  NameArg& operator=(NameArg&& other);
 
 #if X_QT_INTEROP
-  PropertyNameArg(const QString &);
+  NameArg(const QString &);
 #endif
 
   template <typename C, xsize S, typename A>
-  PropertyNameArg(const Eks::StringBase<C, S, A> &in)
+  NameArg(const Eks::StringBase<C, S, A> &in)
     {
     xCompileTimeAssert(sizeof(C) == sizeof(Eks::Char));
 
@@ -35,22 +35,22 @@ public:
     _length = in.length();
     }
 
-  PropertyNameArg(const Eks::Char *in)
+  NameArg(const Eks::Char *in)
     {
     _type = TypeEks;
     _data.eks = in;
     _length = Eks::StringBase<Eks::Char>::Traits::length(in);
     }
 
-  void toName(PropertyName &out) const;
+  void toName(Name &out) const;
 
   bool isEmpty() const;
 
-  bool operator==(const PropertyNameArg &oth) const;
-  bool operator==(const PropertyName &oth) const;
+  bool operator==(const NameArg &oth) const;
+  bool operator==(const Name &oth) const;
 
 private:
-  X_DISABLE_COPY(PropertyNameArg)
+  X_DISABLE_COPY(NameArg)
 
   enum
     {
@@ -83,9 +83,9 @@ namespace Convert
 namespace internal
 {
 
-template <> struct JSToNative<const Shift::PropertyNameArg &>
+template <> struct JSToNative<const Shift::NameArg &>
   {
-  typedef Shift::PropertyName ResultType;
+  typedef Shift::Name ResultType;
 
   ResultType operator()(Value const &h) const
     {
@@ -105,10 +105,10 @@ template <typename T> class MatchOut
   };
 }
 
-template <> class TypeMatcher<const Shift::PropertyNameArg&, Shift::PropertyName>
+template <> class TypeMatcher<const Shift::NameArg&, Shift::Name>
   {
 public:
-  static inline Shift::PropertyNameArg match(const Shift::PropertyName *in, bool& valid)
+  static inline Shift::NameArg match(const Shift::Name *in, bool& valid)
     {
     valid = true;
     return *in;
