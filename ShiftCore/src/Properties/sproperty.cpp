@@ -946,7 +946,6 @@ void Property::setDirty()
     _dirty = true;
 
     setDependantsDirty();
-    xAssert(isDirty());
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
     Entity *ent = entity();
@@ -1010,8 +1009,8 @@ void Property::update() const
 
   concurrentUpdate();
 
-  // dirty can be set again in compute functions.
-  xAssert(!isDirty());
+  // dirty can be set again in async operations..
+  // so possibly isDirty() == true...
   }
 
 void Property::concurrentUpdate() const

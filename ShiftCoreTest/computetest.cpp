@@ -6,7 +6,7 @@
 
 class TestVector : public Shift::PropertyContainer
   {
-  S_ENTITY(TestVector, Entity, 0)
+  S_ENTITY(TestVector, Shift::PropertyContainer, 0)
 public:
 
   Shift::FloatProperty x;
@@ -15,7 +15,7 @@ public:
 
   bool allDirty() const
     {
-    return countDirty == 4;
+    return countDirty() == 4;
     }
 
   bool anyDirty() const
