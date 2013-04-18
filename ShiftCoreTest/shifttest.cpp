@@ -1,10 +1,11 @@
-#include "computetest.h"
+#include "shifttest.h"
 #include <QString>
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/spropertygroup.h"
 #include "shift/Properties/sbaseproperties.h"
+#include "XGlobalAllocator"
 
 // future tests
 // casting test, benchmarking shallow and deep hierarchies
@@ -113,12 +114,19 @@ void TestEntity::createTypeInformation(
     }
   }
 
-ShiftCoreComputeTest::ShiftCoreComputeTest()
+ShiftCoreTest::ShiftCoreTest()
   {
+  Shift::TypeRegistry::initiate(core.defaultAllocator());
   }
 
-void ShiftCoreComputeTest::simpleDirty()
+ShiftCoreTest::~ShiftCoreTest()
   {
+  Shift::TypeRegistry::terminate();
+  }
+
+void ShiftCoreTest::simpleDirtyCompute()
+  {
+  Eks::detail::Assert::currentBreakFunction()();
   Shift::Database db;
 
   // create an entity, everything should be dirty
@@ -171,4 +179,4 @@ void ShiftCoreComputeTest::simpleDirty()
   QCOMPARE(b->in.anyDirty(), false);
   }
 
-QTEST_APPLESS_MAIN(ShiftCoreComputeTest)
+QTEST_APPLESS_MAIN(ShiftCoreTest)

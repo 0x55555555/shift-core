@@ -37,8 +37,8 @@ public:
     {
     const XScript::Interface<typename PropType::ParentType> *parentTempl =
         static_cast<XScript::Interface<typename PropType::ParentType>*>(PropType::ParentType::staticTypeInformation()->apiInterface());
-    const XScript::Interface<Property> *baseTempl =
-        static_cast<XScript::Interface<Property>*>(Property::staticTypeInformation()->apiInterface());
+    const XScript::Interface<Attribute> *baseTempl =
+        static_cast<XScript::Interface<Attribute>*>(Attribute::staticTypeInformation()->apiInterface());
 
     XScript::Interface<PropType> *templ = XScript::Interface<PropType>::createWithParent(info->typeName(), parentTempl, baseTempl);
     info->setApiInterface(templ);

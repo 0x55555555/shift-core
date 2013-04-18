@@ -92,11 +92,13 @@ void TypeRegistry::terminate()
 
 Eks::AllocatorBase *TypeRegistry::persistentBlockAllocator()
   {
+  xAssert(_internalTypes);
   return &_internalTypes->bucketAllocator;
   }
 
 Eks::AllocatorBase *TypeRegistry::generalPurposeAllocator()
   {
+  xAssert(_internalTypes);
   xAssert(_internalTypes->baseAllocator);
   return _internalTypes->baseAllocator;
   }

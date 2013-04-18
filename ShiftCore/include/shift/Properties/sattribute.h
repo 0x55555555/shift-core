@@ -205,20 +205,20 @@ template <typename T> inline const XScript::InterfaceBase *findPropertyInterface
   return T::staticApiInterface();
   }
 
-#define S_PROPERTY_INTERFACE(name) X_SCRIPTABLE_TYPE_INHERITS(name, Shift::Property) \
+#define S_PROPERTY_INTERFACE(name) X_SCRIPTABLE_TYPE_INHERITS(name, Shift::Attribute) \
   namespace XScript { \
   template <> inline const InterfaceBase *findInterface<name>(const name *p) { \
-    return Shift::findPropertyInterface<Shift::Property>(p); } \
+    return Shift::findPropertyInterface<Shift::Attribute>(p); } \
   namespace Convert { \
-  template <> inline name *castFromBase<name, Shift::Property>(Shift::Property *ptr) { \
+  template <> inline name *castFromBase<name, Shift::Attribute>(Shift::Attribute *ptr) { \
     return ptr->castTo<name>(); } } }
 
-#define S_PROPERTY_ABSTRACT_INTERFACE(name) X_SCRIPTABLE_ABSTRACT_TYPE_INHERITS(name, Shift::Property) \
+#define S_PROPERTY_ABSTRACT_INTERFACE(name) X_SCRIPTABLE_ABSTRACT_TYPE_INHERITS(name, Shift::Attribute) \
   namespace XScript { \
   template <> inline const InterfaceBase *findInterface<name>(const name *p) { \
-    return Shift::findPropertyInterface<Shift::Property>(p); } \
+    return Shift::findPropertyInterface<Shift::Attribute>(p); } \
   namespace Convert { \
-  template <> inline name *castFromBase<name, Shift::Property>(Shift::Property *ptr) { \
+  template <> inline name *castFromBase<name, Shift::Attribute>(Shift::Attribute *ptr) { \
     return ptr->castTo<name>(); } } }
 }
 

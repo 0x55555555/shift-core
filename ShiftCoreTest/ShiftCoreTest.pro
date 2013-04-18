@@ -17,7 +17,8 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 
-SOURCES += computetest.cpp
+SOURCES += \
+    shifttest.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 INCLUDEPATH += $$ROOT/shift/GraphicsCore \
@@ -29,4 +30,4 @@ INCLUDEPATH += $$ROOT/shift/GraphicsCore \
 LIBS += -lShiftCore -lEksCore -lEks3D -lEksScript -lShiftGraphicsCore
 
 HEADERS += \
-    computetest.h
+    shifttest.h
