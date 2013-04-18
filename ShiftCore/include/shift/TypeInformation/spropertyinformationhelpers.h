@@ -22,13 +22,13 @@ template <typename T> class PropertyInformationTyped;
     &_##myName##StaticTypeInformation, myName::bootstrapStaticTypeInformation); \
   const Shift::PropertyInformation *myName::staticTypeInformation() { return _##myName##StaticTypeInformation.information; } \
   const Shift::PropertyInformation *myName::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator) \
-  { Shift::ApiHelper<myName>::checkType(); Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
+  { Shift::detail::ApiHelper<myName>::checkType(); Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
   #myName, myName::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
 
 #define S_IMPLEMENT_ABSTRACT_PROPERTY(myName, grp) \
   S_IMPLEMENT_PROPERTY(myName, grp)
 
-namespace
+namespace detail
 {
 template <typename PropType> struct ApiHelper
   {
@@ -63,7 +63,7 @@ public:
 
 template <typename T, void FUNC( const PropertyInstanceInformation *, T * )> struct ComputeHelper
   {
-  static void compute( const PropertyInstanceInformation *c, Property *prop)
+  static void compute(const PropertyInstanceInformation *c, Property *prop)
     {
     T* t = prop->uncheckedCastTo<T>();
     xAssert(t);
@@ -73,13 +73,24 @@ template <typename T, void FUNC( const PropertyInstanceInformation *, T * )> str
 
 template <typename T, void FUNC( T * )> struct ComputeNoInstanceInformationHelper
   {
-  static void compute( const PropertyInstanceInformation *, Property *prop)
+  static void compute(const PropertyInstanceInformation *, Property *prop)
     {
     T* t = prop->uncheckedCastTo<T>();
     xAssert(t);
     FUNC(t);
     }
   };
+
+template <typename PropType, typename Fn> struct CompteLambdaHelper
+  {
+  static void bind(const PropertyInstanceInformation *, Container* par)
+    {
+    Fn method;
+
+    method(par->uncheckedCastTo<PropType>());
+    }
+  };
+
 }
 
 template <typename PropType, typename InstanceType> class PropertyInstanceInformationTyped
@@ -92,15 +103,21 @@ public:
   template <void FUNC(PropType * )>
       void setCompute()
     {
-    Function t = (Function)ComputeNoInstanceInformationHelper<PropType, FUNC>::compute;
+    Function t = (Function)detail::ComputeNoInstanceInformationHelper<PropType, FUNC>::compute;
 
     setCompute(t);
+    }
+
+  template <typename Fn>
+      void setCompute(Fn)
+    {
+    setCompute(&detail::CompteLambdaHelper<PropType, Fn>::bind);
     }
 
   template <void FUNC( const PropertyInstanceInformation *, PropType * )>
       void setComputeWithInstanceInformation()
     {
-    Function t = (Function)ComputeHelper<PropType, FUNC>::compute;
+    Function t = (Function)detail::ComputeHelper<PropType, FUNC>::compute;
 
     setCompute(t);
     }
@@ -406,7 +423,7 @@ private:
 
     info->setInstances(0);
 
-    ApiHelper<PropType>::create(info);
+    detail::ApiHelper<PropType>::create(info);
 
     PropertyInformationCreateData data(allocator);
     data.registerAttributes = true;

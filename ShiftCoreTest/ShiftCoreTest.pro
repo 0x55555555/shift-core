@@ -27,3 +27,6 @@ INCLUDEPATH += $$ROOT/shift/GraphicsCore \
     $$ROOT/Shift/ShiftCore/include
 
 LIBS += -lShiftCore -lEksCore -lEks3D -lEksScript -lShiftGraphicsCore
+
+HEADERS += \
+    computetest.h
