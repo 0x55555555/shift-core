@@ -11,7 +11,7 @@ namespace Shift
 {
 
 class Property;
-class PropertyContainer;
+class Container;
 class PropertyInformation;
 
 class Loader
@@ -33,7 +33,7 @@ public:
 
   virtual const PropertyInformation *type() const = 0;
 
-  void loadChildren(PropertyContainer *parent);
+  void loadChildren(Container *parent);
 
   virtual bool beginChildren() const = 0;
   virtual void endChildren() const = 0;
@@ -43,7 +43,7 @@ public:
   virtual bool childHasValue() const = 0;
   virtual void endNextChild() = 0;
 
-  void read(PropertyContainer *parent);
+  void read(Container *parent);
 
   virtual void beginAttribute(const char *) = 0;
   virtual void endAttribute(const char *) = 0;
@@ -78,14 +78,14 @@ public:
 
   virtual void setType(const PropertyInformation *) = 0;
 
-  void saveChildren(const PropertyContainer *c);
+  void saveChildren(const Container *c);
 
   virtual void beginChildren() = 0;
   virtual void endChildren() = 0;
   virtual void beginNextChild() = 0;
   virtual void endNextChild() = 0;
 
-  void write(const Property *);
+  void write(const Attribute *);
 
   virtual void beginAttribute(const char *) = 0;
   virtual void endAttribute(const char *) = 0;

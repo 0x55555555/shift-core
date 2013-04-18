@@ -59,9 +59,9 @@ const Property *ExternalPointer::resolve(ResolveResult *resultOpt) const
 class ExternalUuidPointer::Traits : public detail::PropertyBaseTraits
   {
 public:
-  static void saveProperty(const Property *p, Saver &s )
+  static void save(const Attribute *p, Saver &s )
     {
-    detail::PropertyBaseTraits::saveProperty(p, s, false);
+    detail::PropertyBaseTraits::save(p, s, false);
 
     const ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
     if(s.streamMode() == Saver::Text)
@@ -74,9 +74,9 @@ public:
       }
     }
 
-  static Property *loadProperty(PropertyContainer *parent, Loader &l)
+  static Attribute *load(Container *parent, Loader &l)
     {
-    Property *p = detail::PropertyBaseTraits::loadProperty(parent, l);
+    Attribute *p = detail::PropertyBaseTraits::load(parent, l);
 
     ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
     if(l.streamMode() == Saver::Text)

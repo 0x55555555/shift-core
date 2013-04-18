@@ -98,7 +98,7 @@ private:
   EntityWeakPointer _root;
   QHash<int, QByteArray> _roles;
   Options _options;
-  const PropertyContainer::TreeChange *_currentTreeChange;
+  const Container::TreeChange *_currentTreeChange;
   };
 
 }

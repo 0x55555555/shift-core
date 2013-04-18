@@ -40,7 +40,7 @@ void PropertyInstanceInformation::destroy(
       inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
 
     void *data = destroy(inst);
-    
+
     if(destroyInfo)
       {
       PropertyInformation::destroyChildren(const_cast<PropertyInformation*>(info), allocator);
@@ -153,19 +153,20 @@ void EmbeddedPropertyInstanceInformation::destroy(
   PropertyInstanceInformation::destroy(allocator, inst);
   }
 
-void EmbeddedPropertyInstanceInformation::initiateProperty(Property *propertyToInitiate) const
+void EmbeddedPropertyInstanceInformation::initiateAttribute(Attribute *propertyToInitiate) const
   {
   if(defaultInput())
     {
+    Property *thsProp = propertyToInitiate->uncheckedCastTo<Property>();
     xuint8 *data = (xuint8*)propertyToInitiate;
 
     const xuint8 *inputPropertyData = data + defaultInput();
 
-    const Property *inputProperty = (Property*)inputPropertyData;
+    const Property *inputProperty = ((Attribute*)inputPropertyData)->uncheckedCastTo<Property>();
 
     xAssert(inputProperty->isDirty());
-    xAssert(propertyToInitiate->isDirty());
-    inputProperty->connect(propertyToInitiate);
+    xAssert(!propertyToInitiate->castTo<Property>() || propertyToInitiate->uncheckedCastTo<Property>()->isDirty());
+    inputProperty->connect(thsProp);
     }
   }
 
@@ -189,7 +190,7 @@ void EmbeddedPropertyInstanceInformation::setMode(Mode m)
   }
 
 void EmbeddedPropertyInstanceInformation::initiate(const PropertyInformation *info,
-                 const PropertyNameArg &n,
+                 const NameArg &n,
                  xsize index,
                  xsize location)
   {
@@ -314,6 +315,7 @@ void EmbeddedPropertyInstanceInformation::setDefaultValue(const QString &)
 
 void EmbeddedPropertyInstanceInformation::setDefaultInput(const EmbeddedPropertyInstanceInformation *info)
   {
+  xAssert(info->childInformation()->inheritsFromType(Property::staticTypeInformation()));
   // find the offset to the holding type information
   xsize targetOffset = 0;
   const PropertyInformation *targetBase = info->holdingTypeInformation()->findAllocatableBase(targetOffset);
@@ -342,34 +344,34 @@ void EmbeddedPropertyInstanceInformation::setDefaultInput(const EmbeddedProperty
   xAssert(_defaultInput < (xptrdiff)sourceBase->size());
   }
 
-Property *EmbeddedPropertyInstanceInformation::locateProperty(PropertyContainer *parent) const
+Attribute *EmbeddedPropertyInstanceInformation::locate(Container *parent) const
   {
   xuint8* parentOffset = reinterpret_cast<xuint8*>(parent);
   xuint8* childOffset = parentOffset + location();
-  Property *child = reinterpret_cast<Property*>(childOffset);
+  Attribute *child = reinterpret_cast<Attribute*>(childOffset);
 
   return child;
   }
 
-const Property *EmbeddedPropertyInstanceInformation::locateProperty(const PropertyContainer *parent) const
+const Attribute *EmbeddedPropertyInstanceInformation::locate(const Container *parent) const
   {
   const xuint8* parentOffset = reinterpret_cast<const xuint8*>(parent);
   const xuint8* childOffset = parentOffset + location();
-  const Property *child = reinterpret_cast<const Property*>(childOffset);
+  const Attribute *child = reinterpret_cast<const Attribute*>(childOffset);
   return child;
   }
 
-const PropertyContainer *EmbeddedPropertyInstanceInformation::locateConstParent(const Property *prop) const
+const Container *EmbeddedPropertyInstanceInformation::locateConstParent(const Attribute *prop) const
   {
-  return locateParent(const_cast<Property*>(prop));
+  return locateParent(const_cast<Attribute*>(prop));
   }
 
-PropertyContainer *EmbeddedPropertyInstanceInformation::locateParent(Property *prop) const
+Container *EmbeddedPropertyInstanceInformation::locateParent(Attribute *prop) const
   {
   xuint8* data = (xuint8*)prop;
   data -= location();
 
-  PropertyContainer *parent = (PropertyContainer*)data;
+  Container *parent = (Container*)data;
   return parent;
   }
 

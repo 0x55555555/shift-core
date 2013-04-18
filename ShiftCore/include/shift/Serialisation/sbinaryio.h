@@ -52,7 +52,7 @@ private:
   bool childHasValue() const;
   void endNextChild();
 
-  void read(PropertyContainer *);
+  void read(Container *);
 
   void beginAttribute(const char *);
   void endAttribute(const char *);

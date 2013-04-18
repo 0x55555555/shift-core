@@ -26,7 +26,7 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
 
     static XScript::ClassDef<0,0,7> cls = {
       {
-      api->method<Property* (const PropertyInformation *, const PropertyNameArg &), &Entity::addChild>("addChild"),
+      api->method<Attribute* (const PropertyInformation *, const NameArg &), &Entity::addChild>("addChild"),
 
       api->method<void (TreeObserver*), &Entity::addTreeObserver>("addTreeObserver"),
       api->method<void (DirtyObserver*), &Entity::addDirtyObserver>("addDirtyObserver"),
@@ -68,28 +68,28 @@ void Entity::reparent(Entity *ent)
   {
   xAssert(parent() && parentEntity());
 
-  parent()->moveProperty(&ent->children, this);
+  parent()->moveAttribute(&ent->children, this);
   }
 
-Property *Entity::addChild(const PropertyInformation *info, const PropertyNameArg& name)
+Attribute *Entity::addChild(const PropertyInformation *info, const NameArg& name)
   {
   Block b(handler());
-  Property *ent = children.add(info, X_UINT8_SENTINEL, name);
+  Attribute *ent = children.add(info, X_UINT8_SENTINEL, name);
   xAssert(ent);
   return ent;
   }
 
-Property *Entity::addProperty(const PropertyInformation *info, const PropertyNameArg& name, PropertyInstanceInformationInitialiser *inst)
+Attribute *Entity::addProperty(const PropertyInformation *info, const NameArg& name, PropertyInstanceInformationInitialiser *inst)
   {
   Block b(handler());
-  Property *p = PropertyContainer::addProperty(info, X_UINT8_SENTINEL, name, inst);
+  Attribute *p = Container::addAttribute(info, X_UINT8_SENTINEL, name, inst);
   xAssert(p);
   return p;
   }
 
 const Entity *Entity::parentEntity() const
   {
-  const PropertyContainer *par = parent();
+  const Container *par = parent();
   if(par)
     {
     return par->entity();
@@ -99,7 +99,7 @@ const Entity *Entity::parentEntity() const
 
 Entity *Entity::parentEntity()
   {
-  PropertyContainer *par = parent();
+  Container *par = parent();
   if(par)
     {
     return par->entity();
@@ -107,9 +107,9 @@ Entity *Entity::parentEntity()
   return 0;
   }
 
-Entity *Entity::findChildEntity(const PropertyNameArg &n)
+Entity *Entity::findChildEntity(const NameArg &n)
   {
-  Property *prop = children.findChild(n);
+  Attribute *prop = children.findChild(n);
   if(!prop)
     {
     return 0;
@@ -117,9 +117,9 @@ Entity *Entity::findChildEntity(const PropertyNameArg &n)
   return prop->castTo<Entity>();
   }
 
-const Entity *Entity::findChildEntity(const PropertyNameArg &n) const
+const Entity *Entity::findChildEntity(const NameArg &n) const
   {
-  const Property *prop = children.findChild(n);
+  const Attribute *prop = children.findChild(n);
   if(!prop)
     {
     return 0;

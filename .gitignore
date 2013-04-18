@@ -19,6 +19,7 @@
 *.user
 *.a
 *.o
+*.orig
 moc_*.cpp
 qrc_*.cpp
 *.pro.user*

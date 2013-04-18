@@ -1,6 +1,6 @@
 #include "shift/UI/sentityui.h"
 #include "shift/UI/spropertydefaultui.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontaineriterators.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/sentity.h"
 #include "QtWidgets/QFormLayout"
@@ -34,7 +34,7 @@ EntityUI::EntityUI(xuint32 options)
     }
   }
 
-xuint64 EntityUI::widgetType(const Property *p) const
+xuint64 EntityUI::widgetType(const Attribute *p) const
   {
   const PropertyInformation *actualType(p->typeInformation());
   if(_uiTypes.contains(actualType))
@@ -68,7 +68,7 @@ QWidget *EntityUI::createControlWidget(Entity *ent, QWidget *parent, bool *added
   return canvas;
   }
 
-QWidget *EntityUI::createControlWidget(Property *property, QWidget *parent) const
+QWidget *EntityUI::createControlWidget(Attribute *property, QWidget *parent) const
   {
   xuint64 type = widgetType(property);
   if(type < (xuint64)_types.size())

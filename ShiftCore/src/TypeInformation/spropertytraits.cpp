@@ -1,7 +1,7 @@
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
-#include "shift/Properties/spropertycontainer.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontainer.h"
+#include "shift/Properties/scontaineriterators.h"
 #include "shift/Serialisation/sloader.h"
 
 namespace Shift
@@ -10,16 +10,16 @@ namespace Shift
 namespace detail
 {
 
-void PropertyBaseTraits::assignProperty(const Property *, Property *)
+void PropertyBaseTraits::assign(const Attribute *, Attribute *)
   {
   }
 
-void PropertyBaseTraits::saveProperty(const Property *p, Saver &l)
+void PropertyBaseTraits::save(const Attribute *p, Saver &l)
   {
-  saveProperty(p, l, true);
+  save(p, l, true);
   }
 
-void PropertyBaseTraits::saveProperty(const Property *p, Saver &l, bool writeInput)
+void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
   {
   SProfileFunction
   const PropertyInformation *type = p->typeInformation();
@@ -91,15 +91,18 @@ void PropertyBaseTraits::saveProperty(const Property *p, Saver &l, bool writeInp
 #endif
     }
 
-  if(writeInput && p->input())
+  if(const Property* prop = p->castTo<Property>())
     {
-    l.beginAttribute("input");
-    writeValue(l, p->input()->path(p));
-    l.endAttribute("input");
+    if(writeInput && prop->input())
+      {
+      l.beginAttribute("input");
+      writeValue(l, prop->input()->path(p));
+      l.endAttribute("input");
+      }
     }
   }
 
-Property *PropertyBaseTraits::loadProperty(PropertyContainer *parent, Loader &l)
+Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
   {
   class Initialiser : public PropertyInstanceInformationInitialiser
     {
@@ -122,7 +125,7 @@ Property *PropertyBaseTraits::loadProperty(PropertyContainer *parent, Loader &l)
   Initialiser initialiser;
 
   l.beginAttribute("name");
-  PropertyName name;
+  Name name;
   readValue(l, name);
   l.endAttribute("name");
 
@@ -212,70 +215,79 @@ Property *PropertyBaseTraits::loadProperty(PropertyContainer *parent, Loader &l)
   readValue(l, version);
   l.endAttribute("version");
 
-  Property *prop = 0;
+  Attribute *attr = 0;
   if(dynamic != 0)
     {
-    prop = parent->addProperty(type, X_UINT8_SENTINEL, name, &initialiser);
-    xAssert(prop);
+    attr = parent->addAttribute(type, X_UINT8_SENTINEL, name, &initialiser);
+    xAssert(attr);
     }
   else
     {
-    prop = parent->findChild(name);
-    xAssert(prop);
-    xAssert(prop->typeInformation() == type);
+    attr = parent->findChild(name);
+    xAssert(attr);
+    xAssert(attr->typeInformation() == type);
     }
 
-  l.beginAttribute("input");
-  Loader::InputString input;
-  readValue(l, input);
-  l.endAttribute("input");
-
-  if(!input.isEmpty())
+  if(Property *prop = attr->castTo<Property>())
     {
-    l.resolveInputAfterLoad(prop, input);
+    l.beginAttribute("input");
+    Loader::InputString input;
+    readValue(l, input);
+    l.endAttribute("input");
+
+    if(!input.isEmpty())
+      {
+      l.resolveInputAfterLoad(prop, input);
+      }
     }
 
-  return prop;
+  return attr;
   }
 
-bool PropertyBaseTraits::shouldSavePropertyValue(const Property *p)
+bool PropertyBaseTraits::shouldSaveValue(const Attribute *p)
   {
-  if(p->hasInput())
+  if(const Property *prop = p->castTo<Property>())
     {
-    return false;
-    }
+    if(prop->hasInput())
+      {
+      return false;
+      }
 
-  if(p->isComputed())
-    {
-    return false;
+    if(prop->isComputed())
+      {
+      return false;
+      }
     }
 
   return true;
   }
 
-bool PropertyBaseTraits::shouldSaveProperty(const Property *p)
+bool PropertyBaseTraits::shouldSave(const Attribute *p)
   {
   if(p->isDynamic())
     {
     return true;
     }
 
-  if(p->hasInput())
+  if(const Property *prop = p->castTo<Property>())
     {
-    xsize inputLocation = p->embeddedBaseInstanceInformation()->defaultInput();
-    if(inputLocation != 0)
+    if(prop->hasInput())
       {
-      const xuint8 *inputPropertyData = (xuint8*)p + inputLocation;
+      xsize inputLocation = prop->embeddedBaseInstanceInformation()->defaultInput();
+      if(inputLocation != 0)
+        {
+        const xuint8 *inputPropertyData = (xuint8*)p + inputLocation;
 
-      const Property *inputProperty = (Property*)inputPropertyData;
-      if(inputProperty != p->input())
+        const Property *inputProperty = (Property*)inputPropertyData;
+        if(inputProperty != prop->input())
+          {
+          return true;
+          }
+        }
+      else
         {
         return true;
         }
-      }
-    else
-      {
-      return true;
       }
     }
 
@@ -289,11 +301,11 @@ bool PropertyBaseTraits::shouldSaveProperty(const Property *p)
   }
 
 
-void PropertyContainerTraits::assignProperty(const Property *f, Property *t)
+void PropertyContainerTraits::assign(const Attribute *f, Attribute *t)
   {
   SProfileFunction
-  const PropertyContainer *from = f->uncheckedCastTo<PropertyContainer>();
-  PropertyContainer *to = t->uncheckedCastTo<PropertyContainer>();
+  const Container *from = f->uncheckedCastTo<Container>();
+  Container *to = t->uncheckedCastTo<Container>();
 
   if(from->containedProperties() == to->containedProperties())
     {
@@ -308,10 +320,10 @@ void PropertyContainerTraits::assignProperty(const Property *f, Property *t)
         xAssert(tChild->isDynamic());
         if(tChild)
           {
-          to->removeProperty(tChild);
+          to->removeAttribute(tChild);
           }
 
-        tChild = to->addProperty(fChild->staticTypeInformation(), index);
+        tChild = to->addAttribute(fChild->staticTypeInformation(), index);
         }
 
       tChild->assign(fChild);
@@ -322,35 +334,35 @@ void PropertyContainerTraits::assignProperty(const Property *f, Property *t)
     }
   }
 
-void PropertyContainerTraits::saveProperty(const Property *p, Saver &l)
+void PropertyContainerTraits::save(const Attribute *p, Saver &l)
   {
   SProfileFunction
-  const PropertyContainer *c = p->uncheckedCastTo<PropertyContainer>();
+  const Container *c = p->uncheckedCastTo<Container>();
   xAssert(c);
 
-  detail::PropertyBaseTraits::saveProperty(p, l);
+  detail::PropertyBaseTraits::save(p, l);
 
   l.saveChildren(c);
   }
 
-Property *PropertyContainerTraits::loadProperty(PropertyContainer *parent, Loader &l)
+Attribute *PropertyContainerTraits::load(Container *parent, Loader &l)
   {
   SProfileFunction
   xAssert(parent);
 
-  Property *prop = detail::PropertyBaseTraits::loadProperty(parent, l);
+  Attribute *prop = detail::PropertyBaseTraits::load(parent, l);
   xAssert(prop);
 
-  PropertyContainer* container = prop->uncheckedCastTo<PropertyContainer>();
+  Container* container = prop->uncheckedCastTo<Container>();
 
   l.loadChildren(container);
 
   return prop;
   }
 
-bool PropertyContainerTraits::shouldSavePropertyValue(const Property *p)
+bool PropertyContainerTraits::shouldSaveValue(const Attribute *p)
   {
-  const PropertyContainer *ptr = p->uncheckedCastTo<PropertyContainer>();
+  const Container *ptr = p->uncheckedCastTo<Container>();
   if(ptr->containedProperties() < ptr->size())
     {
     return true;

@@ -17,7 +17,7 @@ class PropertyInformation;
 class SHIFT_EXPORT EntityUI
   {
 public:
-  typedef QWidget *(*WidgetCreator)(const Property *property, bool readOnly, QWidget *parent);
+  typedef QWidget *(*WidgetCreator)(const Attribute *property, bool readOnly, QWidget *parent);
 
 XProperties:
   typedef Eks::Vector<WidgetCreator> TypeList;
@@ -33,7 +33,7 @@ public:
 
   EntityUI(xuint32 options = 0);
   QWidget *createControlWidget(Entity *ent, QWidget *parent=0, bool *anyWidgets=0) const;
-  QWidget *createControlWidget(Property *property, QWidget *parent=0) const;
+  QWidget *createControlWidget(Attribute *property, QWidget *parent=0) const;
   bool canCreateWidget(Property *prop) const;
 
   template <typename T>int addWidgetCreator()
@@ -51,7 +51,7 @@ private:
     {
     return new T(prop, readOnly, parent);
     }
-  xuint64 widgetType(const Property *property) const;
+  xuint64 widgetType(const Attribute *property) const;
   };
 
 }

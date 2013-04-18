@@ -61,7 +61,7 @@ SJSONSaver::SJSONSaver() : _autoWhitespace(false), _device(0), _root(0)
   setStreamDevice(Text, &_buffer);
   }
 
-void SJSONSaver::writeToDevice(QIODevice *device, const PropertyContainer *ent, bool includeRoot)
+void SJSONSaver::writeToDevice(QIODevice *device, const Container *ent, bool includeRoot)
   {
   SProfileFunction
   _root = ent;
@@ -326,7 +326,7 @@ void SJSONLoader::readAllAttributes()
     }
   }
 
-void SJSONLoader::readFromDevice(QIODevice *device, PropertyContainer *parent)
+void SJSONLoader::readFromDevice(QIODevice *device, Container *parent)
   {
   Block b(parent->handler());
   SProfileFunction
@@ -350,14 +350,17 @@ void SJSONLoader::readFromDevice(QIODevice *device, PropertyContainer *parent)
 
   xAssert(_current == End);
 
-  Q_FOREACH(Property *prop, _resolveAfterLoad.keys())
+  xForeach(Property *prop, _resolveAfterLoad.keys())
     {
-    Property* input = prop->resolvePath(_resolveAfterLoad.value(prop));
+    Attribute* input = prop->resolvePath(_resolveAfterLoad.value(prop));
 
     xAssert(input);
     if(input)
       {
-      input->connect(prop);
+      if(Property *inputProp = input->castTo<Property>())
+        {
+        inputProp->connect(prop);
+        }
       }
     }
 

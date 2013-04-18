@@ -22,7 +22,7 @@ void Handler::clearChanges()
   _done.clear();
   }
 
-Handler *Handler::findHandler(PropertyContainer *parent, Property *prop)
+Handler *Handler::findHandler(Container *parent, Property *prop)
   {
   Handler *handler = prop->findInterface<Handler>();
   if(handler)

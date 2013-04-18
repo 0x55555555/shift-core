@@ -2,6 +2,7 @@
 #define SPROPERTYCHANGES_H
 
 #include "shift/Changes/schange.h"
+#include "shift/Utilities/spropertyname.h"
 
 namespace Shift
 {
@@ -21,13 +22,13 @@ class PropertyNameChange : public Change
   {
   S_CHANGE(PropertyNameChange, Change, 50)
 public:
-  PropertyNameChange(const PropertyNameArg &b, const PropertyNameArg &a, Property *ent)
-    : _property(ent)
+  PropertyNameChange(const NameArg &b, const NameArg &a, Attribute *ent)
+    : _attribute(ent)
     {
     b.toName(_before);
     a.toName(_after);
     }
-  const PropertyName &before(bool back=false) const
+  const Name &before(bool back=false) const
     {
     if(back)
       {
@@ -35,7 +36,7 @@ public:
       }
     return _before;
     }
-  const PropertyName &after(bool back=false) const
+  const Name &after(bool back=false) const
     {
     if(back)
       {
@@ -43,12 +44,12 @@ public:
       }
     return _after;
     }
-  Property *property() {return _property;}
-  const Property *property() const {return _property;}
+  Attribute *attribute() {return _attribute;}
+  const Attribute *attribute() const {return _attribute;}
 private:
-  PropertyName _before;
-  PropertyName _after;
-  Property *_property;
+  Name _before;
+  Name _after;
+  Attribute *_attribute;
   bool apply();
   bool unApply();
   bool inform(bool back);

@@ -9,7 +9,7 @@ namespace Shift
 
 class PropertyInformationCreateData;
 class Property;
-class PropertyContainer;
+class Container;
 class PropertyInformation;
 class PropertyInstanceInformation;
 class EmbeddedPropertyInstanceInformation;
@@ -26,7 +26,7 @@ public:
 class SHIFT_EXPORT PropertyInstanceInformation
   {
 public:
-  typedef void (*ComputeFunction)( const PropertyInstanceInformation *, PropertyContainer * );
+  typedef void (*ComputeFunction)( const PropertyInstanceInformation *, Container * );
 
   enum Mode
     {
@@ -46,7 +46,7 @@ public:
 
 XProperties:
   XProperty(const PropertyInformation *, childInformation, setChildInformation);
-  XRefProperty(PropertyName, name);
+  XRefProperty(Name, name);
   XPropertyMember(xuint8, mode);
   XROProperty(xuint8, isDynamic);
   XProperty(xuint8, referenceCount, setReferenceCount);
@@ -95,13 +95,13 @@ public:
   const EmbeddedPropertyInstanceInformation *resolvePath(const Eks::String &) const;
 
   virtual void setDefaultValue(const QString &);
-  virtual void initiateProperty(Property *propertyToInitiate) const;
+  virtual void initiateAttribute(Attribute *propertyToInitiate) const;
 
-  Property *locateProperty(PropertyContainer *parent) const;
-  const Property *locateProperty(const PropertyContainer *parent) const;
+  Attribute *locate(Container *parent) const;
+  const Attribute *locate(const Container *parent) const;
 
-  const PropertyContainer *locateConstParent(const Property *prop) const;
-  PropertyContainer *locateParent(Property *prop) const;
+  const Container *locateConstParent(const Attribute *prop) const;
+  Container *locateParent(Attribute *prop) const;
 
   void setCompute(ComputeFunction fn);
   bool isComputed() const { return _compute != 0; }
@@ -118,22 +118,22 @@ public:
   bool affectsSiblings() const { return _affects != 0; }
 
   void initiate(const PropertyInformation *info,
-                const PropertyNameArg &name,
+                const NameArg &name,
                 xsize index,
                 xsize s);
 
   void setDefaultInput(const EmbeddedPropertyInstanceInformation *info);
 
-  PropertyAffectsWalker<Property, PropertyContainer> affectsWalker(PropertyContainer *c) const;
-  PropertyAffectsWalker<const Property, const PropertyContainer> affectsWalker(const PropertyContainer *c) const;
+  PropertyAffectsWalker<Property, Container> affectsWalker(Container *c) const;
+  PropertyAffectsWalker<const Property, const Container> affectsWalker(const Container *c) const;
   };
 
 class SHIFT_EXPORT DynamicPropertyInstanceInformation : public PropertyInstanceInformation
   {
   // Dynamic Instance
   XProperty(xsize, index, setIndex);
-  XProperty(PropertyContainer *, parent, setParent)
-  XProperty(Property *, nextSibling, setNextSibling)
+  XProperty(Container *, parent, setParent)
+  XProperty(Attribute *, nextSibling, setNextSibling)
 
 public:
   DynamicPropertyInstanceInformation();

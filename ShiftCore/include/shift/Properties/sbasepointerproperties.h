@@ -4,7 +4,7 @@
 #include "shift/sdatabase.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/TypeInformation/sinterfaces.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontaineriterators.h"
 
 namespace Shift
 {
@@ -84,7 +84,7 @@ public:
 
   void removePointer(const typename PTR::PtrType *ptr)
     {
-    xForeach(auto c, PropertyContainer::walker<Pointer>())
+    xForeach(auto c, Container::walker<Pointer>())
       {
       if(c)
         {
@@ -99,7 +99,7 @@ public:
 
   bool hasPointer(const typename PTR::PtrType *ptr)
     {
-    xForeach(auto child, PropertyContainer::walker())
+    xForeach(auto child, Container::walker<Pointer>())
       {
       if(ptr == child->input())
         {
@@ -111,7 +111,7 @@ public:
 
   void clear()
     {
-    PropertyContainer::clear();
+    Container::clear();
     }
   };
 
@@ -202,7 +202,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
 
 #define S_TYPED_POINTER_ARRAY_TYPE(exportType, name, type) \
   class exportType name : public Shift::TypedPointerArray<type> { \
-  S_PROPERTY_CONTAINER(name, PropertyContainer, 0); }; \
+  S_PROPERTY_CONTAINER(name, Container, 0); }; \
 
 #define S_IMPLEMENT_TYPED_POINTER_ARRAY_TYPE(name, group) \
   S_IMPLEMENT_PROPERTY(name, group) \

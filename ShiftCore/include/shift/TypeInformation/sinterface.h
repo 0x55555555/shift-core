@@ -22,7 +22,7 @@ XProperties:
 
 public:
   virtual ~InterfaceBaseFactory() { }
-  virtual InterfaceBase *classInterface(Property *) { return 0; }
+  virtual InterfaceBase *classInterface(Attribute *) { return 0; }
   };
 
 #define S_INTERFACE_TYPE(typeId) public: \
@@ -50,7 +50,7 @@ class InterfaceBase
 class StaticInterfaceBase : public InterfaceBase, public InterfaceBaseFactory
   {
 public:
-  InterfaceBase *classInterface(Property *) X_OVERRIDE { return this; }
+  InterfaceBase *classInterface(Attribute *) X_OVERRIDE { return this; }
   };
 
 
@@ -104,7 +104,7 @@ template <typename PropType, typename T> static void addInheritedInterface()
     {
     S_INTERFACE_FACTORY_TYPE(T)
   public:
-    InterfaceBase *classInterface(Property *prop) X_OVERRIDE
+    InterfaceBase *classInterface(Attribute *prop) X_OVERRIDE
       {
       PropType *type = prop->castTo<PropType>();
       T *t = type;

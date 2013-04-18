@@ -29,7 +29,7 @@ public:
 
   void clearChanges();
 
-  static Handler *findHandler(PropertyContainer *parent, Property *prop);
+  static Handler *findHandler(Container *parent, Property *prop);
 
   void beginBlock();
   void endBlock(bool cancel = false);
@@ -47,7 +47,7 @@ public:
   template <typename CLS, typename T0, typename T1, typename T2, typename T3> void doChange(const T0 &t0, const T1 &t1, const T2 &t2, const T3 &t3);
 #endif
 
-  Observers &currentBlockObserverList() { return _blockObservers; }
+  Eks::Vector<Observer *> &currentBlockObserverList() { return _blockObservers; }
 
   Eks::TemporaryAllocatorCore *temporaryAllocator();
 
@@ -62,7 +62,7 @@ private:
   void undoTo(xsize p);
 
   void inform();
-  Observers _blockObservers;
+  Eks::Vector<Observer *> _blockObservers;
   QMutex _doChange;
 
   Eks::Vector <Change*> _done;
@@ -96,7 +96,7 @@ private:
 class SHIFT_EXPORT StateStorageBlock
   {
 public:
-  StateStorageBlock(bool enable, Handler *h) 
+  StateStorageBlock(bool enable, Handler *h)
 #ifdef S_CENTRAL_CHANGE_HANDLER
     : _handler(h), _oldValue(h->stateStorageEnabled())
 #endif
@@ -114,7 +114,7 @@ public:
     _handler->setStateStorageEnabled(_oldValue);
 #endif
     }
-  
+
 #ifdef S_CENTRAL_CHANGE_HANDLER
 private:
   Handler *_handler;

@@ -3,21 +3,21 @@
 namespace Shift
 {
 
-PropertyNameArg::PropertyNameArg()
+NameArg::NameArg()
   {
   _type = TypeEks;
   _data.eks = 0;
   _length = 0;
   }
 
-PropertyNameArg::PropertyNameArg(PropertyNameArg &&oth)
+NameArg::NameArg(NameArg &&oth)
   {
   _type = oth._type;
   _data = oth._data;
   _length = oth._length;
   }
 
-PropertyNameArg& PropertyNameArg::operator=(PropertyNameArg&& oth)
+NameArg& NameArg::operator=(NameArg&& oth)
   {
   _type = oth._type;
   _data = oth._data;
@@ -27,7 +27,7 @@ PropertyNameArg& PropertyNameArg::operator=(PropertyNameArg&& oth)
   }
 
 #if X_QT_INTEROP
-PropertyNameArg::PropertyNameArg(const QString &t)
+NameArg::NameArg(const QString &t)
   {
   _type = TypeQt;
   _data.qt = &t;
@@ -35,7 +35,7 @@ PropertyNameArg::PropertyNameArg(const QString &t)
   }
 #endif
 
-void PropertyNameArg::toName(PropertyName &out) const
+void NameArg::toName(Name &out) const
   {
   out.clear();
 
@@ -51,12 +51,12 @@ void PropertyNameArg::toName(PropertyName &out) const
 #endif
   }
 
-bool PropertyNameArg::isEmpty() const
+bool NameArg::isEmpty() const
   {
   return _length == 0;
   }
 
-bool PropertyNameArg::operator==(const PropertyNameArg &oth) const
+bool NameArg::operator==(const NameArg &oth) const
   {
   if(_type == TypeEks)
     {
@@ -88,7 +88,7 @@ bool PropertyNameArg::operator==(const PropertyNameArg &oth) const
   return false;
   }
 
-bool PropertyNameArg::operator==(const PropertyName &oth) const
+bool NameArg::operator==(const Name &oth) const
   {
   if(_type == TypeEks)
     {

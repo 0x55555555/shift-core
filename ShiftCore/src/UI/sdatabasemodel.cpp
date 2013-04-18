@@ -1,5 +1,5 @@
 #include "shift/UI/sdatabasemodel.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontaineriterators.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
@@ -162,7 +162,7 @@ int DatabaseModel::rowCount( const QModelIndex &parent ) const
     prop = &ent->children;
     }
 
-  const PropertyContainer *container = prop->castTo<PropertyContainer>();
+  const Container *container = prop->castTo<Container>();
   if(container)
     {
     if(_currentTreeChange)
@@ -206,7 +206,7 @@ QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent
     prop = &ent->children;
     }
 
-  const PropertyContainer *container = prop->castTo<PropertyContainer>();
+  const Container *container = prop->castTo<Container>();
   if(container)
     {
     if(_currentTreeChange)
@@ -254,13 +254,13 @@ QModelIndex DatabaseModel::parent( const QModelIndex &child ) const
   if(child.isValid())
     {
     Property *prop = (Property *)child.internalPointer();
-    PropertyContainer *parent = prop->parent();
+    Container *parent = prop->parent();
 
     if(_currentTreeChange)
       {
       if(prop == _currentTreeChange->property())
         {
-        parent = (PropertyContainer*)_currentTreeChange->before();
+        parent = (Container*)_currentTreeChange->before();
         }
       }
 
@@ -293,7 +293,7 @@ int DatabaseModel::columnCount( const QModelIndex &parent ) const
     {
     int columns = 1;
 
-    const PropertyContainer *cont = prop->castTo<PropertyContainer>();
+    const Container *cont = prop->castTo<Container>();
     if(cont)
       {
       xForeach(auto child, cont->walker())
@@ -571,7 +571,7 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
       {
       changePersistentIndex(createIndex((int)tC->index(), 0, tC->property()), QModelIndex());
 
-      const PropertyContainer *parent = tC->before(back);
+      const Container *parent = tC->before(back);
       xAssert(parent);
 
       xsize i = tC->index();
@@ -581,7 +581,7 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
       }
     else
       {
-      const PropertyContainer *parent = tC->after(back);
+      const Container *parent = tC->after(back);
       xAssert(parent);
 
       int i = xMin((int)(parent->size()-1), (int)tC->index());
@@ -596,7 +596,7 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
   const Property::NameChange *nameChange = c->castTo<Property::NameChange>();
   if(nameChange)
     {
-    const Property *prop = nameChange->property();
+    const Attribute *prop = nameChange->attribute();
     QModelIndex ind = createIndex((int)prop->parent()->index(prop), 0, (Property*)prop);
     Q_EMIT dataChanged(ind, ind);
     }

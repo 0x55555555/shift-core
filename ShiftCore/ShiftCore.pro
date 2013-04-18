@@ -23,11 +23,9 @@ SOURCES += \
     src/sentity.cpp \
     src/sdatabase.cpp \
     src/Properties/sproperty.cpp \
-    src/Properties/spropertycontainer.cpp \
-    src/Properties/spropertyarray.cpp \
     src/Properties/sbaseproperties.cpp \
     src/Properties/sbasepointerproperties.cpp \
-    src/Properties/sarrayproperty.cpp \
+    src/Properties/sattribute.cpp \
     src/Properties/sexternalpointer.cpp \
     src/Changes/sobserver.cpp \
     src/Changes/shandler.cpp \
@@ -49,21 +47,19 @@ SOURCES += \
     src/Utilities/spropertyname.cpp \
     src/TypeInformation/spropertyinformationhelpers.cpp \
     src/UI/sdebugger.cpp \
-    src/Utilities/satomichelper.cpp
+    src/Utilities/satomichelper.cpp \
+    src/Changes/spropertychanges.cpp \
+    src/Properties/sarray.cpp \
+    src/Properties/scontainer.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
     include/shift/sentity.h \
     include/shift/sdatabase.h \
     include/shift/Properties/sproperty.h \
-    include/shift/Properties/spropertycontainer.h \
-    include/shift/Properties/spropertyarray.h \
     include/shift/Properties/sbaseproperties.h \
-    include/shift/Properties/sarrayproperty.h \
     include/shift/Properties/sbasepointerproperties.h \
-    include/shift/Properties/spropertycontaineriterators.h \
     include/shift/Properties/spropertymacros.h \
-    include/shift/Properties/sproperty.inl \
     include/shift/Properties/sexternalpointer.h \
     include/shift/Changes/schange.h \
     include/shift/Changes/sobserver.h \
@@ -92,7 +88,12 @@ HEADERS += \
     include/shift/UI/spropertydefaultui.h \
     include/shift/UI/sdatabasemodel.h \
     include/shift/UI/sdebugger.h \
-    include/shift/Utilities/satomichelper.h
+    include/shift/Utilities/satomichelper.h \
+    include/shift/Properties/sattribute.h \
+    include/shift/Properties/sattribute.inl \
+    include/shift/Properties/scontainer.h \
+    include/shift/Properties/scontaineriterators.h \
+    include/shift/Properties/sarray.h
 
 
 

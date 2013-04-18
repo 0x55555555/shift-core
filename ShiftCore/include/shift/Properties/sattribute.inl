@@ -8,30 +8,30 @@
 namespace Shift
 {
 
-inline bool Property::isDynamic() const
+inline bool Attribute::isDynamic() const
   {
   SProfileFunction
   return baseInstanceInformation()->isDynamic();
   }
 
-inline const PropertyInformation *Property::typeInformation() const
+inline const PropertyInformation *Attribute::typeInformation() const
   {
   return _instanceInfo->childInformation();
   }
 
-inline const Property::BaseInstanceInformation *Property::baseInstanceInformation() const
+inline const Attribute::BaseInstanceInformation *Attribute::baseInstanceInformation() const
   {
   xAssert(_instanceInfo);
   return _instanceInfo;
   }
 
-inline const Property::EmbeddedInstanceInformation *Property::embeddedBaseInstanceInformation() const
+inline const Attribute::EmbeddedInstanceInformation *Attribute::embeddedBaseInstanceInformation() const
   {
   xAssert(_instanceInfo);
   return _instanceInfo->embeddedInfo();
   }
 
-inline const Property::DynamicInstanceInformation *Property::dynamicBaseInstanceInformation() const
+inline const Attribute::DynamicInstanceInformation *Attribute::dynamicBaseInstanceInformation() const
   {
   xAssert(_instanceInfo);
   return _instanceInfo->dynamicInfo();

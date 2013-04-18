@@ -11,7 +11,7 @@ class TemporaryAllocatorCore;
 namespace Shift
 {
 
-class PropertyNameArg;
+class NameArg;
 class PropertyGroup;
 class PropertyInformation;
 class InterfaceBaseFactory;
@@ -43,7 +43,7 @@ public:
   static void addPropertyGroup(PropertyGroup &);
   static void addType(PropertyInformation *);
 
-  static const PropertyInformation *findType(const PropertyNameArg &);
+  static const PropertyInformation *findType(const NameArg &);
 
 
   static const InterfaceBaseFactory *interfaceFactory(

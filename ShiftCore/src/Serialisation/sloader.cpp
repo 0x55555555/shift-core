@@ -1,13 +1,13 @@
 #include "shift/Serialisation/sloader.h"
-#include "shift/Properties/spropertycontainer.h"
-#include "shift/Properties/spropertycontaineriterators.h"
+#include "shift/Properties/scontainer.h"
+#include "shift/Properties/scontaineriterators.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertytraits.h"
 
 namespace Shift
 {
 
-void Loader::loadChildren(PropertyContainer *parent)
+void Loader::loadChildren(Container *parent)
   {
   if(beginChildren())
     {
@@ -21,7 +21,7 @@ void Loader::loadChildren(PropertyContainer *parent)
     }
   }
 
-void Loader::read(PropertyContainer *read)
+void Loader::read(Container *read)
   {
   const PropertyInformation *info = type();
   xAssert(info);
@@ -39,11 +39,11 @@ void Loader::read(PropertyContainer *read)
     {
     // child has no stored value, because it was default at export, or something
     // so just load the property, with the Property method, and leave it as default.
-    detail::PropertyBaseTraits::loadProperty(read, *this);
+    detail::PropertyBaseTraits::load(read, *this);
     }
   }
 
-void Saver::saveChildren(const PropertyContainer *c)
+void Saver::saveChildren(const Container *c)
   {
   bool shouldSaveAnyChildren = false;
 
@@ -79,7 +79,7 @@ void Saver::saveChildren(const PropertyContainer *c)
     }
   }
 
-void Saver::write(const Property *prop)
+void Saver::write(const Attribute *prop)
   {
   const PropertyInformation *info = prop->typeInformation();
   xAssert(info);

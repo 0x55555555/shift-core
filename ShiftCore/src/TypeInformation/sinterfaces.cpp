@@ -12,7 +12,7 @@ const QString g_positionName("__position");
 const QString g_inputsPositionName("__inputsPosition");
 const QString g_outputsPositionName("__outputsPosition");
 
-Eks::Vector3D SBasicPositionInterface::positionGeneric(const Property * p, const PropertyNameArg &name) const
+Eks::Vector3D SBasicPositionInterface::positionGeneric(const Property * p, const NameArg &name) const
   {
   const Entity *ent = p->uncheckedCastTo<Entity>();
   const Vector3DProperty *prop = ent->findChild<Vector3DProperty>(name);
@@ -24,7 +24,7 @@ Eks::Vector3D SBasicPositionInterface::positionGeneric(const Property * p, const
   return Eks::Vector3D::Zero();
   }
 
-void SBasicPositionInterface::setPositionGeneric(Property * p, const Eks::Vector3D &val, const PropertyNameArg &name) const
+void SBasicPositionInterface::setPositionGeneric(Property * p, const Eks::Vector3D &val, const NameArg &name) const
   {
   class Initialiser : public PropertyInstanceInformationInitialiser
     {

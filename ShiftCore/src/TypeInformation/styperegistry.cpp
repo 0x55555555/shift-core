@@ -156,7 +156,7 @@ void TypeRegistry::internalAddType(PropertyInformation *t)
     }
   }
 
-const PropertyInformation *TypeRegistry::findType(const PropertyNameArg &in)
+const PropertyInformation *TypeRegistry::findType(const NameArg &in)
   {
   SProfileFunction
   xForeach(const PropertyInformation *info, _internalTypes->types)

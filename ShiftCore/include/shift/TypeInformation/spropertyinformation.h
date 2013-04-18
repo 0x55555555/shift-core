@@ -18,8 +18,7 @@ namespace Shift
 class Property;
 class Loader;
 class Saver;
-class PropertyContainer;
-class PropertyInformation;
+class ContainerPropertyInformation;
 class PropertyGroup;
 
 class PropertyInformationCreateData
@@ -39,15 +38,15 @@ public:
 
 struct PropertyInformationFunctions
   {
-  typedef Property *(*CreatePropertyFunction)(void *data);
-  typedef void (*CreatePropertyInPlaceFunction)(Property *data);
-  typedef void *(*DestroyPropertyFunction)(Property *data);
-  typedef void (*PostCreateFunction)(Property *data);
-  typedef void (*PostSetFunction)(PropertyContainer *cont, Property *data);
-  typedef void (*SaveFunction)( const Property *, Saver & );
-  typedef Property *(*LoadFunction)( PropertyContainer *, Loader & );
-  typedef void (*AssignFunction)( const Property *, Property * );
-  typedef bool (*SaveQueryFunction)( const Property * );
+  typedef Attribute *(*CreateFunction)(void *data);
+  typedef void (*CreateInPlaceFunction)(Attribute *data);
+  typedef void *(*DestroyFunction)(Attribute *data);
+  typedef void (*PostCreateFunction)(Attribute *data);
+  typedef void (*PostSetFunction)(Attribute *data);
+  typedef void (*SaveFunction)( const Attribute *, Saver & );
+  typedef Attribute *(*LoadFunction)( Container *, Loader & );
+  typedef void (*AssignFunction)( const Attribute *, Attribute * );
+  typedef bool (*SaveQueryFunction)( const Attribute * );
   typedef void (*CreateTypeInformationFunction)(PropertyInformation *, const PropertyInformationCreateData &);
   typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(void *data, const PropertyInstanceInformation *copy);
   typedef void *(*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
@@ -56,9 +55,9 @@ struct PropertyInformationFunctions
   CreateInstanceInformationFunction createDynamicInstanceInformation;
   DestroyInstanceInformationFunction destroyEmbeddedInstanceInformation;
   DestroyInstanceInformationFunction destroyDynamicInstanceInformation;
-  CreatePropertyFunction createProperty;
-  CreatePropertyInPlaceFunction createPropertyInPlace;
-  DestroyPropertyFunction destroyProperty;
+  CreateFunction create;
+  CreateInPlaceFunction createInPlace;
+  DestroyFunction destroy;
   SaveFunction save;
   LoadFunction load;
   SaveQueryFunction shouldSave;
@@ -85,7 +84,7 @@ XProperties:
 
   XProperty(xuint32, version, setVersion);
 
-  XByRefProperty(PropertyName, typeName, setTypeName);
+  XByRefProperty(Name, typeName, setTypeName);
 
   XProperty(const PropertyInformation *, parentTypeInformation, setParentTypeInformation);
 
@@ -128,7 +127,7 @@ public:
   template <typename T> const EmbeddedPropertyInstanceInformation *firstChild(xsize *i) const;
   template <typename T> const EmbeddedPropertyInstanceInformation *nextChild(xsize *i) const;
 
-  const EmbeddedPropertyInstanceInformation *childFromName(const PropertyNameArg &) const;
+  const EmbeddedPropertyInstanceInformation *childFromName(const NameArg& name) const;
 
   // find the sproperty information that will be allocated dynamically (ie has no static parent)
   // offset is the offset in bytes back from this base to the allocated base.
