@@ -107,7 +107,16 @@ void TestEntity::createTypeInformation(
     a->setAffects(affects, true);
     b->setCompute([](TestEntity *ent)
       {
-      (void)ent;
+      Shift::FloatProperty::ComputeLock(&ent->reciprocal.x) = 1.0f / ent->in.x();
+      QCOMPARE(ent->reciprocal.x.isDirty(), false);
+      Shift::FloatProperty::ComputeLock(&ent->reciprocal.y) = 1.0f / ent->in.y();
+      QCOMPARE(ent->reciprocal.y.isDirty(), false);
+      Shift::FloatProperty::ComputeLock(&ent->reciprocal.z) = 1.0f / ent->in.z();
+      QCOMPARE(ent->reciprocal.z.isDirty(), false);
+      
+      QCOMPARE(ent->reciprocal.x.isDirty(), false);
+      QCOMPARE(ent->reciprocal.y.isDirty(), false);
+      QCOMPARE(ent->reciprocal.z.isDirty(), false);
       });
     }
   }
@@ -115,6 +124,8 @@ void TestEntity::createTypeInformation(
 ShiftCoreTest::ShiftCoreTest()
   {
   Shift::TypeRegistry::initiate(core.defaultAllocator());
+
+  Shift::TypeRegistry::addPropertyGroup(Test::propertyGroup());
   }
 
 ShiftCoreTest::~ShiftCoreTest()
@@ -122,9 +133,18 @@ ShiftCoreTest::~ShiftCoreTest()
   Shift::TypeRegistry::terminate();
   }
 
+class TestDatabase : public Shift::Database
+  {
+public:
+  TestDatabase()
+    {
+    initiateInheritedDatabaseType(staticTypeInformation());
+    }
+  };
+
 void ShiftCoreTest::simpleDirtyCompute()
   {
-  Shift::Database db;
+  TestDatabase db;
 
   // create an entity, everything should be dirty
   TestEntity* a = db.addChild<TestEntity>();
@@ -135,7 +155,7 @@ void ShiftCoreTest::simpleDirtyCompute()
   a->in.preGet();
   QCOMPARE(a->in.countDirty(), 3);
 
-  // clean components, shoudl only affect themselves
+  // clean components, should only affect themselves
   a->in.x.preGet();
   QCOMPARE(a->in.countDirty(), 2);
   a->in.y.preGet();
@@ -146,6 +166,7 @@ void ShiftCoreTest::simpleDirtyCompute()
 
   // get reciprocal, should compute children
   a->reciprocal.preGet();
+  QCOMPARE(a->in.anyDirty(), false);
   QCOMPARE(a->reciprocal.anyDirty(), false);
 
 
@@ -153,22 +174,40 @@ void ShiftCoreTest::simpleDirtyCompute()
   TestEntity* b = db.addChild<TestEntity>();
   QCOMPARE(b->in.allDirty(), true);
   QCOMPARE(b->reciprocal.allDirty(), true);
+  
+  b->in.preGet();
+  b->reciprocal.preGet();
+  QCOMPARE(b->in.allDirty(), false);
+  QCOMPARE(b->reciprocal.allDirty(), false);
+
+  b->in.setInput(&a->reciprocal);
+  QCOMPARE(a->in.anyDirty(), false);
+  // after a connection, mainly due to efficient, the from and to are dirty, even thought only the to really requires it...
+  QCOMPARE(a->reciprocal.allDirty(), true); 
+  QCOMPARE(b->in.allDirty(), true);
 
   // get b->in, shouldnt change anything but itself
   b->in.preGet();
-  QCOMPARE(a->in.countDirty(), 3);
+  QCOMPARE(a->in.countDirty(), 0);
+  QCOMPARE(b->in.countDirty(), 0);
 
-  // clean components, should only affect themselves
+  a->in.x = 1;
+  QCOMPARE(a->in.countDirty(), 0);
+  QCOMPARE(b->in.countDirty(), 4);
+  a->in.y = 2;
+  QCOMPARE(a->in.countDirty(), 0);
+  QCOMPARE(b->in.countDirty(), 4);
+  a->in.z = 3;
+  QCOMPARE(a->in.countDirty(), 0);
+  QCOMPARE(b->in.countDirty(), 4);
+
+  // clean components, should siblings
   b->in.x.preGet();
-  QCOMPARE(a->in.countDirty(), 2);
+  QCOMPARE(a->in.countDirty(), 0);
   b->in.y.preGet();
-  QCOMPARE(a->in.countDirty(), 1);
+  QCOMPARE(a->in.countDirty(), 0);
   b->in.z.preGet();
   QCOMPARE(a->in.countDirty(), 0);
-
-  b->in.setInput(&a->reciprocal);
-  QCOMPARE(a->reciprocal.anyDirty(), false);
-  QCOMPARE(b->in.allDirty(), true);
 
   b->in.x.preGet();
   QCOMPARE(a->in.anyDirty(), false);

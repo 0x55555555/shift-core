@@ -72,7 +72,7 @@ void Property::setDependantsDirty()
 
   // if there is an input, a parent input or this is computed,
   // then when we are dirtied we need to dirty our children
-  if(input() || _flags.hasFlag(Property::ParentHasInput) || isComputed())
+  if(!isUpdating() && (input() || _flags.hasFlag(Property::ParentHasInput) || isComputed()))
     {
     Container *c = castTo<Container>();
     if(c)
@@ -109,7 +109,13 @@ void Property::setDependantsDirty()
       }
 
     while(parentProp &&
-          (parentProp->_flags.hasFlag(Property::ParentHasOutput) || parentProp->output()))
+           (parentProp->_flags.hasFlag(Property::ParentHasOutput) ||
+            parentProp->output() ||
+             (!parentProp->isDynamic() &&
+              parentProp->embeddedBaseInstanceInformation()->affectsSiblings()
+             )
+           )
+         )
       {
       parentProp->setDependantsDirty();
 
@@ -296,6 +302,11 @@ void Property::disconnectInternal(Property *prop) const
     p = p->nextOutput();
     }
 #endif
+  }
+
+void Property::postCompute()
+  {
+  _dirty = false;
   }
 
 void Property::postSet()

@@ -97,6 +97,7 @@ protected:
 
     bool apply()
       {
+      property()->postCompute();
       return true;
       }
 

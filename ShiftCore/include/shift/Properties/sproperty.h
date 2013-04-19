@@ -49,6 +49,7 @@ public:
   Eks::Vector<Property *> affects();
 
   void postSet();
+  void postCompute();
   void setDependantsDirty();
   void preGet() const
     {

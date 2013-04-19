@@ -410,12 +410,13 @@ void Container::internalSetup(Attribute *newProp)
   if(Property *prop = newProp->castTo<Property>())
     {
     bool parentComputed = isComputed() || _flags.hasFlag(ParentHasInput);
-    if(input() || _flags.hasFlag(ParentHasInput) || parentComputed)
+    if(input() || parentComputed)
       {
       prop->_flags.setFlag(ParentHasInput);
       }
-
-    if(output() || _flags.hasFlag(ParentHasOutput)) // || instanceInformation()->affectsSiblings())
+    
+    bool parentAffects = !isDynamic() && embeddedInstanceInformation()->affectsSiblings();
+    if(output() || parentAffects || _flags.hasFlag(ParentHasOutput))
       {
       prop->_flags.setFlag(ParentHasOutput);
       }
