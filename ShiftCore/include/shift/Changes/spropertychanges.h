@@ -9,7 +9,7 @@ namespace Shift
 
 class PropertyDataChange : public Change
   {
-  S_CHANGE(PropertyDataChange, Change, 53)
+  S_CHANGE(PropertyDataChange, Change, Change::BaseDataChange)
 public:
   PropertyDataChange(Property *p) : _property(p) { }
   Property *property() {return _property;}
@@ -20,7 +20,8 @@ private:
 
 class PropertyNameChange : public Change
   {
-  S_CHANGE(PropertyNameChange, Change, 50)
+  S_CHANGE(PropertyNameChange, Change, Change::NameChange)
+
 public:
   PropertyNameChange(const NameArg &b, const NameArg &a, Attribute *ent)
     : _attribute(ent)
@@ -57,7 +58,7 @@ private:
 
 class PropertyConnectionChange : public Change
   {
-  S_CHANGE(PropertyConnectionChange, Change, 51)
+  S_CHANGE(PropertyConnectionChange, Change, Change::ConnectionChange)
 public:
   enum Mode
     {

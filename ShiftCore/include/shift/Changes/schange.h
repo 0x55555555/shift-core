@@ -4,14 +4,16 @@
 #include "shift/sglobal.h"
 #include "XProperty"
 
+#define S_CHANGE_ID(CHANGE_TYPE) (Change::getChangeTypeId<CHANGE_TYPE::SubType>(CHANGE_TYPE::Type))
+
 // Casting macros
-#define S_CASTABLE( myName, superName, myID, rootName ) \
+#define S_CASTABLE( myName, superName, rootName ) \
     public: \
-    virtual const rootName *castToType( xuint32 id ) const { if( id == myID ){return this;}else{return superName::castToType( id );} } \
+      virtual const rootName *castToType( xuint32 id ) const { if( id == S_CHANGE_ID(myName) ){return this;}else{return superName::castToType( id );} } \
     private:
 
 // Casting macro for XObject to use (neater to have it here)
-#define S_CASTABLE_ROOT( myName, myID, getTID ) \
+#define S_CASTABLE_ROOT( myName, myID ) \
     public: \
     myName *castToType( xuint32 id ) { return (myName*)((const myName*)this)->castToType(id); } \
     virtual const myName *castToType( xuint32 id ) const { if( id == myID ){return this;}else{return 0;} } \
@@ -27,30 +29,53 @@
       } \
     template <typename T>inline T *castTo() \
       { \
-      return static_cast<T*>( castToType( getTID ) ); \
+      return static_cast<T*>( castToType( S_CHANGE_ID(T) ) ); \
       } \
     template <typename T>inline const T *castTo() const \
       { \
-      return static_cast<const T *>( castToType( getTID ) ); \
+      return static_cast<const T *>( castToType( S_CHANGE_ID(T) ) ); \
       } \
     private:
 
-#define S_CHANGE_ROOT(id) public: enum {Type = (id)}; virtual xuint32 type() const { return id; } S_CASTABLE_ROOT( Change, id, static_cast<T*>(0)->Type )
 
-#define S_CHANGE(cl, supCl, id) public: enum {Type = (id)}; virtual xuint32 type() const { return id; } S_CASTABLE( cl, supCl, id, Shift::Change )
+#define S_CHANGE_ROOT public: enum { Type = Change::BaseChange }; typedef void SubType; S_CASTABLE_ROOT( Change, Type )
+
+#define S_CHANGE(cl, supCl, baseType) public: enum {Type = baseType}; S_CASTABLE( cl, supCl, Shift::Change )
+
+#define S_CHANGE_TYPED(cl, supCl, baseType, type) public: enum {Type = baseType}; typedef type SubType;  S_CASTABLE( cl, supCl, Shift::Change )
 
 namespace Shift
 {
 
 class Change
   {
-  S_CHANGE_ROOT(1);
 public:
+  enum BaseChangeTypes
+  {
+    BaseChange,
+    NameChange,
+    ConnectionChange,
+    TreeChange,
+    BaseDataChange,
+    ComputeChange,
+    DataChange
+  };
+
+  S_CHANGE_ROOT
+
+public:
+  template <typename T> static xuint32 getChangeTypeId(xuint32 t)
+    {
+    xAssertFail();
+    return t;
+    }
+
   virtual ~Change() { }
   virtual bool apply() = 0;
   virtual bool unApply() = 0;
   virtual bool inform(bool backwards) = 0;
   };
+
 
 }
 
