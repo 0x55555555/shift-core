@@ -42,6 +42,25 @@ SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
 
 #endif
 
+namespace detail
+{
+template <typename T>void getDefault(T *)
+  {
+  }
+
+void getDefault(xuint8 *t);
+void getDefault(xint32 *t);
+void getDefault(xint64 *t);
+void getDefault(xuint32 *t);
+void getDefault(xuint64 *t);
+void getDefault(float *t);
+void getDefault(double *t);
+void getDefault(Eks::Vector2D *t);
+void getDefault(Eks::Vector3D *t);
+void getDefault(Eks::Vector4D *t);
+void getDefault(Eks::Quaternion *t);
+}
+
 template <typename T>
 class PODInterface
   {
@@ -86,7 +105,7 @@ protected:
 protected:
   class ComputeChange : public Property::DataChange
     {
-    S_CHANGE(ComputeChange, Property::DataChange, 155);
+    S_CHANGE_TYPED(ComputeChange, Property::DataChange, Change::ComputeBase, T);
 
   public:
     ComputeChange(PODPropertyBase<T, DERIVED> *prop)
@@ -172,23 +191,30 @@ protected:
   friend class ComputeLock;
   };
 
-template <typename T, typename DERIVED> class PODProperty : public PODPropertyBase<T, DERIVED>
+template <typename T> class PODProperty : public PODPropertyBase<T, PODProperty<T>>
   {
+  typedef PODProperty<T> PODPropertyType;
+  S_PROPERTY(PODPropertyType, Property, 0);
+
 public:
+  typedef Shift::detail::PODPropertyTraits<PODPropertyType> Traits;
+  friend class Traits;
+
   class EmbeddedInstanceInformation : public Property::EmbeddedInstanceInformation
     {
   XProperties:
     XByRefProperty(T, defaultValue, setDefault);
 
   public:
-    EmbeddedInstanceInformation(const T &d) : _defaultValue(d)
+    EmbeddedInstanceInformation()
       {
+      detail::getDefault(&_defaultValue);
       }
 
     virtual void initiateAttribute(Attribute *propertyToInitiate) const
       {
       Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-      propertyToInitiate->uncheckedCastTo<DERIVED>()->_value = defaultValue();
+      propertyToInitiate->uncheckedCastTo<PODPropertyType>()->_value = defaultValue();
       }
 
     virtual void setDefaultValueFromString(const Eks::String &val)
@@ -208,7 +234,7 @@ public:
   class Lock
     {
   public:
-    Lock(PODProperty<T, DERIVED> *ptr) : _ptr(ptr)
+    Lock(PODPropertyType *ptr) : _ptr(ptr)
       {
       xAssert(ptr);
       _oldData = _ptr->value();
@@ -226,7 +252,7 @@ public:
       }
 
   private:
-    PODProperty<T, DERIVED> *_ptr;
+    PODPropertyType *_ptr;
     T* _data;
     T _oldData;
     };
@@ -236,10 +262,10 @@ public:
 private:
   class ComputeChange : public Property::DataChange
     {
-    S_CHANGE(ComputeChange, Property::DataChange, DERIVED::TypeId);
+    S_CHANGE_TYPED(ComputeChange, Property::DataChange, Change::ComputeChange, T);
 
   public:
-    ComputeChange(PODProperty<T, DERIVED> *prop)
+    ComputeChange(PODPropertyType *prop)
       : Property::DataChange(prop)
       {
 #if X_ASSERTS_ENABLED
@@ -269,21 +295,21 @@ private:
 
   class Change : public ComputeChange
     {
-    S_CHANGE(Change, ComputeChange, DERIVED::TypeId + 1000);
+    S_CHANGE_TYPED(Change, ComputeChange, Change::DataChange, T);
 
   XProperties:
     XRORefProperty(T, before);
     XRORefProperty(T, after);
 
   public:
-    Change(const T &b, const T &a, PODProperty<T, DERIVED> *prop)
+    Change(const T &b, const T &a, PODPropertyType *prop)
       : ComputeChange(prop), _before(b), _after(a)
       { }
 
     bool apply()
       {
       Attribute *prop = ComputeChange::property();
-      DERIVED* d = prop->uncheckedCastTo<DERIVED>();
+      PODPropertyType* d = prop->uncheckedCastTo<PODPropertyType>();
       d->_value = after();
       ComputeChange::property()->postSet();
       return true;
@@ -292,7 +318,7 @@ private:
     bool unApply()
       {
       Attribute *prop = ComputeChange::property();
-      DERIVED* d = prop->uncheckedCastTo<DERIVED>();
+      PODPropertyType* d = prop->uncheckedCastTo<PODPropertyType>();
       d->_value = before();
       ComputeChange::property()->postSet();
       return true;
@@ -312,17 +338,8 @@ private:
   friend class Lock;
   };
 
-#define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, defaultDefault, typeID) \
-class EXPORT_MODE name : public Shift::PODProperty<type, name> { public: \
-  typedef Shift::detail::PODPropertyTraits<name> Traits; \
-  friend class Traits; \
-  class EmbeddedInstanceInformation : \
-  public Shift::PODProperty<type, name>::EmbeddedInstanceInformation \
-    { public: \
-    EmbeddedInstanceInformation() \
-    : Shift::PODProperty<type, name>::EmbeddedInstanceInformation(defaultDefault) { } }; \
-  enum { TypeId = typeID }; \
-  S_PROPERTY(name, Property, 0); \
+#define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, typeID) \
+class EXPORT_MODE name : public Shift::PODProperty<type> { public: \
   name &operator=(const type &in) { \
     assign(in); \
     return *this; } \
@@ -331,28 +348,25 @@ template <> class Shift::PODInterface <type> { public: typedef name Type; \
   static void assign(name* s, const type& val) { s->assign(val); } \
   static const type& value(const name* s) { return s->value(); } };
 
-#define IMPLEMENT_POD_PROPERTY(name, grp) \
-  S_IMPLEMENT_PROPERTY(name, grp) \
-  void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \
-      const Shift::PropertyInformationCreateData &) { } \
+#define IMPLEMENT_POD_PROPERTY(type, grp) S_IMPLEMENT_PROPERTY_EXPLICIT(PODProperty<type>, type ## Property, grp) S_DEFAULT_TYPE_INFORMATION(PODProperty<type>)
 
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 0, 100);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, IntProperty, xint32, 0, 101);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, LongIntProperty, xint64, 0, 102);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, UnsignedIntProperty, xuint32, 0, 103);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, LongUnsignedIntProperty, xuint64, 0, 104);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, FloatProperty, float, 0.0f, 105);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, DoubleProperty, double, 0.0, 106);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector2DProperty, Eks::Vector2D, Eks::Vector2D(0.0f, 0.0f), 107);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector3DProperty, Eks::Vector3D, Eks::Vector3D(0.0f, 0.0f, 0.0f), 108);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector4DProperty, Eks::Vector4D, Eks::Vector4D(0.0f, 0.0f, 0.0f, 0.0f), 109);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, QuaternionProperty, Eks::Quaternion, Eks::Quaternion::Identity(), 110);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringPropertyBase, Eks::String, "", 111);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, Eks::Colour, Eks::Colour(0.0f, 0.0f, 0.0f, 1.0f), 112);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, ByteArrayProperty, QByteArray, QByteArray(), 113);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, QUuid(), 115);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 100);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, IntProperty, xint32, 101);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, LongIntProperty, xint64, 102);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, UnsignedIntProperty, xuint32, 103);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, LongUnsignedIntProperty, xuint64, 104);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, FloatProperty, float, 105);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, DoubleProperty, double, 106);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector2DProperty, Eks::Vector2D, 107);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector3DProperty, Eks::Vector3D, 108);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector4DProperty, Eks::Vector4D, 109);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, QuaternionProperty, Eks::Quaternion, 110);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringPropertyBase, Eks::String, 111);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, Eks::Colour, 112);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, ByteArrayProperty, QByteArray, 113);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, 115);
 
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, SStringVector(), 114);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, 114);
 
 class SHIFT_EXPORT StringProperty : public StringPropertyBase
   {
@@ -427,10 +441,10 @@ Q_DECLARE_METATYPE(QUuid)
 namespace Shift
 {
 
-template <typename T, typename DERIVED>
-    void PODProperty<T, DERIVED>::assign(const T &in)
+template <typename T>
+    void PODProperty<T>::assign(const T &in)
   {
-  PropertyDoChange(Change, PODPropertyBase<T, DERIVED>::_value, in, this);
+  PropertyDoChange(Change, PODPropertyBase<T>::_value, in, this);
   }
 }
 

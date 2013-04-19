@@ -16,17 +16,27 @@ namespace Shift
 
 template <typename T> class PropertyInformationTyped;
 
-#define S_IMPLEMENT_PROPERTY(myName, grp) \
-  static Shift::PropertyGroup::Information _##myName##StaticTypeInformation = \
+#define S_IMPLEMENT_PROPERTY_BASE(myType, myIdentifier, grp)\
+  static Shift::PropertyGroup::Information _##myIdentifier##StaticTypeInformation = \
     grp :: propertyGroup().registerPropertyInformation( \
-    &_##myName##StaticTypeInformation, myName::bootstrapStaticTypeInformation); \
-  const Shift::PropertyInformation *myName::staticTypeInformation() { return _##myName##StaticTypeInformation.information; } \
-  const Shift::PropertyInformation *myName::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator) \
-  { Shift::detail::checkType<myName>(); Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
-  #myName, myName::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
+    &_##myIdentifier##StaticTypeInformation, myType::bootstrapStaticTypeInformation); \
+  const Shift::PropertyInformation *myType::staticTypeInformation() { return _##myIdentifier##StaticTypeInformation.information; }
 
-#define S_IMPLEMENT_ABSTRACT_PROPERTY(myName, grp) \
-  S_IMPLEMENT_PROPERTY(myName, grp)
+#define S_IMPLEMENT_PROPERTY_EXPLICIT(INTRO, myType, myIdentifier, grp) S_IMPLEMENT_PROPERTY_BASE(myType, myIdentifier, grp) \
+  INTRO const Shift::PropertyInformation *myType::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator) \
+  { Shift::detail::checkType<myType>(); Shift::PropertyInformationTyped<myType>::bootstrapTypeInformation(&_##myIdentifier##StaticTypeInformation.information, \
+  #myIdentifier, myType::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
+
+#define S_DEFAULT_INTRO
+#define S_IMPLEMENT_PROPERTY(myType, grp) S_IMPLEMENT_PROPERTY_EXPLICIT(S_DEFAULT_INTRO, myType, myType, grp)
+
+#define S_DEFAULT_TYPE_INFORMATION(name) \
+void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \
+    const Shift::PropertyInformationCreateData &) { } \
+
+#define S_IMPLEMENT_PROPERTY_BASIC(myName, grp) S_IMPLEMENT_PROPERTY(myName, grp) \
+
+#define S_IMPLEMENT_ABSTRACT_PROPERTY S_IMPLEMENT_PROPERTY
 
 namespace detail
 {

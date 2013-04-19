@@ -7,6 +7,55 @@
 namespace Shift
 {
 
+namespace detail
+{
+void getDefault(xuint8 *t)
+  {
+  *t = 0;
+  }
+
+void getDefault(xint32 *t)
+  {
+  *t = 0;
+  }
+void getDefault(xint64 *t)
+  {
+  *t = 0;
+  }
+void getDefault(xuint32 *t)
+  {
+  *t = 0;
+  }
+void getDefault(xuint64 *t)
+  {
+  *t = 0;
+  }
+void getDefault(float *t)
+  {
+  *t = 0.0f;
+  }
+void getDefault(double *t)
+  {
+  *t = 0.0;
+  }
+void getDefault(Eks::Vector2D *t)
+  {
+  *t = Eks::Vector2D::Zero();
+  }
+void getDefault(Eks::Vector3D *t)
+  {
+  *t = Eks::Vector3D::Zero();
+  }
+void getDefault(Eks::Vector4D *t)
+  {
+  *t = Eks::Vector4D::Zero();
+  }
+void getDefault(Eks::Quaternion *t)
+  {
+  *t = Eks::Quaternion::Identity();
+  }
+}
+
 QTextStream &operator<<(QTextStream &s, xuint8 v)
   {
   return s << (xuint32)v;
@@ -126,10 +175,25 @@ QTextStream &operator<<(QTextStream &s, const SStringVector &v)
   return s;
   }
 
-#define IMPLEMENT_POD_SHIFT_PROPERTY(name) IMPLEMENT_POD_PROPERTY(name, Shift)
+#define IMPLEMENT_POD_SHIFT_PROPERTY(name) IMPLEMENT_POD_PROPERTY(PODProperty<name>, Shift)
 
-IMPLEMENT_POD_SHIFT_PROPERTY(BoolProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(IntProperty);
+//IMPLEMENT_POD_SHIFT_PROPERTY(bool);
+
+//S_IMPLEMENT_PROPERTY_EXPLICIT(template <typename T>, PODProperty<T>, "POD", Shift)
+S_IMPLEMENT_PROPERTY_BASE(PODProperty<bool>, POD, Shift)
+
+template <typename T> const Shift::PropertyInformation *PODProperty<T>::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator)
+  {
+  Shift::detail::checkType<PODProperty<T>>();
+
+  Shift::PropertyInformationTyped<PODProperty<T>>::bootstrapTypeInformation(
+        &_PODStaticTypeInformation.information,
+                                                   "POD",
+        PODProperty<T>::ParentType::bootstrapStaticTypeInformation(allocator), allocator);
+  return staticTypeInformation();
+  }
+
+/*IMPLEMENT_POD_SHIFT_PROPERTY(IntProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(LongIntProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(UnsignedIntProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(LongUnsignedIntProperty);
@@ -144,7 +208,7 @@ IMPLEMENT_POD_SHIFT_PROPERTY(ColourProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(ByteArrayProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(UuidPropertyBase);
 
-IMPLEMENT_POD_SHIFT_PROPERTY(StringArrayProperty);
+IMPLEMENT_POD_SHIFT_PROPERTY(StringArrayProperty);*/
 
 S_IMPLEMENT_PROPERTY(UuidProperty, Shift)
 
