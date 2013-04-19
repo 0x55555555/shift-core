@@ -64,7 +64,6 @@ public:
     }
   };
 
-S_PROPERTY_INTERFACE(TestVector)
 S_IMPLEMENT_PROPERTY(TestVector, Test)
 
 void TestVector::createTypeInformation(
@@ -90,7 +89,6 @@ public:
   TestVector reciprocal;
   };
 
-S_PROPERTY_INTERFACE(TestEntity)
 S_IMPLEMENT_PROPERTY(TestEntity, Test)
 
 void TestEntity::createTypeInformation(
@@ -126,7 +124,6 @@ ShiftCoreTest::~ShiftCoreTest()
 
 void ShiftCoreTest::simpleDirtyCompute()
   {
-  Eks::detail::Assert::currentBreakFunction()();
   Shift::Database db;
 
   // create an entity, everything should be dirty

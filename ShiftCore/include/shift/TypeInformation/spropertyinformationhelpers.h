@@ -22,7 +22,7 @@ template <typename T> class PropertyInformationTyped;
     &_##myName##StaticTypeInformation, myName::bootstrapStaticTypeInformation); \
   const Shift::PropertyInformation *myName::staticTypeInformation() { return _##myName##StaticTypeInformation.information; } \
   const Shift::PropertyInformation *myName::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator) \
-  { Shift::detail::ApiHelper<myName>::checkType(); Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
+  { Shift::detail::checkType<myName>(); Shift::PropertyInformationTyped<myName>::bootstrapTypeInformation(&_##myName##StaticTypeInformation.information, \
   #myName, myName::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
 
 #define S_IMPLEMENT_ABSTRACT_PROPERTY(myName, grp) \
@@ -30,7 +30,18 @@ template <typename T> class PropertyInformationTyped;
 
 namespace detail
 {
-template <typename PropType> struct ApiHelper
+template <typename PropType> static void checkType()
+  {
+  typedef std::is_base_of<PropType::ParentType, PropType> Inherits;
+  xCompileTimeAssert(Inherits::value == true);
+  }
+
+template <typename PropType, bool HasMetaType=QMetaTypeId2<PropType*>::Defined != 0> struct ApiHelper
+  {
+
+  };
+
+template <typename PropType> struct ApiHelper<PropType, true>
   {
 public:
   static void create(PropertyInformation *info)
@@ -43,15 +54,18 @@ public:
     XScript::Interface<PropType> *templ = XScript::Interface<PropType>::createWithParent(info->typeName(), parentTempl, baseTempl);
     info->setApiInterface(templ);
     }
+  };
 
-  static void checkType()
+template <typename PropType> struct ApiHelper<PropType, false>
+  {
+public:
+  static void create(PropertyInformation *info)
     {
-    typedef std::is_base_of<PropType::ParentType, PropType> Inherits;
-    xCompileTimeAssert(Inherits::value == true);
+    info->setApiInterface(PropType::ParentType::staticTypeInformation()->apiInterface());
     }
   };
 
-template <> struct ApiHelper<Attribute>
+template <> struct ApiHelper<Attribute, true>
   {
 public:
   static void create(PropertyInformation *info)

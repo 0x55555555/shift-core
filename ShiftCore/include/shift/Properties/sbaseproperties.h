@@ -433,25 +433,5 @@ template <typename T, typename DERIVED>
   }
 }
 
-S_PROPERTY_INTERFACE(Shift::BoolProperty)
-S_PROPERTY_INTERFACE(Shift::IntProperty)
-S_PROPERTY_INTERFACE(Shift::LongIntProperty)
-S_PROPERTY_INTERFACE(Shift::UnsignedIntProperty)
-S_PROPERTY_INTERFACE(Shift::LongUnsignedIntProperty)
-S_PROPERTY_INTERFACE(Shift::FloatProperty)
-S_PROPERTY_INTERFACE(Shift::DoubleProperty)
-S_PROPERTY_INTERFACE(Shift::Vector2DProperty)
-S_PROPERTY_INTERFACE(Shift::Vector3DProperty)
-S_PROPERTY_INTERFACE(Shift::Vector4DProperty)
-S_PROPERTY_INTERFACE(Shift::QuaternionProperty)
-S_PROPERTY_INTERFACE(Shift::StringPropertyBase)
-S_PROPERTY_INTERFACE(Shift::ColourProperty)
-S_PROPERTY_INTERFACE(Shift::ByteArrayProperty)
-S_PROPERTY_INTERFACE(Shift::StringArrayProperty)
-S_PROPERTY_INTERFACE(Shift::StringProperty)
-S_PROPERTY_INTERFACE(Shift::FilenameProperty)
-S_PROPERTY_INTERFACE(Shift::UuidPropertyBase)
-S_PROPERTY_INTERFACE(Shift::UuidProperty)
-
 
 #endif // SBASEPROPERTIES_H

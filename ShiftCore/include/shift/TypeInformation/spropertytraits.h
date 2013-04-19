@@ -197,7 +197,7 @@ public:
 
   enum
     {
-    assignProperty = 0
+    assign = 0
     };
   };
 
