@@ -132,13 +132,15 @@ Property::Property()
 void Property::setInput(const Property *inp)
   {
   SProfileFunction
+
+  if(input())
+    {
+    PropertyDoChange(ConnectionChange, ConnectionChange::Disconnect, (Property*)input(), this);
+    }
+
   if(inp)
     {
     PropertyDoChange(ConnectionChange, ConnectionChange::Connect, (Property*)inp, this);
-    }
-  else if(input())
-    {
-    PropertyDoChange(ConnectionChange, ConnectionChange::Disconnect, (Property*)input(), this);
     }
   }
 

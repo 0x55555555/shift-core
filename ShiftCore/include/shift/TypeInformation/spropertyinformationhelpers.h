@@ -209,13 +209,16 @@ public:
       void addArray(
           U (AncestorPropType::* ptr)[SIZE],
           const NameArg &name,
-          PropertyInstanceInformationTyped<PropType, U> **inst)
+          PropertyInstanceInformationTyped<PropType, U> **inst=0)
     {
+    PropertyInstanceInformationTyped<PropType, U> *instArray[SIZE];
+    inst = inst ? inst : instArray;
+
     Name str;
     name.toName(str);
     const xsize nameLength = str.length();
 
-   AncestorPropType *prop = (AncestorPropType *)0x0;
+    AncestorPropType *prop = (AncestorPropType *)0x0;
 
     for(xsize i = 0; i < SIZE; ++i)
       {
