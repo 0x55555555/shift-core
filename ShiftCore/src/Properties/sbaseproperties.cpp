@@ -210,31 +210,31 @@ IMPLEMENT_POD_SHIFT_PROPERTY(UuidPropertyBase);
 
 IMPLEMENT_POD_SHIFT_PROPERTY(StringArrayProperty);*/
 
-S_IMPLEMENT_PROPERTY(UuidProperty, Shift)
+S_IMPLEMENT_PROPERTY(Data<QUuid>, Shift)
 
-void UuidProperty::createTypeInformation(PropertyInformationTyped<UuidProperty> *,
+void UuidProperty::createTypeInformation(PropertyInformationTyped<Data<QUuid>> *,
                                            const PropertyInformationCreateData &)
   {
   }
 
-S_IMPLEMENT_PROPERTY(StringProperty, Shift)
+S_IMPLEMENT_PROPERTY(Data<Eks::String>, Shift)
 
-void StringProperty::createTypeInformation(PropertyInformationTyped<StringProperty> *,
+void StringProperty::createTypeInformation(PropertyInformationTyped<Data<Eks::String>> *,
                                            const PropertyInformationCreateData &)
   {
   }
 
-S_IMPLEMENT_PROPERTY(FilenameProperty, Shift)
+S_IMPLEMENT_PROPERTY(Filename, Shift)
 
-void FilenameProperty::createTypeInformation(PropertyInformationTyped<FilenameProperty> *,
+void FilenameProperty::createTypeInformation(PropertyInformationTyped<Filename> *,
                                              const PropertyInformationCreateData &)
   {
   }
 
-void BoolProperty::assignBetween(const Attribute *f, Attribute *t)
+namespace detail
+{
+void assignTo(const Attribute *f, BoolProperty *t)
   {
-  BoolProperty *to = t->uncheckedCastTo<BoolProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -285,10 +285,8 @@ void BoolProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void IntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, IntProperty *t)
   {
-  IntProperty *to = t->uncheckedCastTo<IntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -339,10 +337,8 @@ void IntProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void LongIntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, LongIntProperty *t)
   {
-  LongIntProperty *to = t->uncheckedCastTo<LongIntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -393,10 +389,8 @@ void LongIntProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void UnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, UnsignedIntProperty *t)
   {
-  UnsignedIntProperty *to = t->uncheckedCastTo<UnsignedIntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -447,10 +441,8 @@ void UnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void LongUnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignBetween(const Attribute *f, LongUnsignedIntProperty *t)
   {
-  LongUnsignedIntProperty *to = t->uncheckedCastTo<LongUnsignedIntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {

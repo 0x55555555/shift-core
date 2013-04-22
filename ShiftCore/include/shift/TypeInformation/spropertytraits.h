@@ -239,7 +239,7 @@ public:
 
   static void assign(const Shift::Attribute *p, Shift::Attribute *l)
     {
-    T::assignBetween(p, l);
+    Shift::detail::assignTo(p, l->uncheckedCastTo<T>());
     }
   };
 

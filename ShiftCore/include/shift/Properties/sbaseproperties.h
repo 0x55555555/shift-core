@@ -59,6 +59,11 @@ void getDefault(Eks::Vector2D *t);
 void getDefault(Eks::Vector3D *t);
 void getDefault(Eks::Vector4D *t);
 void getDefault(Eks::Quaternion *t);
+
+void assignTo(const Shift::Attribute, Shift::Attribute*)
+  {
+  xAssertFail();
+  }
 }
 
 template <typename T>
@@ -97,7 +102,7 @@ public:
 #endif
   };
 
-template <typename T, typename DERIVED> class PODPropertyBase : public Property
+template <typename T> class PODPropertyBase : public Property
   {
 protected:
   XPropertyMember(T, value);
@@ -108,7 +113,7 @@ protected:
     S_CHANGE_TYPED(ComputeChange, Property::DataChange, Change::ComputeBase, T);
 
   public:
-    ComputeChange(PODPropertyBase<T, DERIVED> *prop)
+    ComputeChange(PODPropertyBase<T> *prop)
       : Property::DataChange(prop)
       {
       xAssert(!prop->database()->stateStorageEnabled());
@@ -142,9 +147,9 @@ public:
   class ComputeLock
     {
   public:
-    typedef typename PODPropertyBase<T, DERIVED>::ComputeChange Change;
+    typedef typename PODPropertyBase<T>::ComputeChange Change;
 
-    ComputeLock(PODPropertyBase<T, DERIVED> *ptr) : _ptr(ptr)
+    ComputeLock(PODPropertyBase<T> *ptr) : _ptr(ptr)
       {
       xAssert(ptr);
       _data = &_ptr->_value;
@@ -171,7 +176,7 @@ public:
       }
 
   private:
-    PODPropertyBase<T, DERIVED> *_ptr;
+    PODPropertyBase<T> *_ptr;
     T* _data;
     };
 
@@ -191,7 +196,7 @@ protected:
   friend class ComputeLock;
   };
 
-template <typename T> class PODProperty : public PODPropertyBase<T, PODProperty<T>>
+template <typename T> class PODProperty : public PODPropertyBase<T>
   {
   typedef PODProperty<T> PODPropertyType;
   S_PROPERTY(PODPropertyType, Property, 0);
@@ -338,16 +343,18 @@ private:
   friend class Lock;
   };
 
-#define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, typeID) \
-class EXPORT_MODE name : public Shift::PODProperty<type> { public: \
-  name &operator=(const type &in) { \
-    assign(in); \
-    return *this; } \
-  static void assignBetween(const Shift::Attribute *p, Shift::Attribute *l ); }; \
+
+template <typename T> class Data : public PODProperty<T>
+  {
+  };
+
+#define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, typeID) typedef Data<type> name;
+
+/*
 template <> class Shift::PODInterface <type> { public: typedef name Type; \
   static void assign(name* s, const type& val) { s->assign(val); } \
   static const type& value(const name* s) { return s->value(); } };
-
+*/
 #define IMPLEMENT_POD_PROPERTY(type, grp) S_IMPLEMENT_PROPERTY_EXPLICIT(PODProperty<type>, type ## Property, grp) S_DEFAULT_TYPE_INFORMATION(PODProperty<type>)
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 100);
@@ -368,10 +375,13 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, 115);
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, 114);
 
-class SHIFT_EXPORT StringProperty : public StringPropertyBase
+
+
+template<> class Data<Eks::String> : public PODProperty<Eks::String>
   {
+
 public:
-  class EmbeddedInstanceInformation : public StringPropertyBase::EmbeddedInstanceInformation
+  class EmbeddedInstanceInformation : public PODProperty<Eks::String>::EmbeddedInstanceInformation
     {
   public:
     void setDefaultValue(const Eks::String &val)
@@ -380,31 +390,33 @@ public:
       }
     };
 
-  S_PROPERTY(StringProperty, StringPropertyBase, 0);
-  StringProperty &operator=(const Eks::String &in)
+  S_PROPERTY(Data, PODProperty<Eks::String>, 0);
+
+public:
+  Data<Eks::String> &operator=(const Eks::String &in)
     {
     assign(in);
     return *this;
     }
   };
 
-class SHIFT_EXPORT UuidProperty : public UuidPropertyBase
+template<> class Data<QUuid> : public PODProperty<QUuid>
   {
 public:
-  class EmbeddedInstanceInformation : public UuidPropertyBase::EmbeddedInstanceInformation
+  class EmbeddedInstanceInformation : public PODProperty<QUuid>::EmbeddedInstanceInformation
     {
   public:
     virtual void initiateAttribute(Property *propertyToInitiate) const
       {
       Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-      propertyToInitiate->uncheckedCastTo<UuidProperty>()->_value = QUuid::createUuid();
+      propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();
       }
     };
 
-  S_PROPERTY(UuidProperty, UuidPropertyBase, 0);
+  S_PROPERTY(Data, PODProperty<QUuid>, 0);
   };
 
-template <typename T> class FlagsProperty : public IntProperty
+template <typename T> class Flags : public IntProperty
   {
 public:
   void setFlag(T t, bool onOff)
@@ -415,18 +427,18 @@ public:
     }
   };
 
-class SHIFT_EXPORT FilenameProperty : public StringProperty
+class SHIFT_EXPORT Filename : public Data<Eks::String>
   {
-  S_PROPERTY(FilenameProperty, StringProperty, 0);
+  S_PROPERTY(Filename, Data<Eks::String>, 0);
 
 public:
   };
 
 // specific pod interface for bool because it is actually a uint8.
-template <> class PODInterface <bool> { public: typedef BoolProperty Type; \
+/*template <> class PODInterface <bool> { public: typedef BoolProperty Type; \
   static void assign(BoolProperty* s, const bool &val) { s->assign(val); } \
   static const xuint8 &value(const BoolProperty* s) { return s->value(); } };
-
+*/
 }
 
 #if X_QT_INTEROP
