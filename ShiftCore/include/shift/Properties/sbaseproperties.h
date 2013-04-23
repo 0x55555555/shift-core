@@ -42,35 +42,10 @@ SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
 
 #endif
 
-namespace detail
-{
-template <typename T>void getDefault(T *)
-  {
-  }
-
-void getDefault(xuint8 *t);
-void getDefault(xint32 *t);
-void getDefault(xint64 *t);
-void getDefault(xuint32 *t);
-void getDefault(xuint64 *t);
-void getDefault(float *t);
-void getDefault(double *t);
-void getDefault(Eks::Vector2D *t);
-void getDefault(Eks::Vector3D *t);
-void getDefault(Eks::Vector4D *t);
-void getDefault(Eks::Quaternion *t);
-}
-
 template <typename T>
 class PODInterface
   {
   };
-
-namespace detail
-{
-template <typename T> class BasePODPropertyTraits;
-template <typename T> class PODPropertyTraits;
-}
 
 template <typename PROP, typename POD> class PODPropertyVariantInterface : public PropertyVariantInterface
   {
@@ -97,82 +72,233 @@ public:
 #endif
   };
 
-template <typename T, typename DERIVED> class PODPropertyBase : public Property
+namespace detail
+{
+template <typename T>void getDefault(T *)
   {
-protected:
-  XPropertyMember(T, value);
+  }
 
-protected:
-  class ComputeChange : public Property::DataChange
+void getDefault(xuint8 *t);
+void getDefault(xint32 *t);
+void getDefault(xint64 *t);
+void getDefault(xuint32 *t);
+void getDefault(xuint64 *t);
+void getDefault(float *t);
+void getDefault(double *t);
+void getDefault(Eks::Vector2D *t);
+void getDefault(Eks::Vector3D *t);
+void getDefault(Eks::Vector4D *t);
+void getDefault(Eks::Quaternion *t);
+
+template <typename T> class BasePODPropertyTraits;
+template <typename T> class PODPropertyTraits;
+
+template <typename T> class PODComputeChange : public Property::DataChange
+  {
+  S_CHANGE_TYPED(PODComputeChange, Property::DataChange, Change::ComputeChange, T);
+
+public:
+  PODComputeChange(T *prop)
+    : Property::DataChange(prop)
     {
-    S_CHANGE_TYPED(ComputeChange, Property::DataChange, Change::ComputeBase, T);
+    xAssert(!prop->database()->stateStorageEnabled());
+    }
 
-  public:
-    ComputeChange(PODPropertyBase<T, DERIVED> *prop)
-      : Property::DataChange(prop)
-      {
-      xAssert(!prop->database()->stateStorageEnabled());
-      }
+  bool apply()
+    {
+    return true;
+    }
 
-    bool apply()
+private:
+  bool unApply()
+    {
+    xAssertFail();
+    return true;
+    }
+  bool inform(bool)
+    {
+    if(property()->entity())
       {
-      return true;
+      property()->entity()->informDirtyObservers(property());
       }
+    return true;
+    }
+  };
 
-  private:
-    bool unApply()
+template <typename T> class PODComputeLock
+  {
+public:
+  typedef typename T::ComputeChange Change;
+
+  PODComputeLock(T *ptr) : _ptr(ptr)
+    {
+    xAssert(ptr);
+    _data = &_ptr->_value;
+    }
+
+  ~PODComputeLock()
+    {
+    PropertyDoChangeNonLocal(Change, _ptr, _ptr);
+    }
+
+  T* data()
+    {
+    return _data;
+    }
+
+  T *operator->()
+    {
+    return _data;
+    }
+
+  PODComputeLock &operator=(const T &x)
+    {
+    *_data = x;
+    return *this;
+    }
+
+private:
+  T *_ptr;
+  typename T::PODType *_data;
+  };
+
+template <typename T> class PODEmbeddedInstanceInformation
+    : public Property::EmbeddedInstanceInformation
+  {
+XProperties:
+  typedef typename T::PODType PODType;
+  XByRefProperty(PODType, defaultValue, setDefault);
+
+public:
+  PODEmbeddedInstanceInformation()
+    {
+    detail::getDefault(&_defaultValue);
+    }
+
+  virtual void initiateAttribute(Attribute *propertyToInitiate) const
+    {
+    Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
+    propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
+    }
+
+  virtual void setDefaultValueFromString(const Eks::String &val)
+    {
+    Eks::String::Buffer s(&val);
+    Eks::String::IStream stream(&s);
+    xAssertFail();
+    }
+
+  void setDefaultValue(const T &val)
+    {
+    _defaultValue = val;
+    }
+  };
+
+template <typename T> class PODLock
+  {
+public:
+  PODLock(T *ptr) : _ptr(ptr)
+    {
+    xAssert(ptr);
+    _oldData = _ptr->value();
+    _data = &_ptr->_value;
+    }
+  ~PODLock()
+    {
+    PropertyDoChange(Change, _oldData, *_data, _ptr);
+    _data = 0;
+    }
+
+  T* data()
+    {
+    return _data;
+    }
+
+private:
+  T *_ptr;
+  typename T::PODType* _data;
+  typename T::PODType _oldData;
+  };
+
+
+template <typename T> class PODChange : public PODComputeChange<T>
+  {
+  S_CHANGE_TYPED(PODChange, PODComputeChange, Change::DataChange, T);
+
+XProperties:
+  typedef typename T::PODType PODType;
+  XRORefProperty(PODType, before);
+  XRORefProperty(PODType, after);
+
+public:
+  PODChange(const PODType &b, const PODType &a, T *prop)
+    : PODComputeChange(prop), _before(b), _after(a)
+    { }
+
+  bool apply()
+    {
+    Attribute *prop = ComputeChange::property();
+    T* d = prop->uncheckedCastTo<T>();
+    d->_value = after();
+    PODComputeChange::property()->postSet();
+    return true;
+    }
+
+  bool unApply()
+    {
+    Attribute *prop = ComputeChange::property();
+    T* d = prop->uncheckedCastTo<T>();
+    d->_value = before();
+    PODComputeChange::property()->postSet();
+    return true;
+    }
+
+  bool inform(bool)
+    {
+    Entity *ent = PODComputeChange::property()->entity();
+    if(ent)
       {
-      xAssertFail();
-      return true;
+      ent->informDirtyObservers(PODComputeChange::property());
       }
-    bool inform(bool)
-      {
-      if(property()->entity())
-        {
-        property()->entity()->informDirtyObservers(property());
-        }
-      return true;
-      }
-    };
+    return true;
+    }
+  };
+
+}
+
+enum DataMode
+  {
+  AttributeData,
+  ComputedData,
+  FullData,
+
+  DataModeCount
+  };
+
+template <typename T, DataMode Mode=FullData> class Data
+    : public Eks::IfElse<Mode >= AttributeData, Property, Attribute>
+  {
+  typedef typename Eks::IfElse<Mode >= AttributeData, Property, Attribute>::Type ParentType;
+
+public:
+  typedef Data<T, Mode> PODPropertyType;
+
+  typedef detail::PODPropertyTraits<PODPropertyType> Traits;
+  typedef detail::PODEmbeddedInstanceInformation<PODPropertyType> EmbeddedInstanceInformation;
+
+  inline const DynamicInstanceInformation *dynamicInstanceInformation() const
+    { return static_cast<const DynamicInstanceInformation *>(dynamicBaseInstanceInformation()); }
+
+  //S_PROPERTY(PODPropertyType, ParentType, 0);
 
 public:
   typedef T PODType;
 
-  class ComputeLock
-    {
-  public:
-    typedef typename PODPropertyBase<T, DERIVED>::ComputeChange Change;
+  typedef detail::PODChange<PODPropertyType> Change;
+  typedef detail::PODComputeChange<PODPropertyType> ComputeChange;
 
-    ComputeLock(PODPropertyBase<T, DERIVED> *ptr) : _ptr(ptr)
-      {
-      xAssert(ptr);
-      _data = &_ptr->_value;
-      }
-    ~ComputeLock()
-      {
-      PropertyDoChangeNonLocal(Change, _ptr, _ptr);
-      }
 
-    T* data()
-      {
-      return _data;
-      }
-
-    T *operator->()
-      {
-      return _data;
-      }
-
-    ComputeLock &operator=(const T &x)
-      {
-      *_data = x;
-      return *this;
-      }
-
-  private:
-    PODPropertyBase<T, DERIVED> *_ptr;
-    T* _data;
-    };
+  void assign(const T &in);
 
   const T &operator()() const
     {
@@ -187,158 +313,19 @@ public:
     }
 
 protected:
+  XPropertyMember(T, value);
+
+  typedef detail::PODLock<PODPropertyType> Lock;
+  typedef detail::PODComputeLock<T> ComputeLock;
+
   friend class ComputeLock;
-  };
-
-template <typename T> class PODProperty : public PODPropertyBase<T, PODProperty<T>>
-  {
-  typedef PODProperty<T> PODPropertyType;
-  S_PROPERTY(PODPropertyType, Property, 0);
-
-public:
-  typedef Shift::detail::PODPropertyTraits<PODPropertyType> Traits;
   friend class Traits;
-
-  class EmbeddedInstanceInformation : public Property::EmbeddedInstanceInformation
-    {
-  XProperties:
-    XByRefProperty(T, defaultValue, setDefault);
-
-  public:
-    EmbeddedInstanceInformation()
-      {
-      detail::getDefault(&_defaultValue);
-      }
-
-    virtual void initiateAttribute(Attribute *propertyToInitiate) const
-      {
-      Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-      propertyToInitiate->uncheckedCastTo<PODPropertyType>()->_value = defaultValue();
-      }
-
-    virtual void setDefaultValueFromString(const Eks::String &val)
-      {
-      Eks::String::Buffer s(&val);
-      Eks::String::IStream stream(&s);
-      xAssertFail();
-      //stream >> _defaultValue;
-      }
-
-    void setDefaultValue(const T &val)
-      {
-      _defaultValue = val;
-      }
-    };
-
-  class Lock
-    {
-  public:
-    Lock(PODPropertyType *ptr) : _ptr(ptr)
-      {
-      xAssert(ptr);
-      _oldData = _ptr->value();
-      _data = &_ptr->_value;
-      }
-    ~Lock()
-      {
-      PropertyDoChange(Change, _oldData, *_data, _ptr);
-      _data = 0;
-      }
-
-    T* data()
-      {
-      return _data;
-      }
-
-  private:
-    PODPropertyType *_ptr;
-    T* _data;
-    T _oldData;
-    };
-
-  void assign(const T &in);
-
-private:
-  class ComputeChange : public Property::DataChange
-    {
-    S_CHANGE_TYPED(ComputeChange, Property::DataChange, Change::ComputeChange, T);
-
-  public:
-    ComputeChange(PODPropertyType *prop)
-      : Property::DataChange(prop)
-      {
-#if X_ASSERTS_ENABLED
-      xAssert(!prop->database()->stateStorageEnabled());
-#endif
-      }
-
-  private:
-    bool apply()
-      {
-      return true;
-      }
-    bool unApply()
-      {
-      xAssertFail();
-      return true;
-      }
-    bool inform(bool)
-      {
-      if(property()->entity())
-        {
-        property()->entity()->informDirtyObservers(property());
-        }
-      return true;
-      }
-    };
-
-  class Change : public ComputeChange
-    {
-    S_CHANGE_TYPED(Change, ComputeChange, Change::DataChange, T);
-
-  XProperties:
-    XRORefProperty(T, before);
-    XRORefProperty(T, after);
-
-  public:
-    Change(const T &b, const T &a, PODPropertyType *prop)
-      : ComputeChange(prop), _before(b), _after(a)
-      { }
-
-    bool apply()
-      {
-      Attribute *prop = ComputeChange::property();
-      PODPropertyType* d = prop->uncheckedCastTo<PODPropertyType>();
-      d->_value = after();
-      ComputeChange::property()->postSet();
-      return true;
-      }
-
-    bool unApply()
-      {
-      Attribute *prop = ComputeChange::property();
-      PODPropertyType* d = prop->uncheckedCastTo<PODPropertyType>();
-      d->_value = before();
-      ComputeChange::property()->postSet();
-      return true;
-      }
-
-    bool inform(bool)
-      {
-      Entity *ent = ComputeChange::property()->entity();
-      if(ent)
-        {
-        ent->informDirtyObservers(ComputeChange::property());
-        }
-      return true;
-      }
-    };
-
   friend class Lock;
+  friend class EmbeddedInstanceInformation;
   };
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, typeID) \
-class EXPORT_MODE name : public Shift::PODProperty<type> { public: \
+class EXPORT_MODE name : public Shift::Data<type> { public: \
   name &operator=(const type &in) { \
     assign(in); \
     return *this; } \
@@ -440,10 +427,10 @@ Q_DECLARE_METATYPE(QUuid)
 namespace Shift
 {
 
-template <typename T>
-    void PODProperty<T>::assign(const T &in)
+template <typename T, DataMode Mode>
+    void Data<T, Mode>::assign(const T &in)
   {
-  PropertyDoChange(Change, PODPropertyBase<T>::_value, in, this);
+  PropertyDoChange(Change, Data<T, Mode>::_value, in, this);
   }
 }
 
