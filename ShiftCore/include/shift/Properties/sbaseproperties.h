@@ -8,7 +8,11 @@
 #include "shift/Changes/schange.h"
 #include "shift/Changes/sobserver.h"
 #include "shift/Changes/shandler.h"
+
+#include "XTemporaryAllocator"
 #include "shift/Changes/spropertychanges.h"
+#include "shift/TypeInformation/spropertytraits.h"
+#include "shift/TypeInformation/spropertygroup.h"
 
 #if X_ASSERTS_ENABLED
 # include "shift/sdatabase.h"
@@ -90,13 +94,87 @@ void getDefault(Eks::Vector3D *t);
 void getDefault(Eks::Vector4D *t);
 void getDefault(Eks::Quaternion *t);
 
-void assignTo(const Shift::Attribute, Shift::Attribute*)
+void assignTo(const Shift::Attribute *, Shift::Attribute *)
   {
   xAssertFail();
   }
 
-template <typename T> class BasePODPropertyTraits;
-template <typename T> class PODPropertyTraits;
+template <typename T, int IsAttribute, int IsFull> class PODPropertyTraits
+  : public PropertyBaseTraits
+  {
+public:
+  static bool shouldSaveValue(const Attribute *)
+    {
+    return false;
+    }
+
+  static void preGet(const Attribute *)
+    {
+    }
+
+  static void preGet(const Property *prop)
+    {
+    prop->preGet();
+    }
+
+  enum
+    {
+    assign = 0
+    };
+  };
+
+template <typename T, int IsAttribute> class PODPropertyTraits<T, IsAttribute, true>
+  : public PropertyBaseTraits
+  {
+public:
+  static void save(const Attribute *p, Saver &l)
+    {
+    PropertyBaseTraits::save(p, l);
+    const T *ptr = p->uncheckedCastTo<T>();
+    writeValue(l, ptr->_value);
+    }
+
+  static Attribute *load(Container *parent, Loader &l)
+    {
+    Attribute *prop = PropertyBaseTraits::load(parent, l);
+    T *ptr = prop->uncheckedCastTo<T>();
+    readValue(l, ptr->_value);
+    return prop;
+    }
+
+  static bool shouldSaveValue(const Attribute *p)
+    {
+    const T *ptr = p->uncheckedCastTo<T>();
+
+    if(PropertyBaseTraits::shouldSaveValue(p))
+      {
+      using ::operator!=;
+
+      if(ptr->isDynamic() ||
+         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
+        {
+        return true;
+        }
+      }
+
+    return false;
+    }
+
+  static void preGet(const Attribute *attr)
+    {
+    }
+
+  static void preGet(const Property *prop)
+    {
+    prop->preGet();
+    }
+
+  static void assign(const Shift::Attribute *p, Shift::Attribute *l)
+    {
+    T *t = l->uncheckedCastTo<T>();
+    Shift::detail::assignTo(p, t);
+    }
+  };
 
 template <typename T> class PODComputeChange : public Property::DataChange
   {
@@ -243,7 +321,7 @@ public:
 
   bool apply()
     {
-    Attribute *prop = ComputeChange::property();
+    Attribute *prop = PODComputeChange::property();
     T* d = prop->uncheckedCastTo<T>();
     d->_value = after();
     PODComputeChange::property()->postSet();
@@ -252,7 +330,7 @@ public:
 
   bool unApply()
     {
-    Attribute *prop = ComputeChange::property();
+    Attribute *prop = PODComputeChange::property();
     T* d = prop->uncheckedCastTo<T>();
     d->_value = before();
     PODComputeChange::property()->postSet();
@@ -282,14 +360,19 @@ enum DataMode
   };
 
 template <typename T, DataMode Mode=FullData> class Data
-    : public Eks::IfElse<Mode >= AttributeData, Property, Attribute>
+    : public Eks::IfElse<Mode != AttributeData, Property, Attribute>::Type
   {
-  typedef typename Eks::IfElse<Mode >= AttributeData, Property, Attribute>::Type ParentType;
-
 public:
+  typedef typename Eks::IfElse<Mode != AttributeData, Property, Attribute>::Type ParentType;
   typedef Data<T, Mode> PODPropertyType;
 
-  typedef detail::PODPropertyTraits<PODPropertyType> Traits;
+  enum
+    {
+    IsAttribute = Mode > AttributeData,
+    IsCopyable = Mode >= FullData
+    };
+
+  typedef detail::PODPropertyTraits<PODPropertyType, IsAttribute, IsCopyable> Traits;
   typedef detail::PODEmbeddedInstanceInformation<PODPropertyType> EmbeddedInstanceInformation;
   typedef typename ParentType::DynamicInstanceInformation DynamicInstanceInformation;
 
@@ -306,13 +389,13 @@ public:
 
   const T &operator()() const
     {
-    preGet();
+    Traits::preGet(this);
     return _value;
     }
 
   const T &value() const
     {
-    preGet();
+    Traits::preGet(this);
     return _value;
     }
 
@@ -323,9 +406,13 @@ protected:
   typedef detail::PODComputeLock<T> ComputeLock;
 
   friend class ComputeLock;
+  friend class ComputeChange;
+  friend class Change;
   friend class Traits;
   friend class Lock;
   friend class EmbeddedInstanceInformation;
+
+  static PropertyGroup::Information _staticTypeInformation;
   };
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, typeID) \
@@ -350,6 +437,7 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, QuaternionProperty, Eks::Quaternion, 110);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, Eks::Colour, 112);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ByteArrayProperty, QByteArray, 113);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, 115);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringProperty, Eks::String, 112);
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, 114);
 
@@ -367,6 +455,11 @@ public:
     {
     Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
     propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();
+    }
+
+  QUuid defaultValue() const
+    {
+    return QUuid();
     }
   };
 
@@ -396,6 +489,66 @@ template <typename T, DataMode Mode>
   {
   PropertyDoChange(Change, Data<T, Mode>::_value, in, this);
   }
+
+template <typename T, DataMode Mode>
+    const PropertyInformation *Data<T, Mode>::staticTypeInformation()
+  {
+  return _staticTypeInformation.information;
+  }
+
+template <typename T, DataMode Mode>
+    void Data<T, Mode>::createTypeInformation(PropertyInformationTyped<Data<T, Mode>> *,
+                                      const PropertyInformationCreateData &)
+  {
+  }
+
+
+template <typename T, DataMode Mode>
+    const Shift::PropertyInformation *Data<T, Mode>::
+      bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator)
+  {
+  typedef Data<T, Mode> ThisType;
+  Shift::detail::checkType<ThisType>();
+
+  Eks::TemporaryAllocator temp(TypeRegistry::temporaryAllocator());
+  Eks::String name(&temp);
+
+  const char *modeType = "Full";
+  if(Mode == ComputedData)
+    {
+    modeType = "Computed";
+    }
+  else if(Mode == AttributeData)
+    {
+    modeType = "Attribute";
+    }
+
+  name.appendType(modeType);
+  name.appendType(QMetaType::typeName(qMetaTypeId<T>()));
+
+  Shift::PropertyInformationTyped<ThisType>::bootstrapTypeInformation(
+        &_staticTypeInformation.information,
+        name.data(),
+        ThisType::ParentType::bootstrapStaticTypeInformation(allocator), allocator);
+
+  return staticTypeInformation();
+  }
+
+namespace detail
+{
+void assignTo(const Attribute *f, Data<Eks::String> *to);
+void assignTo(const Attribute *f, ColourProperty *to);
+void assignTo(const Attribute *f, Vector4DProperty *to);
+void assignTo(const Attribute *f, Vector3DProperty *to);
+void assignTo(const Attribute *f, Vector2DProperty *to);
+void assignTo(const Attribute *f, DoubleProperty *to);
+void assignTo(const Attribute *f, FloatProperty *to);
+void assignTo(const Attribute *f, LongUnsignedIntProperty *to);
+void assignTo(const Attribute *f, UnsignedIntProperty *to);
+void assignTo(const Attribute *f, LongIntProperty *to);
+void assignTo(const Attribute *f, IntProperty *to);
+void assignTo(const Attribute *f, BoolProperty *to);
+}
 }
 
 #if X_QT_INTEROP

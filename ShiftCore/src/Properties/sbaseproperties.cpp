@@ -175,6 +175,8 @@ QTextStream &operator<<(QTextStream &s, const SStringVector &v)
   return s;
   }
 
+#if 0
+
 #define IMPLEMENT_POD_SHIFT_PROPERTY(name) IMPLEMENT_POD_PROPERTY(PODProperty<name>, Shift)
 
 //IMPLEMENT_POD_SHIFT_PROPERTY(bool);
@@ -192,6 +194,7 @@ template <typename T> const Shift::PropertyInformation *PODProperty<T>::bootstra
         PODProperty<T>::ParentType::bootstrapStaticTypeInformation(allocator), allocator);
   return staticTypeInformation();
   }
+#endif
 
 /*IMPLEMENT_POD_SHIFT_PROPERTY(IntProperty);
 IMPLEMENT_POD_SHIFT_PROPERTY(LongIntProperty);
@@ -210,6 +213,7 @@ IMPLEMENT_POD_SHIFT_PROPERTY(UuidPropertyBase);
 
 IMPLEMENT_POD_SHIFT_PROPERTY(StringArrayProperty);*/
 
+#if 0
 S_IMPLEMENT_PROPERTY(Data<QUuid>, Shift)
 
 void UuidProperty::createTypeInformation(PropertyInformationTyped<Data<QUuid>> *,
@@ -231,9 +235,11 @@ void FilenameProperty::createTypeInformation(PropertyInformationTyped<Filename> 
   {
   }
 
+#endif
+
 namespace detail
 {
-void assignTo(const Attribute *f, BoolProperty *t)
+void assignTo(const Attribute *f, BoolProperty *to)
   {
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
@@ -285,7 +291,7 @@ void assignTo(const Attribute *f, BoolProperty *t)
     }
   }
 
-void assignTo(const Attribute *f, IntProperty *t)
+void assignTo(const Attribute *f, IntProperty *to)
   {
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
@@ -337,7 +343,7 @@ void assignTo(const Attribute *f, IntProperty *t)
     }
   }
 
-void assignTo(const Attribute *f, LongIntProperty *t)
+void assignTo(const Attribute *f, LongIntProperty *to)
   {
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
@@ -389,7 +395,7 @@ void assignTo(const Attribute *f, LongIntProperty *t)
     }
   }
 
-void assignTo(const Attribute *f, UnsignedIntProperty *t)
+void assignTo(const Attribute *f, UnsignedIntProperty *to)
   {
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
@@ -441,7 +447,7 @@ void assignTo(const Attribute *f, UnsignedIntProperty *t)
     }
   }
 
-void assignBetween(const Attribute *f, LongUnsignedIntProperty *t)
+void assignTo(const Attribute *f, LongUnsignedIntProperty *to)
   {
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
@@ -493,10 +499,8 @@ void assignBetween(const Attribute *f, LongUnsignedIntProperty *t)
     }
   }
 
-void FloatProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, FloatProperty *to)
   {
-  FloatProperty *to = t->uncheckedCastTo<FloatProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -547,10 +551,8 @@ void FloatProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void DoubleProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, DoubleProperty *to)
   {
-  DoubleProperty *to = t->uncheckedCastTo<DoubleProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -601,10 +603,8 @@ void DoubleProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void Vector2DProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Vector2DProperty *to)
   {
-  Vector2DProperty *to = t->uncheckedCastTo<Vector2DProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -641,10 +641,8 @@ void Vector2DProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void Vector3DProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Vector3DProperty *to)
   {
-  Vector3DProperty *to = t->uncheckedCastTo<Vector3DProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -681,10 +679,8 @@ void Vector3DProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void Vector4DProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Vector4DProperty *to)
   {
-  ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -723,10 +719,8 @@ void Vector4DProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void QuaternionProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, ColourProperty *to)
   {
-  ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -766,74 +760,14 @@ void QuaternionProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void ColourProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Data<Eks::String> *to)
   {
-  ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
-
-  const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
-  if(aProp)
-    {
-    Eks::Colour col(aProp->value().head<4>());
-    to->assign(col);
-    return;
-    }
-
-  const Vector3DProperty *bProp = f->castTo<Vector3DProperty>();
-  if(bProp)
-    {
-    Eks::Colour col(bProp->value().head<4>());
-    to->assign(col);
-    return;
-    }
-
-  const Vector4DProperty *cProp = f->castTo<Vector4DProperty>();
-  if(cProp)
-    {
-    to->assign(cProp->value());
-    return;
-    }
-
-  const ColourProperty *colProp = f->castTo<ColourProperty>();
-  if(colProp)
-    {
-    to->assign(colProp->value());
-    return;
-    }
-
-  const QuaternionProperty *qProp = f->castTo<QuaternionProperty>();
-  if(qProp)
-    {
-    Eks::Colour col(qProp->value().coeffs().head<4>());
-    to->assign(col);
-    return;
-    }
-  }
-
-void StringPropertyBase::assignBetween(const Attribute *f, Attribute *t)
-  {
-  StringPropertyBase *to = t->uncheckedCastTo<StringPropertyBase>();
-
-  const StringPropertyBase *sProp = f->castTo<StringPropertyBase>();
+  const Data<Eks::String> *sProp = f->castTo<Data<Eks::String>>();
   if(sProp)
     {
     to->assign(sProp->value());
     return;
     }
   }
-
-void ByteArrayProperty::assignBetween(const Attribute *, Attribute *)
-  {
-  xAssertFail();
-  }
-
-void UuidPropertyBase::assignBetween(const Attribute *, Attribute *)
-  {
-  xAssertFail();
-  }
-
-void StringArrayProperty::assignBetween(const Attribute *, Attribute *)
-  {
-  xAssertFail();
-  }
-
+}
 }

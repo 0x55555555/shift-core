@@ -103,7 +103,7 @@ public:
     const QUuid &uuid() const { return _uuid(); }
 
 private:
-  UuidProperty _uuid;
+  Data<QUuid> _uuid;
   friend class ExternalUuidPointer;
   };
 
