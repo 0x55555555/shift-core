@@ -132,7 +132,6 @@ void setupBaseInterfaces()
   Util::addPODInterface<Vector3DProperty>();
   Util::addPODInterface<Vector4DProperty>();
   Util::addPODInterface<QuaternionProperty>();
-  Util::addPODInterface<StringPropertyBase>();
   Util::addPODInterface<ColourProperty>();
   Util::addPODInterface<ByteArrayProperty>();
 

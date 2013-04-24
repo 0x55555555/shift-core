@@ -42,30 +42,6 @@ SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
 
 #endif
 
-namespace detail
-{
-template <typename T>void getDefault(T *)
-  {
-  }
-
-void getDefault(xuint8 *t);
-void getDefault(xint32 *t);
-void getDefault(xint64 *t);
-void getDefault(xuint32 *t);
-void getDefault(xuint64 *t);
-void getDefault(float *t);
-void getDefault(double *t);
-void getDefault(Eks::Vector2D *t);
-void getDefault(Eks::Vector3D *t);
-void getDefault(Eks::Vector4D *t);
-void getDefault(Eks::Quaternion *t);
-
-void assignTo(const Shift::Attribute, Shift::Attribute*)
-  {
-  xAssertFail();
-  }
-}
-
 template <typename T>
 class PODInterface
   {
@@ -98,7 +74,7 @@ public:
 
 namespace detail
 {
-template <typename T>void getDefault(T *)
+template <typename T> void getDefault(T *)
   {
   }
 
@@ -113,6 +89,11 @@ void getDefault(Eks::Vector2D *t);
 void getDefault(Eks::Vector3D *t);
 void getDefault(Eks::Vector4D *t);
 void getDefault(Eks::Quaternion *t);
+
+void assignTo(const Shift::Attribute, Shift::Attribute*)
+  {
+  xAssertFail();
+  }
 
 template <typename T> class BasePODPropertyTraits;
 template <typename T> class PODPropertyTraits;
@@ -189,12 +170,6 @@ private:
 
 template <typename T> class PODEmbeddedInstanceInformation
     : public Property::EmbeddedInstanceInformation
-  typedef PODProperty<T> PODPropertyType;
-  S_PROPERTY(PODPropertyType, Property, 0);
-
-  typedef Shift::detail::PODPropertyTraits<PODPropertyType> Traits;
-  friend class Traits;
-
   {
 XProperties:
   typedef typename T::PODType PODType;
@@ -316,11 +291,9 @@ public:
 
   typedef detail::PODPropertyTraits<PODPropertyType> Traits;
   typedef detail::PODEmbeddedInstanceInformation<PODPropertyType> EmbeddedInstanceInformation;
+  typedef typename ParentType::DynamicInstanceInformation DynamicInstanceInformation;
 
-  inline const DynamicInstanceInformation *dynamicInstanceInformation() const
-    { return static_cast<const DynamicInstanceInformation *>(dynamicBaseInstanceInformation()); }
-
-  //S_PROPERTY(PODPropertyType, ParentType, 0);
+  S_PROPERTY(PODPropertyType, ParentType, 0);
 
 public:
   typedef T PODType;
@@ -356,7 +329,7 @@ protected:
   };
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, typeID) \
-class EXPORT_MODE name : public Shift::Data<type> { public: \
+typedef Shift::Data<type> name; \
 template <> class Shift::PODInterface <type> { public: typedef name Type; \
   static void assign(name* s, const type& val) { s->assign(val); } \
   static const type& value(const name* s) { return s->value(); } };
@@ -374,7 +347,6 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector2DProperty, Eks::Vector2D, 107);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector3DProperty, Eks::Vector3D, 108);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, Vector4DProperty, Eks::Vector4D, 109);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, QuaternionProperty, Eks::Quaternion, 110);
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringPropertyBase, Eks::String, 111);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, Eks::Colour, 112);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ByteArrayProperty, QByteArray, 113);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, 115);
@@ -382,44 +354,22 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, 115);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, 114);
 
 
-template<> class Data<Eks::String> : public PODProperty<Eks::String>
+namespace detail
+{
+template<> class PODEmbeddedInstanceInformation<Data<QUuid>>
+        : public Property::EmbeddedInstanceInformation
   {
+  typedef QUuid PODType;
 
 public:
-  class EmbeddedInstanceInformation : public PODProperty<Eks::String>::EmbeddedInstanceInformation
-    {
-  public:
-    void setDefaultValue(const Eks::String &val)
-      {
-      setDefault(val);
-      }
-    };
 
-  S_PROPERTY(Data, PODProperty<Eks::String>, 0);
-
-public:
-  Data<Eks::String> &operator=(const Eks::String &in)
+  virtual void initiateAttribute(Attribute *propertyToInitiate) const
     {
-    assign(in);
-    return *this;
+    Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
+    propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();
     }
   };
 
-template<> class Data<QUuid> : public PODProperty<QUuid>
-  {
-public:
-  class EmbeddedInstanceInformation : public PODProperty<QUuid>::EmbeddedInstanceInformation
-    {
-  public:
-    virtual void initiateAttribute(Property *propertyToInitiate) const
-      {
-      Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-      propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();
-      }
-    };
-
-  S_PROPERTY(Data, PODProperty<QUuid>, 0);
-  };
 
 template <typename T> class Flags : public IntProperty
   {
@@ -432,18 +382,20 @@ public:
     }
   };
 
-class SHIFT_EXPORT Filename : public Data<Eks::String>
-  {
-  S_PROPERTY(Filename, Data<Eks::String>, 0);
-
-public:
-  };
-
 // specific pod interface for bool because it is actually a uint8.
 /*template <> class PODInterface <bool> { public: typedef BoolProperty Type; \
   static void assign(BoolProperty* s, const bool &val) { s->assign(val); } \
   static const xuint8 &value(const BoolProperty* s) { return s->value(); } };
 */
+}
+
+#define EnumProperty IntProperty
+
+template <typename T, DataMode Mode>
+    void Data<T, Mode>::assign(const T &in)
+  {
+  PropertyDoChange(Change, Data<T, Mode>::_value, in, this);
+  }
 }
 
 #if X_QT_INTEROP
@@ -452,18 +404,6 @@ Q_DECLARE_METATYPE(QUuid)
 
 #endif
 
-#define EnumProperty IntProperty
-
-
-namespace Shift
-{
-
-template <typename T, DataMode Mode>
-    void Data<T, Mode>::assign(const T &in)
-  {
-  PropertyDoChange(Change, Data<T, Mode>::_value, in, this);
-  }
-}
 
 
 #endif // SBASEPROPERTIES_H
