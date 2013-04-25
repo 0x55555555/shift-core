@@ -93,7 +93,8 @@ HEADERS += \
     include/shift/Properties/sattribute.inl \
     include/shift/Properties/scontainer.h \
     include/shift/Properties/scontaineriterators.h \
-    include/shift/Properties/sarray.h
+    include/shift/Properties/sarray.h \
+    include/shift/Properties/sbaseproperties.inl
 
 
 

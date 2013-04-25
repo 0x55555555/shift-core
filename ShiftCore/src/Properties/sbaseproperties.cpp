@@ -239,6 +239,11 @@ void FilenameProperty::createTypeInformation(PropertyInformationTyped<Filename> 
 
 namespace detail
 {
+void assignTo(const Attribute *, Attribute *)
+  {
+  xAssertFail();
+  }
+
 void assignTo(const Attribute *f, BoolProperty *to)
   {
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
