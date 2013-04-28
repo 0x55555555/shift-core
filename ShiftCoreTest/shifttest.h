@@ -35,6 +35,7 @@ public:
     }
 
 private Q_SLOTS:
+  void dataTest();
   void simpleOperationTest();
   void simpleDirtyCompute();
 

@@ -50,7 +50,8 @@ SOURCES += \
     src/Utilities/satomichelper.cpp \
     src/Changes/spropertychanges.cpp \
     src/Properties/sarray.cpp \
-    src/Properties/scontainer.cpp
+    src/Properties/scontainer.cpp \
+    src/Changes/schange.cpp
 
 HEADERS += \
     include/shift/sglobal.h \

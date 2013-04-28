@@ -61,10 +61,10 @@ public:
     fns.destroyEmbeddedInstanceInformation = TypeTraits::destroyEmbeddedInstanceInformation;
     fns.destroyDynamicInstanceInformation = TypeTraits::destroyDynamicInstanceInformation;
 
-    fns.save = Traits::save;
-    fns.load = Traits::load;
     fns.shouldSave = Traits::shouldSave;
     fns.shouldSaveValue = Traits::shouldSaveValue;
+    fns.save = (PropertyInformationFunctions::SaveFunction)Traits::save;
+    fns.load = (PropertyInformationFunctions::LoadFunction)Traits::load;
     fns.assign =
         (PropertyInformationFunctions::AssignFunction)
           Traits::assign;

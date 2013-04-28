@@ -38,14 +38,42 @@
     private:
 
 
-#define S_CHANGE_ROOT public: enum { Type = Change::BaseChange }; typedef void SubType; S_CASTABLE_ROOT( Change, Type )
+#define S_CHANGE_ROOT \
+  public: enum { Type = Change::BaseChange }; \
+  typedef void SubType; \
+  S_CASTABLE_ROOT( Change, Type )
 
-#define S_CHANGE(cl, supCl, baseType) public: enum {Type = baseType}; S_CASTABLE( cl, supCl, Shift::Change )
+#define S_CHANGE(cl, supCl, baseType) \
+  public: enum {Type = baseType}; \
+  S_CASTABLE( cl, supCl, Shift::Change )
 
-#define S_CHANGE_TYPED(cl, supCl, baseType, type) public: enum {Type = baseType}; typedef type SubType;  S_CASTABLE( cl, supCl, Shift::Change )
+#define S_CHANGE_TYPED(cl, supCl, baseType, type) \
+  public: enum {Type = baseType}; \
+  typedef type SubType; \
+  S_CASTABLE( cl, supCl, Shift::Change )
 
 namespace Shift
 {
+namespace detail
+{
+class SHIFT_EXPORT MetaType
+  {
+public:
+  template <typename T>static xuint32 id()
+    {
+    static xuint32 id = newId();
+    return id;
+    }
+
+  template <typename T> static void appendTypeName(Eks::String &str)
+    {
+    str.appendType(id<T>());
+    }
+
+private:
+  static xuint32 newId();
+  };
+}
 
 class Change
   {
@@ -66,8 +94,10 @@ public:
 public:
   template <typename T> static xuint32 getChangeTypeId(xuint32 t)
     {
-    xAssertFail();
-    return t;
+    int id = detail::MetaType::id<T>();
+    xAssert(id < X_UINT16_SENTINEL);
+
+    return (t<<16) + id;
     }
 
   virtual ~Change() { }

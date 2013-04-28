@@ -107,6 +107,28 @@ private:
   friend class ExternalUuidPointer;
   };
 
+namespace detail
+{
+template<int IsFull> class PODEmbeddedInstanceInformation<Data<QUuid>, IsFull>
+        : public Property::EmbeddedInstanceInformation
+  {
+  typedef QUuid PODType;
+
+public:
+
+  virtual void initiateAttribute(Attribute *propertyToInitiate) const
+    {
+    Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
+    propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();
+    }
+
+  QUuid defaultValue() const
+    {
+    return QUuid();
+    }
+  };
+}
+
 }
 
 S_PROPERTY_INTERFACE(Shift::ExternalPointer)

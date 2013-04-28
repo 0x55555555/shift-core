@@ -1,4 +1,5 @@
 #include "shift/Properties/sbaseproperties.h"
+#include "shift/Properties/sbaseproperties.inl"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/shandler.inl"
@@ -9,6 +10,133 @@ namespace Shift
 
 namespace detail
 {
+
+void readEscapedQuotedString(QTextStream &s, QString &str)
+  {
+  str.clear();
+
+  while(!s.atEnd())
+    {
+    QChar tempChar;
+    s >> tempChar;
+    if(tempChar == '\\')
+      {
+      s >> tempChar;
+      }
+    else if(tempChar == '"')
+      {
+      break;
+      }
+
+    str.append(tempChar);
+    }
+  }
+
+void writeEscapedQuotedString(QTextStream &s, Eks::String str)
+  {
+  Eks::String::Replacement replacements[] =
+  {
+    { "\\", "\\\\" },
+    { "\"", "\\\"" },
+  };
+
+  xAssertFail(); // test the replace fn.
+  Eks::String escaped;
+  Eks::String::replace(str, &escaped, replacements, X_ARRAY_COUNT(replacements));
+
+  s << "\"" << escaped << "\"";
+  }
+
+}
+}
+
+QTextStream &operator<<(QTextStream &s, xuint8 v)
+  {
+  return s << (xuint32)v;
+  }
+
+QTextStream &operator>>(QTextStream &s, xuint8 &v)
+  {
+  xuint32 t;
+  s >> t;
+  v = (xuint8)t;
+  return s;
+  }
+
+
+SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &v)
+  {
+  QString str;
+  s >> str;
+  v = str;
+  return s;
+  }
+
+SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v)
+  {
+  return s << v.toString();
+  }
+
+QTextStream &operator>>(QTextStream &s, Shift::StringVector &v)
+  {
+  v.clear();
+  QString temp;
+
+  s.skipWhiteSpace();
+
+  QChar tempCheck;
+  s >> tempCheck;
+  if(tempCheck == '[')
+    {
+    tempCheck = ',';
+    while(tempCheck != ']')
+      {
+      if(tempCheck != ',')
+        {
+        xAssertFail();
+        break;
+        }
+
+      s.skipWhiteSpace();
+      s >> tempCheck;
+      if(tempCheck == ']' || tempCheck != '"')
+        {
+        break;
+        }
+
+      Shift::detail::readEscapedQuotedString(s, temp);
+      v << Eks::String(temp);
+      s.skipWhiteSpace();
+
+      s >> tempCheck;
+      }
+    }
+
+  return s;
+  }
+
+QTextStream &operator<<(QTextStream &s, const Shift::StringVector &v)
+  {
+  s << "[ ";
+  for(xsize i=0, count=v.size(); i<count; ++i)
+    {
+    Shift::detail::writeEscapedQuotedString(s, v[i]);
+    if(i<(count-1))
+      {
+      s << ", ";
+      }
+    }
+  s << " ]";
+  return s;
+  }
+
+
+namespace Shift
+{
+
+namespace detail
+{
+
 void getDefault(xuint8 *t)
   {
   *t = 0;
@@ -56,162 +184,25 @@ void getDefault(Eks::Quaternion *t)
   }
 }
 
-QTextStream &operator<<(QTextStream &s, xuint8 v)
-  {
-  return s << (xuint32)v;
-  }
+#define IMPLEMENT_POD_SHIFT_PROPERTY(T, Mode) IMPLEMENT_POD_PROPERTY(SHIFT_EXPORT, Shift, T, Mode, T)
+#define IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(T, Mode, name) IMPLEMENT_POD_PROPERTY(SHIFT_EXPORT, Shift, T, Mode, name)
 
-QTextStream &operator>>(QTextStream &s, xuint8 &v)
-  {
-  xuint32 t;
-  s >> t;
-  v = (xuint8)t;
-  return s;
-  }
-
-
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &v)
-  {
-  QString str;
-  s >> str;
-  v = str;
-  return s;
-  }
-
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v)
-  {
-  return s << v.toString();
-  }
-
-namespace Utils
-{
-void readEscapedQuotedString(QTextStream &s, QString &str)
-  {
-  str.clear();
-
-  while(!s.atEnd())
-    {
-    QChar tempChar;
-    s >> tempChar;
-    if(tempChar == '\\')
-      {
-      s >> tempChar;
-      }
-    else if(tempChar == '"')
-      {
-      break;
-      }
-
-    str.append(tempChar);
-    }
-  }
-
-void writeEscapedQuotedString(QTextStream &s, Eks::String str)
-  {
-  Eks::String::Replacement replacements[] =
-  {
-    { "\\", "\\\\" },
-    { "\"", "\\\"" },
-  };
-
-  xAssertFail(); // test the replace fn.
-  Eks::String escaped;
-  Eks::String::replace(str, &escaped, replacements, X_ARRAY_COUNT(replacements));
-
-  s << "\"" << escaped << "\"";
-  }
-}
-
-QTextStream &operator>>(QTextStream &s, SStringVector &v)
-  {
-  v.clear();
-  QString temp;
-
-  s.skipWhiteSpace();
-
-  QChar tempCheck;
-  s >> tempCheck;
-  if(tempCheck == '[')
-    {
-    tempCheck = ',';
-    while(tempCheck != ']')
-      {
-      if(tempCheck != ',')
-        {
-        xAssertFail();
-        break;
-        }
-
-      s.skipWhiteSpace();
-      s >> tempCheck;
-      if(tempCheck == ']' || tempCheck != '"')
-        {
-        break;
-        }
-
-      Utils::readEscapedQuotedString(s, temp);
-      v << Eks::String(temp);
-      s.skipWhiteSpace();
-
-      s >> tempCheck;
-      }
-    }
-
-  return s;
-  }
-
-QTextStream &operator<<(QTextStream &s, const SStringVector &v)
-  {
-  s << "[ ";
-  for(xsize i=0, count=v.size(); i<count; ++i)
-    {
-    Utils::writeEscapedQuotedString(s, v[i]);
-    if(i<(count-1))
-      {
-      s << ", ";
-      }
-    }
-  s << " ]";
-  return s;
-  }
-
-#if 0
-
-#define IMPLEMENT_POD_SHIFT_PROPERTY(name) IMPLEMENT_POD_PROPERTY(PODProperty<name>, Shift)
-
-//IMPLEMENT_POD_SHIFT_PROPERTY(bool);
-
-//S_IMPLEMENT_PROPERTY_EXPLICIT(template <typename T>, PODProperty<T>, "POD", Shift)
-S_IMPLEMENT_PROPERTY_BASE(PODProperty<bool>, POD, Shift)
-
-template <typename T> const Shift::PropertyInformation *PODProperty<T>::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator)
-  {
-  Shift::detail::checkType<PODProperty<T>>();
-
-  Shift::PropertyInformationTyped<PODProperty<T>>::bootstrapTypeInformation(
-        &_PODStaticTypeInformation.information,
-                                                   "POD",
-        PODProperty<T>::ParentType::bootstrapStaticTypeInformation(allocator), allocator);
-  return staticTypeInformation();
-  }
-#endif
-
-/*IMPLEMENT_POD_SHIFT_PROPERTY(IntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(LongIntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(UnsignedIntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(LongUnsignedIntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(FloatProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(DoubleProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(Vector2DProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(Vector3DProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(Vector4DProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(QuaternionProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(StringPropertyBase);
-IMPLEMENT_POD_SHIFT_PROPERTY(ColourProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(ByteArrayProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(UuidPropertyBase);
-
-IMPLEMENT_POD_SHIFT_PROPERTY(StringArrayProperty);*/
+IMPLEMENT_POD_SHIFT_PROPERTY(xuint8, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xint32, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xint64, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xuint32, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xuint64, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(float, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(double, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector2D, FullData, 2d)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector3D, FullData, 3d)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector4D, FullData, 4d)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Quaternion, FullData, quat)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::String, FullData, str)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Colour, FullData, col)
+IMPLEMENT_POD_SHIFT_PROPERTY(QByteArray, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(QUuid, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(StringVector, FullData);
 
 #if 0
 S_IMPLEMENT_PROPERTY(Data<QUuid>, Shift)
@@ -239,6 +230,15 @@ void FilenameProperty::createTypeInformation(PropertyInformationTyped<Filename> 
 
 namespace detail
 {
+void podPreGet(const Property *p)
+  {
+  p->preGet();
+  }
+
+void podPreGet(const Attribute *)
+  {
+  }
+
 void assignTo(const Attribute *, Attribute *)
   {
   xAssertFail();

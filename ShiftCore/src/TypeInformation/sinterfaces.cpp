@@ -1,5 +1,6 @@
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Properties/sbaseproperties.h"
+#include "shift/Properties/sbaseproperties.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/sentity.h"
 #include "QColor"

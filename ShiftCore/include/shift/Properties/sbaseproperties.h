@@ -23,8 +23,7 @@
 namespace Shift
 {
 
-
-typedef Eks::Vector<Eks::String> SStringVector;
+typedef Eks::Vector<Eks::String> StringVector;
 
 template <typename T>
 class PODInterface
@@ -63,10 +62,10 @@ template <typename T> class PODComputeChange;
 template <typename T> class PODLock;
 template <typename T> class PODComputeLock;
 template <typename T, int IsAttribute, int IsFull> class PODPropertyTraits;
-template <typename T> class PODEmbeddedInstanceInformation;
+template <typename T, int IsFull> class PODEmbeddedInstanceInformation;
 
-void podPreGet(const Property *);
-void podPreGet(const Attribute *);
+SHIFT_EXPORT void podPreGet(const Property *);
+SHIFT_EXPORT void podPreGet(const Attribute *);
 }
 
 enum DataMode
@@ -92,7 +91,7 @@ public:
     };
 
   typedef detail::PODPropertyTraits<PODPropertyType, IsAttribute, IsCopyable> Traits;
-  typedef detail::PODEmbeddedInstanceInformation<PODPropertyType> EmbeddedInstanceInformation;
+  typedef detail::PODEmbeddedInstanceInformation<PODPropertyType, IsCopyable> EmbeddedInstanceInformation;
   typedef typename ParentType::DynamicInstanceInformation DynamicInstanceInformation;
 
   S_PROPERTY(PODPropertyType, ParentType, 0);
@@ -103,6 +102,11 @@ public:
   typedef detail::PODChange<PODPropertyType> Change;
   typedef detail::PODComputeChange<PODPropertyType> ComputeChange;
 
+  Data<T, Mode> &operator=(const PODType &p)
+    {
+    assign(p);
+    return *this;
+    }
 
   void assign(const T &in);
 
@@ -118,11 +122,16 @@ public:
     return _value;
     }
 
+  typedef detail::PODLock<PODPropertyType> Lock;
+  typedef detail::PODComputeLock<PODPropertyType> ComputeLock;
+
+  inline ComputeLock computeLock()
+    {
+    return this;
+    }
+
 protected:
   XPropertyMember(T, value);
-
-  typedef detail::PODLock<PODPropertyType> Lock;
-  typedef detail::PODComputeLock<T> ComputeLock;
 
   friend class ComputeLock;
   friend class ComputeChange;
@@ -130,6 +139,9 @@ protected:
   friend class Traits;
   friend class Lock;
   friend class EmbeddedInstanceInformation;
+
+private:
+  static Shift::PropertyInformation **staticTypeInformationInternal();
   };
 
 #define DEFINE_POD_PROPERTY(EXPORT_MODE, name, type, typeID) \
@@ -138,7 +150,7 @@ template <> class Shift::PODInterface <type> { public: typedef name Type; \
   static void assign(name* s, const type& val) { s->assign(val); } \
   static const type& value(const name* s) { return s->value(); } };
 
-#define IMPLEMENT_POD_PROPERTY(type, grp) S_IMPLEMENT_PROPERTY_EXPLICIT(PODProperty<type>, type ## Property, grp) S_DEFAULT_TYPE_INFORMATION(PODProperty<type>)
+Q_DECLARE_METATYPE(xuint8);
 
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, BoolProperty, xuint8, 100);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, IntProperty, xint32, 101);
@@ -155,11 +167,10 @@ DEFINE_POD_PROPERTY(SHIFT_EXPORT, ColourProperty, Eks::Colour, 112);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, ByteArrayProperty, QByteArray, 113);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, UuidPropertyBase, QUuid, 115);
 DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringProperty, Eks::String, 112);
+DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, StringVector, 114);
 
-DEFINE_POD_PROPERTY(SHIFT_EXPORT, StringArrayProperty, SStringVector, 114);
 
-
-template <typename T> class Flags : public IntProperty
+template <typename T> class FlagsProperty : public IntProperty
   {
 public:
   void setFlag(T t, bool onOff)
@@ -171,12 +182,6 @@ public:
   };
 
 #define EnumProperty IntProperty
-
-template <typename T, DataMode Mode>
-    void Data<T, Mode>::assign(const T &in)
-  {
-  PropertyDoChange(Change, Data<T, Mode>::_value, in, this);
-  }
 
 }
 
