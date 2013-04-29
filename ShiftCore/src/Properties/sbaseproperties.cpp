@@ -1,4 +1,5 @@
 #include "shift/Properties/sbaseproperties.h"
+#include "shift/Properties/sdata.inl"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/shandler.inl"
@@ -7,35 +8,9 @@
 namespace Shift
 {
 
-QTextStream &operator<<(QTextStream &s, xuint8 v)
-  {
-  return s << (xuint32)v;
-  }
-
-QTextStream &operator>>(QTextStream &s, xuint8 &v)
-  {
-  xuint32 t;
-  s >> t;
-  v = (xuint8)t;
-  return s;
-  }
-
-
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &v)
-  {
-  QString str;
-  s >> str;
-  v = str;
-  return s;
-  }
-
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v)
-  {
-  return s << v.toString();
-  }
-
-namespace Utils
+namespace detail
 {
+
 void readEscapedQuotedString(QTextStream &s, QString &str)
   {
   str.clear();
@@ -71,9 +46,38 @@ void writeEscapedQuotedString(QTextStream &s, Eks::String str)
 
   s << "\"" << escaped << "\"";
   }
+
+}
 }
 
-QTextStream &operator>>(QTextStream &s, SStringVector &v)
+QTextStream &operator<<(QTextStream &s, xuint8 v)
+  {
+  return s << (xuint32)v;
+  }
+
+QTextStream &operator>>(QTextStream &s, xuint8 &v)
+  {
+  xuint32 t;
+  s >> t;
+  v = (xuint8)t;
+  return s;
+  }
+
+
+SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &v)
+  {
+  QString str;
+  s >> str;
+  v = str;
+  return s;
+  }
+
+SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v)
+  {
+  return s << v.toString();
+  }
+
+QTextStream &operator>>(QTextStream &s, Shift::StringVector &v)
   {
   v.clear();
   QString temp;
@@ -100,7 +104,7 @@ QTextStream &operator>>(QTextStream &s, SStringVector &v)
         break;
         }
 
-      Utils::readEscapedQuotedString(s, temp);
+      Shift::detail::readEscapedQuotedString(s, temp);
       v << Eks::String(temp);
       s.skipWhiteSpace();
 
@@ -111,12 +115,12 @@ QTextStream &operator>>(QTextStream &s, SStringVector &v)
   return s;
   }
 
-QTextStream &operator<<(QTextStream &s, const SStringVector &v)
+QTextStream &operator<<(QTextStream &s, const Shift::StringVector &v)
   {
   s << "[ ";
   for(xsize i=0, count=v.size(); i<count; ++i)
     {
-    Utils::writeEscapedQuotedString(s, v[i]);
+    Shift::detail::writeEscapedQuotedString(s, v[i]);
     if(i<(count-1))
       {
       s << ", ";
@@ -126,51 +130,122 @@ QTextStream &operator<<(QTextStream &s, const SStringVector &v)
   return s;
   }
 
-#define IMPLEMENT_POD_SHIFT_PROPERTY(name) IMPLEMENT_POD_PROPERTY(name, Shift)
 
-IMPLEMENT_POD_SHIFT_PROPERTY(BoolProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(IntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(LongIntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(UnsignedIntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(LongUnsignedIntProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(FloatProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(DoubleProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(Vector2DProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(Vector3DProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(Vector4DProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(QuaternionProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(StringPropertyBase);
-IMPLEMENT_POD_SHIFT_PROPERTY(ColourProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(ByteArrayProperty);
-IMPLEMENT_POD_SHIFT_PROPERTY(UuidPropertyBase);
+namespace Shift
+{
 
-IMPLEMENT_POD_SHIFT_PROPERTY(StringArrayProperty);
+namespace detail
+{
 
-S_IMPLEMENT_PROPERTY(UuidProperty, Shift)
+void getDefault(xuint8 *t)
+  {
+  *t = 0;
+  }
 
-void UuidProperty::createTypeInformation(PropertyInformationTyped<UuidProperty> *,
+void getDefault(xint32 *t)
+  {
+  *t = 0;
+  }
+void getDefault(xint64 *t)
+  {
+  *t = 0;
+  }
+void getDefault(xuint32 *t)
+  {
+  *t = 0;
+  }
+void getDefault(xuint64 *t)
+  {
+  *t = 0;
+  }
+void getDefault(float *t)
+  {
+  *t = 0.0f;
+  }
+void getDefault(double *t)
+  {
+  *t = 0.0;
+  }
+void getDefault(Eks::Vector2D *t)
+  {
+  *t = Eks::Vector2D::Zero();
+  }
+void getDefault(Eks::Vector3D *t)
+  {
+  *t = Eks::Vector3D::Zero();
+  }
+void getDefault(Eks::Vector4D *t)
+  {
+  *t = Eks::Vector4D::Zero();
+  }
+void getDefault(Eks::Quaternion *t)
+  {
+  *t = Eks::Quaternion::Identity();
+  }
+}
+
+#define IMPLEMENT_POD_SHIFT_PROPERTY(T, Mode) IMPLEMENT_POD_PROPERTY(SHIFT_EXPORT, Shift, T, Mode, T)
+#define IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(T, Mode, name) IMPLEMENT_POD_PROPERTY(SHIFT_EXPORT, Shift, T, Mode, name)
+
+IMPLEMENT_POD_SHIFT_PROPERTY(xuint8, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xint32, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xint64, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xuint32, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(xuint64, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(float, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(double, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector2D, FullData, 2d)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector3D, FullData, 3d)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector4D, FullData, 4d)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Quaternion, FullData, quat)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::String, FullData, str)
+IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Colour, FullData, col)
+IMPLEMENT_POD_SHIFT_PROPERTY(QByteArray, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(QUuid, FullData)
+IMPLEMENT_POD_SHIFT_PROPERTY(StringVector, FullData);
+
+#if 0
+S_IMPLEMENT_PROPERTY(Data<QUuid>, Shift)
+
+void UuidProperty::createTypeInformation(PropertyInformationTyped<Data<QUuid>> *,
                                            const PropertyInformationCreateData &)
   {
   }
 
-S_IMPLEMENT_PROPERTY(StringProperty, Shift)
+S_IMPLEMENT_PROPERTY(Data<Eks::String>, Shift)
 
-void StringProperty::createTypeInformation(PropertyInformationTyped<StringProperty> *,
+void StringProperty::createTypeInformation(PropertyInformationTyped<Data<Eks::String>> *,
                                            const PropertyInformationCreateData &)
   {
   }
 
-S_IMPLEMENT_PROPERTY(FilenameProperty, Shift)
+S_IMPLEMENT_PROPERTY(Filename, Shift)
 
-void FilenameProperty::createTypeInformation(PropertyInformationTyped<FilenameProperty> *,
+void FilenameProperty::createTypeInformation(PropertyInformationTyped<Filename> *,
                                              const PropertyInformationCreateData &)
   {
   }
 
-void BoolProperty::assignBetween(const Attribute *f, Attribute *t)
-  {
-  BoolProperty *to = t->uncheckedCastTo<BoolProperty>();
+#endif
 
+namespace detail
+{
+void podPreGet(const Property *p)
+  {
+  p->preGet();
+  }
+
+void podPreGet(const Attribute *)
+  {
+  }
+
+void assignTo(const Attribute *, Attribute *)
+  {
+  xAssertFail();
+  }
+
+void assignTo(const Attribute *f, BoolProperty *to)
+  {
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -221,10 +296,8 @@ void BoolProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void IntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, IntProperty *to)
   {
-  IntProperty *to = t->uncheckedCastTo<IntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -275,10 +348,8 @@ void IntProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void LongIntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, LongIntProperty *to)
   {
-  LongIntProperty *to = t->uncheckedCastTo<LongIntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -329,10 +400,8 @@ void LongIntProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void UnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, UnsignedIntProperty *to)
   {
-  UnsignedIntProperty *to = t->uncheckedCastTo<UnsignedIntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -383,10 +452,8 @@ void UnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void LongUnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, LongUnsignedIntProperty *to)
   {
-  LongUnsignedIntProperty *to = t->uncheckedCastTo<LongUnsignedIntProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -437,10 +504,8 @@ void LongUnsignedIntProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void FloatProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, FloatProperty *to)
   {
-  FloatProperty *to = t->uncheckedCastTo<FloatProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -491,10 +556,8 @@ void FloatProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void DoubleProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, DoubleProperty *to)
   {
-  DoubleProperty *to = t->uncheckedCastTo<DoubleProperty>();
-
   const BoolProperty *boolProp = f->castTo<BoolProperty>();
   if(boolProp)
     {
@@ -545,10 +608,8 @@ void DoubleProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void Vector2DProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Vector2DProperty *to)
   {
-  Vector2DProperty *to = t->uncheckedCastTo<Vector2DProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -585,10 +646,8 @@ void Vector2DProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void Vector3DProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Vector3DProperty *to)
   {
-  Vector3DProperty *to = t->uncheckedCastTo<Vector3DProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -625,10 +684,8 @@ void Vector3DProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void Vector4DProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Vector4DProperty *to)
   {
-  ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -667,10 +724,8 @@ void Vector4DProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void QuaternionProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, ColourProperty *to)
   {
-  ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
-
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
   if(aProp)
     {
@@ -710,74 +765,14 @@ void QuaternionProperty::assignBetween(const Attribute *f, Attribute *t)
     }
   }
 
-void ColourProperty::assignBetween(const Attribute *f, Attribute *t)
+void assignTo(const Attribute *f, Data<Eks::String> *to)
   {
-  ColourProperty *to = t->uncheckedCastTo<ColourProperty>();
-
-  const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();
-  if(aProp)
-    {
-    Eks::Colour col(aProp->value().head<4>());
-    to->assign(col);
-    return;
-    }
-
-  const Vector3DProperty *bProp = f->castTo<Vector3DProperty>();
-  if(bProp)
-    {
-    Eks::Colour col(bProp->value().head<4>());
-    to->assign(col);
-    return;
-    }
-
-  const Vector4DProperty *cProp = f->castTo<Vector4DProperty>();
-  if(cProp)
-    {
-    to->assign(cProp->value());
-    return;
-    }
-
-  const ColourProperty *colProp = f->castTo<ColourProperty>();
-  if(colProp)
-    {
-    to->assign(colProp->value());
-    return;
-    }
-
-  const QuaternionProperty *qProp = f->castTo<QuaternionProperty>();
-  if(qProp)
-    {
-    Eks::Colour col(qProp->value().coeffs().head<4>());
-    to->assign(col);
-    return;
-    }
-  }
-
-void StringPropertyBase::assignBetween(const Attribute *f, Attribute *t)
-  {
-  StringPropertyBase *to = t->uncheckedCastTo<StringPropertyBase>();
-
-  const StringPropertyBase *sProp = f->castTo<StringPropertyBase>();
+  const Data<Eks::String> *sProp = f->castTo<Data<Eks::String>>();
   if(sProp)
     {
     to->assign(sProp->value());
     return;
     }
   }
-
-void ByteArrayProperty::assignBetween(const Attribute *, Attribute *)
-  {
-  xAssertFail();
-  }
-
-void UuidPropertyBase::assignBetween(const Attribute *, Attribute *)
-  {
-  xAssertFail();
-  }
-
-void StringArrayProperty::assignBetween(const Attribute *, Attribute *)
-  {
-  xAssertFail();
-  }
-
+}
 }

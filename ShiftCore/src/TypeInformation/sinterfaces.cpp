@@ -1,5 +1,6 @@
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Properties/sbaseproperties.h"
+#include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/sentity.h"
 #include "QColor"
@@ -132,7 +133,6 @@ void setupBaseInterfaces()
   Util::addPODInterface<Vector3DProperty>();
   Util::addPODInterface<Vector4DProperty>();
   Util::addPODInterface<QuaternionProperty>();
-  Util::addPODInterface<StringPropertyBase>();
   Util::addPODInterface<ColourProperty>();
   Util::addPODInterface<ByteArrayProperty>();
 

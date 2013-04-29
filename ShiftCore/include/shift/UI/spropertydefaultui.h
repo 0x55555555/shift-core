@@ -295,7 +295,7 @@ private:
   void syncGUI() { setColour( propertyValue()->value() ); }
   };
 
-
+#if 0
 class Filename : public SUIBase<QWidget, FilenameProperty>
   {
   Q_OBJECT
@@ -336,7 +336,6 @@ private:
   QToolButton *_button;
   };
 
-#if 0
   /** \brief APrivateVector2DProperty Sets and displays a GUI for a 3D vector.
     */
   class APrivateVector2DProperty : public QWidget

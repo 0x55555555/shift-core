@@ -1,4 +1,5 @@
 #include "shifttest.h"
+#include "shift/Properties/sdata.inl"
 
 void ShiftCoreTest::simpleDirtyCompute()
   {

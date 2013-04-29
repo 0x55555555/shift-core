@@ -1,6 +1,7 @@
 #include "shifttest.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/spropertygroup.h"
+#include "shift/Properties/sdata.inl"
 
 namespace Test
 {
@@ -45,11 +46,11 @@ void TestEntity::createTypeInformation(
     a->setAffects(affects, true);
     b->setCompute([](TestEntity *ent)
       {
-      Shift::FloatProperty::ComputeLock(&ent->reciprocal.x) = 1.0f / ent->in.x();
+      ent->reciprocal.x.computeLock() = 1.0f / ent->in.x();
       QCOMPARE(ent->reciprocal.x.isDirty(), false);
-      Shift::FloatProperty::ComputeLock(&ent->reciprocal.y) = 1.0f / ent->in.y();
+      ent->reciprocal.y.computeLock() = 1.0f / ent->in.y();
       QCOMPARE(ent->reciprocal.y.isDirty(), false);
-      Shift::FloatProperty::ComputeLock(&ent->reciprocal.z) = 1.0f / ent->in.z();
+      ent->reciprocal.z.computeLock() = 1.0f / ent->in.z();
       QCOMPARE(ent->reciprocal.z.isDirty(), false);
 
       QCOMPARE(ent->reciprocal.x.isDirty(), false);

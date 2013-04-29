@@ -61,10 +61,10 @@ public:
     fns.destroyEmbeddedInstanceInformation = TypeTraits::destroyEmbeddedInstanceInformation;
     fns.destroyDynamicInstanceInformation = TypeTraits::destroyDynamicInstanceInformation;
 
-    fns.save = Traits::save;
-    fns.load = Traits::load;
     fns.shouldSave = Traits::shouldSave;
     fns.shouldSaveValue = Traits::shouldSaveValue;
+    fns.save = (PropertyInformationFunctions::SaveFunction)Traits::save;
+    fns.load = (PropertyInformationFunctions::LoadFunction)Traits::load;
     fns.assign =
         (PropertyInformationFunctions::AssignFunction)
           Traits::assign;
@@ -174,73 +174,6 @@ public:
   static void save(const Attribute *, Saver & );
   static Attribute *load(Container *, Loader &);
   static bool shouldSaveValue(const Attribute *);
-  };
-
-template <typename T> class BasePODPropertyTraits : public PropertyBaseTraits
-  {
-public:
-  static void save(const Attribute *p, Saver &l )
-    {
-    PropertyBaseTraits::save(p, l);
-    }
-
-  static Attribute *load(Container *parent, Loader &l)
-    {
-    Attribute *prop = PropertyBaseTraits::load(parent, l);
-    return prop;
-    }
-
-  static bool shouldSaveValue(const Attribute *)
-    {
-    return false;
-    }
-
-  enum
-    {
-    assign = 0
-    };
-  };
-
-template <typename T> class PODPropertyTraits : public BasePODPropertyTraits<T>
-  {
-public:
-  static void save(const Attribute *p, Saver &l )
-    {
-    BasePODPropertyTraits<T>::save(p, l);
-    const T *ptr = p->uncheckedCastTo<T>();
-    writeValue(l, ptr->_value);
-    }
-
-  static Attribute *load(Container *parent, Loader &l)
-    {
-    Attribute *prop = BasePODPropertyTraits<T>::load(parent, l);
-    T *ptr = prop->uncheckedCastTo<T>();
-    readValue(l, ptr->_value);
-    return prop;
-    }
-
-  static bool shouldSaveValue(const Attribute *p)
-    {
-    const T *ptr = p->uncheckedCastTo<T>();
-
-    if(BasePODPropertyTraits<T>::shouldSaveValue(p))
-      {
-      using ::operator!=;
-
-      if(ptr->isDynamic() ||
-         ptr->value() != ptr->embeddedInstanceInformation()->defaultValue())
-        {
-        return true;
-        }
-      }
-
-    return false;
-    }
-
-  static void assign(const Shift::Attribute *p, Shift::Attribute *l)
-    {
-    T::assignBetween(p, l);
-    }
   };
 
 }

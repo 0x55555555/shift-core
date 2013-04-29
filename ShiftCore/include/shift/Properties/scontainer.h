@@ -36,7 +36,7 @@ public:
 
   class TreeChange : public Change
     {
-    S_CHANGE(TreeChange, Change, 52)
+    S_CHANGE(TreeChange, Change, Change::TreeChange)
   public:
     TreeChange(Container *b, Container *a, Attribute *ent, xsize index);
     ~TreeChange();

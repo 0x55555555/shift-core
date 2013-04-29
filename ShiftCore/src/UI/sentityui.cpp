@@ -29,8 +29,6 @@ EntityUI::EntityUI(xuint32 options)
     setUIType(Vector2DProperty::staticTypeInformation(), addWidgetCreator<PropertyDefaultUI::Vector2D>() );
     setUIType(Vector3DProperty::staticTypeInformation(), addWidgetCreator<PropertyDefaultUI::Vector3D>() );
     setUIType(ColourProperty::staticTypeInformation(), addWidgetCreator<PropertyDefaultUI::Colour>() );
-
-    setUIType(FilenameProperty::staticTypeInformation(), addWidgetCreator<PropertyDefaultUI::Filename>() );
     }
   }
 
