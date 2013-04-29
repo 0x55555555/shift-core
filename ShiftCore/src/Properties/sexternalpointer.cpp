@@ -1,7 +1,7 @@
 #include "shift/Properties/sexternalpointer.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Serialisation/sloader.h"
-#include "shift/Properties/sbaseproperties.inl"
+#include "shift/Properties/sdata.inl"
 #include "XOptional"
 
 namespace Shift

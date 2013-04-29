@@ -1,5 +1,5 @@
 #include "shift/Properties/sbaseproperties.h"
-#include "shift/Properties/sbaseproperties.inl"
+#include "shift/Properties/sdata.inl"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/shandler.inl"

@@ -1,7 +1,7 @@
 #include "shifttest.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/spropertygroup.h"
-#include "shift/Properties/sbaseproperties.inl"
+#include "shift/Properties/sdata.inl"
 
 namespace Test
 {

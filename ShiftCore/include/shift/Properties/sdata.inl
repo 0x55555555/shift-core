@@ -8,19 +8,8 @@
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/TypeInformation/spropertygroup.h"
 
-#if X_QT_INTEROP
-
-Q_DECLARE_METATYPE(Shift::StringVector)
-
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, xuint8 v);
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, xuint8 &v);
-
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, Shift::StringVector &);
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const Shift::StringVector &v);
-
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &);
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
-
+#if X_ASSERTS_ENABLED
+#include "shift/sdatabase.h"
 #endif
 
 namespace Shift
@@ -65,24 +54,6 @@ private:
 
 template <typename T> class PODChange : public PODComputeChange<T>
   {
-/*public: enum {Type = Change::DataChange};
-typedef typename T::PODType SubType;
-
-public:
-  virtual const Shift::Change *castToType( xuint32 id ) const
-    {
-    if( id == (Change::getChangeTypeId<SubType>(PODChange::Type)) )
-      {
-      return this;
-      }
-    else
-      {
-      return PODComputeChange::castToType( id );
-      }
-    }
-private:
-  //S_CASTABLE( PODChange, PODComputeChange, Shift::Change )
-*/
   typedef typename T::PODType PODType;
   S_CHANGE_TYPED(PODChange, PODComputeChange, Change::DataChange, PODType);
 
@@ -278,18 +249,6 @@ template <typename T> void getDefault(T *)
   {
   }
 
-SHIFT_EXPORT void getDefault(xuint8 *t);
-SHIFT_EXPORT void getDefault(xint32 *t);
-SHIFT_EXPORT void getDefault(xint64 *t);
-SHIFT_EXPORT void getDefault(xuint32 *t);
-SHIFT_EXPORT void getDefault(xuint64 *t);
-SHIFT_EXPORT void getDefault(float *t);
-SHIFT_EXPORT void getDefault(double *t);
-SHIFT_EXPORT void getDefault(Eks::Vector2D *t);
-SHIFT_EXPORT void getDefault(Eks::Vector3D *t);
-SHIFT_EXPORT void getDefault(Eks::Vector4D *t);
-SHIFT_EXPORT void getDefault(Eks::Quaternion *t);
-
 template <typename T, int IsFull> class PODEmbeddedInstanceInformation
     : public Property::EmbeddedInstanceInformation
   {
@@ -330,21 +289,6 @@ XProperties:
 
 public:
   };
-
-SHIFT_EXPORT void assignTo(const Attribute *, Attribute *);
-SHIFT_EXPORT void assignTo(const Attribute *f, Data<Eks::String> *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, ColourProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, Vector4DProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, Vector3DProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, Vector2DProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, DoubleProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, FloatProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, LongUnsignedIntProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, UnsignedIntProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, LongIntProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, IntProperty *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, BoolProperty *to);
-
 
 template <typename T, int IsAttribute, int IsFull> class PODPropertyTraits
   : public PropertyBaseTraits

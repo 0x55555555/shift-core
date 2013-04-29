@@ -74,6 +74,31 @@ public:
   virtual Eks::Colour colour(const PropertyInformation *) const;
   };
 
+template <typename PROP, typename POD> class PODPropertyVariantInterface : public PropertyVariantInterface
+  {
+public:
+#if X_QT_INTEROP
+  virtual Eks::String asString(const Attribute *p) const
+    {
+    QString d;
+      {
+      QTextStream s(&d);
+      s << p->uncheckedCastTo<PROP>()->value();
+      }
+    return Eks::String(d);
+    }
+  virtual QVariant asVariant(const Attribute *p) const
+    {
+    return QVariant::fromValue<POD>(p->uncheckedCastTo<PROP>()->value());
+    }
+
+  virtual void setVariant(Attribute *p, const QVariant &v) const
+    {
+    p->uncheckedCastTo<PROP>()->assign(v.value<POD>());
+    }
+#endif
+  };
+
 void setupBaseInterfaces();
 }
 
