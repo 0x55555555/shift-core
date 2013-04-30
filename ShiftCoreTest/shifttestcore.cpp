@@ -56,6 +56,8 @@ void TestEntity::createTypeInformation(
       QCOMPARE(ent->reciprocal.x.isDirty(), false);
       QCOMPARE(ent->reciprocal.y.isDirty(), false);
       QCOMPARE(ent->reciprocal.z.isDirty(), false);
+
+      ++ent->evaluationCount;
       });
     }
   }

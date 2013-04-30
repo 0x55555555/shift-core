@@ -38,6 +38,7 @@ private Q_SLOTS:
   void dataTest();
   void simpleOperationTest();
   void simpleDirtyCompute();
+  void entityCompute();
 
 private:
   Eks::Core core;
@@ -78,9 +79,15 @@ class TestEntity : public Shift::Entity
   {
   S_ENTITY(TestEntity, Entity, 0)
 public:
+  TestEntity()
+    {
+    evaluationCount = 0;
+    }
 
   TestVector in;
   TestVector reciprocal;
+
+  xsize evaluationCount;
   };
 
 class TestDatabase : public Shift::Database
