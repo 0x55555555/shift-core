@@ -62,3 +62,4 @@ void TestEntity::createTypeInformation(
     }
   }
 
+QTEST_APPLESS_MAIN(ShiftCoreTest)

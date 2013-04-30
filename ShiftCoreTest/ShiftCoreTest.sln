@@ -4,9 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "computetest", "..\..\bin\computetest.exe", "{5B94DB61-42F3-45D2-9B15-5E952C50FA10}"
 	ProjectSection(DebuggerProjectSystem) = preProject
 		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = F:\SpaceGame\bin\computetest.exe
+		Executable = C:\Users\Jorj\SpaceGamez\bin\computetest.exe
 		RemoteMachine = MRSWIRLEY
-		StartingDirectory = F:\SpaceGame\bin
+		StartingDirectory = C:\Users\Jorj\SpaceGamez\bin
 		Arguments = -tickcounter
 		Environment = Default
 		LaunchingEngine = 00000000-0000-0000-0000-000000000000

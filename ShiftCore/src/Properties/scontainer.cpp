@@ -232,6 +232,10 @@ void Container::internalClear(Database *db)
   while(dynamic)
     {
     Attribute *next = nextDynamicSibling(dynamic);
+    if(Property *prop = dynamic->castTo<Property>())
+      {
+      prop->disconnect();
+      }
     db->deleteDynamicAttribute(dynamic);
     dynamic = next;
     }

@@ -1,5 +1,5 @@
 #include "shift/Changes/spropertychanges.h"
-#include "shift/Properties/scontaineriterators.h"
+#include "shift/Properties/scontainerinternaliterators.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/sentity.h"
 
@@ -35,11 +35,8 @@ bool Property::ConnectionChange::apply()
   if(_mode == Connect)
     {
     _driver->connectInternal(_driven);
-    //if(_driven->typeInformation()->inheritsFromType(_driver->typeInformation()))
-      {
-      setParentHasInputConnection(_driven);
-      setParentHasOutputConnection(_driver);
-      }
+    setParentHasInputConnection(_driven);
+    setParentHasOutputConnection(_driver);
 
     if(!_driver->isUpdating() && !_driven->isUpdating())
       {
@@ -67,11 +64,8 @@ bool Property::ConnectionChange::unApply()
   else if(_mode == Disconnect)
     {
     _driver->connectInternal(_driven);
-    //if(_driven->typeInformation()->inheritsFromType(_driver->typeInformation()))
-      {
-      setParentHasInputConnection(_driven);
-      setParentHasOutputConnection(_driver);
-      }
+    setParentHasInputConnection(_driven);
+    setParentHasOutputConnection(_driver);
 
     if(!_driver->isUpdating() && !_driven->isUpdating())
       {
@@ -103,12 +97,13 @@ void Property::ConnectionChange::setParentHasInputConnection(Property *prop)
   Container *cont = prop->castTo<Container>();
   if(cont)
     {
-    xForeach(auto child, cont->walker<Property>())
+    xForeach(auto child, LightWalker(cont))
       {
-      if(!child->_flags.hasFlag(Property::ParentHasInput))
+      Property *prop = child->castTo<Property>();
+      if(prop && !prop->_flags.hasFlag(Property::ParentHasInput))
         {
-        child->_flags.setFlag(Property::ParentHasInput);
-        setParentHasInputConnection(child);
+        prop->_flags.setFlag(Property::ParentHasInput);
+        setParentHasInputConnection(prop);
         }
       }
     }
@@ -120,12 +115,13 @@ void Property::ConnectionChange::setParentHasOutputConnection(Property *prop)
   Container *cont = prop->castTo<Container>();
   if(cont)
     {
-    xForeach(auto child, cont->walker<Property>())
+    xForeach(auto child, LightWalker(cont))
       {
-      if(!child->_flags.hasFlag(Property::ParentHasOutput))
+      Property *prop = child->castTo<Property>();
+      if(prop && !prop->_flags.hasFlag(Property::ParentHasOutput))
         {
-        child->_flags.setFlag(Property::ParentHasOutput);
-        setParentHasOutputConnection(child);
+        prop->_flags.setFlag(Property::ParentHasOutput);
+        setParentHasOutputConnection(prop);
         }
       }
     }
@@ -142,12 +138,13 @@ void Property::ConnectionChange::clearParentHasInputConnection(Property *prop)
          !cont->embeddedBaseInstanceInformation()->isComputed() ) &&
         !cont->_flags.hasFlag(Property::ParentHasInput))
       {
-      xForeach(auto child, cont->walker<Property>())
+      xForeach(auto child, LightWalker(cont))
         {
-        if(child->_flags.hasFlag(Property::ParentHasInput))
+        Property *prop = child->castTo<Property>();
+        if(prop && prop->_flags.hasFlag(Property::ParentHasInput))
           {
-          child->_flags.clearFlag(Property::ParentHasInput);
-          clearParentHasInputConnection(child);
+          prop->_flags.clearFlag(Property::ParentHasInput);
+          clearParentHasInputConnection(prop);
           }
         }
       }
@@ -165,12 +162,13 @@ void Property::ConnectionChange::clearParentHasOutputConnection(Property *prop)
         !cont->embeddedBaseInstanceInformation()->affectsSiblings() ) &&
         !cont->_flags.hasFlag(Property::ParentHasOutput))
       {
-      xForeach(auto child, cont->walker<Property>())
+      xForeach(auto child, LightWalker(cont))
         {
-        if(child->_flags.hasFlag(Property::ParentHasOutput))
+        Property *prop = child->castTo<Property>();
+        if(prop && prop->_flags.hasFlag(Property::ParentHasOutput))
           {
-          child->_flags.clearFlag(Property::ParentHasOutput);
-          clearParentHasOutputConnection(child);
+          prop->_flags.clearFlag(Property::ParentHasOutput);
+          clearParentHasOutputConnection(prop);
           }
         }
       }

@@ -123,8 +123,18 @@ void ShiftCoreTest::entityCompute()
   TestDatabase db;
 
   // create an entity, everything should be dirty
-  TestEntity* a = db.addChild<TestEntity>();
-  TestEntity* b = db.addChild<TestEntity>();
+  TestEntity *a = db.addChild<TestEntity>();
+  TestEntity *b = db.addChild<TestEntity>();
+
+  QCOMPARE(a->evaluationCount, 0);
+  QCOMPARE(b->evaluationCount, 0);
+
+  b->setInput(a);
+
+  QCOMPARE(a->evaluationCount, 0);
+  QCOMPARE(b->evaluationCount, 0);
+
+  b->setInput(0);
 
   QCOMPARE(a->evaluationCount, 0);
   QCOMPARE(b->evaluationCount, 0);
@@ -134,5 +144,3 @@ void ShiftCoreTest::entityCompute()
   QCOMPARE(a->evaluationCount, 0);
   QCOMPARE(b->evaluationCount, 0);
   }
-
-QTEST_APPLESS_MAIN(ShiftCoreTest)
