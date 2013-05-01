@@ -6,6 +6,7 @@
 #include "shift/Changes/shandler.inl"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/sdatabase.h"
+#include "shift/Properties/scontainerinternaliterators.h"
 #include "XStringBuffer"
 
 namespace Shift
@@ -243,6 +244,16 @@ void Container::internalClear(Database *db)
   _dynamicChild = 0;
   }
 
+void Container::terminateTree()
+  {
+#if X_ASSERTS_ENABLED
+  xForeach(auto p, LightWalker(this))
+    {
+    p->terminate();
+    }
+#endif
+  }
+
 Name Container::makeUniqueName(const NameArg &name) const
   {
   Name newName;
@@ -312,15 +323,7 @@ void Container::removeAttribute(Attribute *oldProp)
 
   Block b(db);
 
-
-  if(Container *oldCont = oldProp->castTo<Container>())
-    {
-    oldCont->disconnectTree();
-    }
-  else if(Property *prop = oldProp->castTo<Property>())
-    {
-    prop->disconnect();
-    }
+  oldProp->terminate();
   PropertyDoChange(TreeChange, this, (Container*)0, oldProp, index(oldProp));
   }
 

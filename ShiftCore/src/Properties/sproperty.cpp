@@ -400,6 +400,7 @@ void Property::update() const
 
 void Property::concurrentUpdate() const
   {
+  xAssert(isUpdating());
   Property *prop = const_cast<Property*>(this);
 
   if(!isDynamic())

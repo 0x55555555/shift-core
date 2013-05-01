@@ -484,6 +484,21 @@ Eks::String Attribute::valueAsString() const
   return Eks::String();
   }
 
+void Attribute::terminate()
+  {
+  if(Container *oldCont = castTo<Container>())
+    {
+    xAssert(!oldCont->isUpdating());
+    oldCont->disconnect();
+    oldCont->terminateTree();
+    }
+  else if(Property *prop = castTo<Property>())
+    {
+    xAssert(!prop->isUpdating());
+    prop->disconnect();
+    }
+  }
+
 void Attribute::internalSetName(const NameArg &name)
   {
   name.toName(((BaseInstanceInformation*)this->baseInstanceInformation())->name());

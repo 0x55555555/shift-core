@@ -215,6 +215,8 @@ private:
   Attribute *_dynamicChild;
   Database *_database;
 
+  void terminateTree();
+
   Name makeUniqueName(const NameArg &name) const;
   void internalInsert(Attribute *, xsize index);
   void internalSetup(Attribute *);
