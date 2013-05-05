@@ -13,7 +13,7 @@ class Change;
 class SHIFT_EXPORT Observer
   {
 public:
-  Observer() { }
+  Observer();
   virtual ~Observer();
   virtual void actOnChanges() { };
 

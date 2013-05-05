@@ -188,6 +188,7 @@ private:
     Observer *getObserver();
     };
   Eks::Vector<ObserverStruct> _observers;
+  void setupObservers();
   };
 
 }

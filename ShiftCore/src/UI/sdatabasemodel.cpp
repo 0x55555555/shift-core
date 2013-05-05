@@ -69,17 +69,14 @@ void DatabaseDelegate::currentItemDestroyed()
   _currentWidget = 0;
   }
 
-DatabaseModel::DatabaseModel(Database *db, Entity *ent, Options options) : _db(db), _root(ent),
-    _options(options), _currentTreeChange(0)
+CommonModel::CommonModel(Database *db, Entity *ent)
+  : _db(db),
+    _root(ent),
+    _showValues(false)
   {
   if(_root == 0)
     {
     _root = db;
-    }
-
-  if(_root.isValid())
-    {
-    _root->addTreeObserver(this);
     }
 
   _roles[Qt::DisplayRole] = "name";
@@ -92,55 +89,7 @@ DatabaseModel::DatabaseModel(Database *db, Entity *ent, Options options) : _db(d
   _roles[EntityOutputPositionRole] = "entityOutputPosition";
   }
 
-DatabaseModel::~DatabaseModel()
-  {
-  if(_root.isValid())
-    {
-    _root->removeTreeObserver(this);
-    }
-  }
-
-QModelIndex DatabaseModel::index(const Property *p) const
-  {
-  return createIndex((int)p->parent()->index(p), 0, (Property *)p);
-  }
-
-bool DatabaseModel::isEqual(const QModelIndex &a, const QModelIndex &b) const
-  {
-  const void *ap = a.internalPointer();
-  const void *bp = b.internalPointer();
-  if(!ap)
-    {
-    ap = _root.entity();
-    }
-  if(!bp)
-    {
-    bp = _root.entity();
-    }
-  return ap == bp;
-  }
-
-QModelIndex DatabaseModel::root() const
-  {
-  return createIndex(0, 0, (Property*)_root.entity());
-  }
-
-bool DatabaseModel::isValid(const QModelIndex &a) const
-  {
-  return a.isValid();
-  }
-
-int DatabaseModel::rowIndex(const QModelIndex &i) const
-  {
-  return i.row();
-  }
-
-int DatabaseModel::columnIndex(const QModelIndex &i) const
-  {
-  return i.column();
-  }
-
-int DatabaseModel::rowCount( const QModelIndex &parent ) const
+int CommonModel::columnCount( const QModelIndex &parent ) const
   {
   SDataModelProfileFunction
   const Property *prop = _root;
@@ -149,147 +98,7 @@ int DatabaseModel::rowCount( const QModelIndex &parent ) const
     prop = (Property *)parent.internalPointer();
     }
 
-  if(!prop)
-    {
-    return 0;
-    }
-
-  if(_options.hasFlag(EntitiesOnly))
-    {
-    const Entity *ent = prop->castTo<Entity>();
-    xAssert(ent);
-
-    prop = &ent->children;
-    }
-
-  const Container *container = prop->castTo<Container>();
-  if(container)
-    {
-    if(_currentTreeChange)
-      {
-      xAssert(container != _currentTreeChange->property());
-      if(container == _currentTreeChange->after())
-        {
-        return (int)(container->size() - 1);
-        }
-      else if(container == _currentTreeChange->before())
-        {
-        return (int)(container->size() + 1);
-        }
-      }
-    return (int)container->size();
-    }
-
-  return 0;
-  }
-
-QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent ) const
-  {
-  SDataModelProfileFunction
-  const Property *prop = _root;
-  int size = 0;
-  if(parent.isValid())
-    {
-    prop = (Property *)parent.internalPointer();
-    }
-
-  if(!prop)
-    {
-    return QModelIndex();
-    }
-
-  if(_options.hasFlag(EntitiesOnly))
-    {
-    const Entity *ent = prop->castTo<Entity>();
-    xAssert(ent);
-
-    prop = &ent->children;
-    }
-
-  const Container *container = prop->castTo<Container>();
-  if(container)
-    {
-    if(_currentTreeChange)
-      {
-      xAssert(container != _currentTreeChange->property());
-      if(container == _currentTreeChange->before())
-        {
-        xsize oldRow = xMin(container->size(), _currentTreeChange->index());
-        if((xsize)row == oldRow)
-          {
-          return createIndex(row, column, _currentTreeChange->property());
-          }
-        else if((xsize)row > oldRow)
-          {
-          --row;
-          }
-        }
-      else if(container == _currentTreeChange->after())
-        {
-        int newRow = xMin((int)(container->size()-1), (int)_currentTreeChange->index());
-        if(row >= newRow)
-          {
-          ++row;
-          }
-        }
-      }
-
-    xForeach(auto child, container->walker())
-      {
-      if(size == row)
-        {
-        return createIndex(row, column, (void*)child);
-        }
-      size++;
-      }
-    xAssertFail();
-    }
-
-  return QModelIndex();
-  }
-
-QModelIndex DatabaseModel::parent( const QModelIndex &child ) const
-  {
-  SDataModelProfileFunction
-  if(child.isValid())
-    {
-    Property *prop = (Property *)child.internalPointer();
-    Container *parent = prop->parent();
-
-    if(_currentTreeChange)
-      {
-      if(prop == _currentTreeChange->property())
-        {
-        parent = (Container*)_currentTreeChange->before();
-        }
-      }
-
-    if(parent)
-      {
-      if(_options.hasFlag(EntitiesOnly))
-        {
-        Entity *ent = parent->entity();
-        return createIndex((int)ent->parent()->index(ent), 0, (Property*)ent);
-        }
-      else
-        {
-        return createIndex((int)parent->parent()->index(parent), 0, (Property*)parent);
-        }
-      }
-    }
-  return QModelIndex();
-  }
-
-int DatabaseModel::columnCount( const QModelIndex &parent ) const
-  {
-  SDataModelProfileFunction
-  const Property *prop = _root;
-  if(parent.isValid())
-    {
-    prop = (Property *)parent.internalPointer();
-    }
-
-  if(_options.hasFlag(ShowValues) && prop)
+  if(_showValues && prop)
     {
     int columns = 1;
 
@@ -312,7 +121,7 @@ int DatabaseModel::columnCount( const QModelIndex &parent ) const
   return 1;
   }
 
-QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
+QVariant CommonModel::data( const QModelIndex &index, int role ) const
   {
   SDataModelProfileFunction
   const Property *prop = (const Property *)index.internalPointer();
@@ -331,11 +140,11 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
     }
   xAssert(prop);
 
-  xAssert(!_currentTreeChange || _currentTreeChange->property() != prop);
+  //xAssert(!_currentTreeChange || _currentTreeChange->property() != prop);
 
   if(role == Qt::DisplayRole)
     {
-    if(_options.hasFlag(ShowValues) && index.column() == 1)
+    if(_showValues && index.column() == 1)
       {
       const PropertyVariantInterface *ifc = prop->findInterface<PropertyVariantInterface>();
       if(ifc)
@@ -414,7 +223,7 @@ QVariant DatabaseModel::data( const QModelIndex &index, int role ) const
   return QVariant();
   }
 
-QVariant DatabaseModel::data( const QModelIndex &index, const QString &role) const
+QVariant CommonModel::data( const QModelIndex &index, const QString &role) const
   {
   SDataModelProfileFunction
   const QHash<int, QByteArray> &roles = roleNames();
@@ -434,16 +243,16 @@ QVariant DatabaseModel::data( const QModelIndex &index, const QString &role) con
   return QVariant();
   }
 
-bool DatabaseModel::setData(const QModelIndex &index, const QVariant &val, int role)
+bool CommonModel::setData(const QModelIndex &index, const QVariant &val, int role)
   {
-  xAssert(!_currentTreeChange);
+  //xAssert(!_currentTreeChange);
   SDataModelProfileFunction
   Property *prop = (Property *)index.internalPointer();
   if(prop)
     {
     if(role == Qt::DisplayRole)
       {
-      if(_options.hasFlag(ShowValues) && index.column() == 1)
+      if(_showValues && index.column() == 1)
         {
         PropertyVariantInterface *ifc = prop->findInterface<PropertyVariantInterface>();
         if(ifc)
@@ -499,7 +308,7 @@ bool DatabaseModel::setData(const QModelIndex &index, const QVariant &val, int r
   return false;
   }
 
-bool DatabaseModel::setData(const QModelIndex &index, const QString &role, const QVariant &value)
+bool CommonModel::setData(const QModelIndex &index, const QString &role, const QVariant &value)
   {
   SDataModelProfileFunction
   const QHash<int, QByteArray> &roles = roleNames();
@@ -519,7 +328,7 @@ bool DatabaseModel::setData(const QModelIndex &index, const QString &role, const
   return false;
   }
 
-QVariant DatabaseModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant CommonModel::headerData(int section, Qt::Orientation orientation, int role) const
   {
   if(orientation == Qt::Horizontal && role == Qt::DisplayRole)
     {
@@ -535,21 +344,259 @@ QVariant DatabaseModel::headerData(int section, Qt::Orientation orientation, int
   return QVariant();
   }
 
-QHash<int, QByteArray> DatabaseModel::roleNames() const
+QHash<int, QByteArray> CommonModel::roleNames() const
   {
   return _roles;
   }
 
-Qt::ItemFlags DatabaseModel::flags(const QModelIndex &index) const
+QModelIndex CommonModel::index(Attribute *p) const
+  {
+  xAssert(p);
+  Container *c = p->parent();
+  if(!c)
+    {
+    return QModelIndex();
+    }
+
+  if(p == _root.entity())
+    {
+    return createIndex(0, 0, (Attribute *)p);
+    }
+
+  return createIndex((int)c->index(p), 0, (Attribute *)p);
+  }
+
+Attribute *CommonModel::attributeFromIndex(const QModelIndex &index) const
+  {
+  Attribute *prop = (Property *)index.internalPointer();
+  return prop;
+  }
+
+Qt::ItemFlags CommonModel::flags(const QModelIndex &index) const
   {
   SDataModelProfileFunction
-  Property *prop = (Property *)index.internalPointer();
-  xAssert(!_currentTreeChange || _currentTreeChange->property() != prop);
+  Attribute *prop = attributeFromIndex(index);
+  //xAssert(!_currentTreeChange || _currentTreeChange->property() != prop);
   if(prop && index.column() < 2)
     {
     return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
     }
   return QAbstractItemModel::flags(index);
+  }
+
+bool CommonModel::isEqual(const QModelIndex &a, const QModelIndex &b) const
+  {
+  const void *ap = attributeFromIndex(a);
+  const void *bp = attributeFromIndex(b);
+  if(!ap)
+    {
+    ap = _root.entity();
+    }
+  if(!bp)
+    {
+    bp = _root.entity();
+    }
+  return ap == bp;
+  }
+
+QModelIndex CommonModel::root() const
+  {
+  return createIndex(0, 0, (Property*)_root.entity());
+  }
+
+bool CommonModel::isValid(const QModelIndex &a) const
+  {
+  return a.isValid();
+  }
+
+int CommonModel::rowIndex(const QModelIndex &i) const
+  {
+  return i.row();
+  }
+
+int CommonModel::columnIndex(const QModelIndex &i) const
+  {
+  return i.column();
+  }
+
+void CommonModel::setRoot(Entity *ent)
+  {
+  beginResetModel();
+  _root = ent;
+  endResetModel();
+
+  Q_EMIT dataChanged(index(0, 0), index((int)_root->children.size(), 0));
+  }
+
+void CommonModel::setDatabase(Database *db, Entity *root)
+  {
+  _db = db;
+
+  if(root == 0)
+    {
+    root = db;
+    }
+
+  setRoot(root);
+  }
+
+DatabaseModel::DatabaseModel(Database *db, Entity *ent, Options options)
+  : CommonModel(db, ent),
+    _currentTreeChange(0),
+    _options(options)
+  {
+  _showValues = (_options & ShowValues) != 0;
+
+  if(_root.isValid())
+    {
+    _root->addTreeObserver(this);
+    }
+  }
+
+DatabaseModel::~DatabaseModel()
+  {
+  if(_root.isValid())
+    {
+    _root->removeTreeObserver(this);
+    }
+  }
+
+int DatabaseModel::rowCount( const QModelIndex &parent ) const
+  {
+  SDataModelProfileFunction
+  const Attribute *prop = _root;
+  if(parent.isValid())
+    {
+    prop = attributeFromIndex(parent);
+    }
+
+  if(!prop)
+    {
+    return 0;
+    }
+
+  if(_options.hasFlag(EntitiesOnly))
+    {
+    const Entity *ent = prop->uncheckedCastTo<Entity>();
+    prop = &ent->children;
+    }
+
+  const Container *container = prop->castTo<Container>();
+  if(container)
+    {
+    if(_currentTreeChange)
+      {
+      xAssert(container != _currentTreeChange->property());
+      if(container == _currentTreeChange->after())
+        {
+        return (int)(container->size() - 1);
+        }
+      else if(container == _currentTreeChange->before())
+        {
+        return (int)(container->size() + 1);
+        }
+      }
+    return (int)container->size();
+    }
+
+  return 0;
+  }
+
+QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent ) const
+  {
+  SDataModelProfileFunction
+  const Attribute *prop = _root;
+  int size = 0;
+  if(parent.isValid())
+    {
+    prop = attributeFromIndex(parent);
+    }
+
+  if(!prop)
+    {
+    return QModelIndex();
+    }
+
+  if(_options.hasFlag(EntitiesOnly))
+    {
+    const Entity *ent = prop->castTo<Entity>();
+    xAssert(ent);
+
+    prop = &ent->children;
+    }
+
+  const Container *container = prop->castTo<Container>();
+  if(container)
+    {
+    if(_currentTreeChange)
+      {
+      xAssert(container != _currentTreeChange->property());
+      if(container == _currentTreeChange->before())
+        {
+        xsize oldRow = xMin(container->size(), _currentTreeChange->index());
+        if((xsize)row == oldRow)
+          {
+          return createIndex(row, column, _currentTreeChange->property());
+          }
+        else if((xsize)row > oldRow)
+          {
+          --row;
+          }
+        }
+      else if(container == _currentTreeChange->after())
+        {
+        int newRow = xMin((int)(container->size()-1), (int)_currentTreeChange->index());
+        if(row >= newRow)
+          {
+          ++row;
+          }
+        }
+      }
+
+    xForeach(auto child, container->walker())
+      {
+      if(size == row)
+        {
+        return createIndex(row, column, (void*)child);
+        }
+      size++;
+      }
+    xAssertFail();
+    }
+
+  return QModelIndex();
+  }
+
+QModelIndex DatabaseModel::parent( const QModelIndex &child ) const
+  {
+  SDataModelProfileFunction
+  if(child.isValid())
+    {
+    Attribute *prop = attributeFromIndex(child);
+    Container *parent = prop->parent();
+
+    if(_currentTreeChange)
+      {
+      if(prop == _currentTreeChange->property())
+        {
+        parent = (Container*)_currentTreeChange->before();
+        }
+      }
+
+    if(parent)
+      {
+      if(_options.hasFlag(EntitiesOnly))
+        {
+        Entity *ent = parent->entity();
+        return CommonModel::index(ent);
+        }
+      else
+        {
+        return CommonModel::index(parent);
+        }
+      }
+    }
+  return QModelIndex();
   }
 
 void DatabaseModel::onTreeChange(const Change *c, bool back)
@@ -610,6 +657,7 @@ void DatabaseModel::setOptions(Options options)
   {
   Q_EMIT layoutAboutToBeChanged();
   _options = options;
+  _showValues = (_options & ShowValues) != 0;
   Q_EMIT layoutChanged();
   }
 
@@ -620,32 +668,158 @@ DatabaseModel::Options DatabaseModel::options() const
 
 void DatabaseModel::setRoot(Entity *ent)
   {
-  beginResetModel();
   if(_root)
     {
     _root->removeTreeObserver(this);
     }
-  _root = ent;
+
+  CommonModel::setRoot(ent);
 
   if(_root)
     {
     _root->addTreeObserver(this);
     }
-  endResetModel();
-
-  Q_EMIT dataChanged(index(0, 0), index((int)_root->children.size(), 0));
   }
 
-void DatabaseModel::setDatabase(Database *db, Entity *root)
+InputModel::InputModel(Database *db, Entity *ent, const PropertyInformation *itemType, const PropertyInformation *treeType, const EmbeddedPropertyInstanceInformation *childGroup)
+  : CommonModel(db, ent),
+    _itemType(itemType),
+    _treeType(treeType),
+    _childAttr(childGroup),
+    _change(0)
   {
-  _db = db;
-
-  if(root == 0)
+  if(_root.isValid())
     {
-    root = db;
+    _root->addConnectionObserver(this);
+    }
+  }
+
+InputModel::~InputModel()
+  {
+  if(_root.isValid())
+    {
+    _root->removeConnectionObserver(this);
+    }
+  }
+
+
+void InputModel::setRoot(Entity *ent)
+  {
+  if(_root)
+    {
+    _root->removeConnectionObserver(this);
     }
 
-  setRoot(root);
+  CommonModel::setRoot(ent);
+
+  if(_root)
+    {
+    _root->addConnectionObserver(this);
+    }
   }
+
+int InputModel::rowCount(const QModelIndex &parent) const
+  {
+  Attribute *attr = const_cast<Entity*>(_root->entity());
+  if(parent.isValid())
+    {
+    attr = attributeFromIndex(parent);
+    }
+
+
+  xAssert(attr);
+  const PropertyInformation *info = attr->typeInformation();
+  xAssert(info->inheritsFromType(_itemType));
+
+  Container *cont = attr->uncheckedCastTo<Container>();
+  if(!info->inheritsFromType(_treeType))
+    {
+    return 0;
+    }
+
+  Attribute *children = _childAttr->locate(cont);
+  Container *childrenCont = children->uncheckedCastTo<Container>();
+  return (int)childrenCont->size();
+  }
+
+QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
+  {
+  Attribute *parentAttr = const_cast<Entity*>(_root.entity());
+  if(parent.isValid())
+    {
+    parentAttr = attributeFromIndex(parent);
+    }
+  const PropertyInformation *info = parentAttr->typeInformation();
+  xAssert(info->inheritsFromType(_treeType));
+
+  Attribute *children = _childAttr->locate(parentAttr->uncheckedCastTo<Container>());
+  Container *cont = children->uncheckedCastTo<Container>();
+  if(row >= cont->size())
+    {
+    return QModelIndex();
+    }
+
+  Attribute *attr = cont->at(row);
+  xAssert(attr);
+
+  Property *prop = attr->uncheckedCastTo<Property>();
+  if(!prop->input())
+    {
+    return CommonModel::index(prop);
+    }
+
+  return CommonModel::index(prop->input());
+  }
+
+QModelIndex InputModel::parent(const QModelIndex &child) const
+  {
+  Attribute *attr = attributeFromIndex(child);
+
+  if(attr == _root.entity())
+    {
+    return QModelIndex();
+    }
+
+  if(!attr->typeInformation()->inheritsFromType(_itemType))
+    {
+    return CommonModel::index(attr->parent());
+    }
+
+  Property *prop = attr->uncheckedCastTo<Property>()->output();
+  for(; prop; prop = prop->nextOutput())
+    {
+    Container *cont = prop->parent();
+    if(!cont)
+      {
+      continue;
+      }
+
+    Container *tree = cont->parent();
+    if(!tree)
+      {
+      continue;
+      }
+
+    if(tree->typeInformation()->inheritsFromType(_treeType))
+      {
+      return CommonModel::index(tree);
+      }
+    }
+
+  xAssertFail();
+  return QModelIndex();
+  }
+
+void InputModel::onConnectionChange(const Change *c, bool back)
+  {
+  const Property::ConnectionChange *_change = c->castTo<Property::ConnectionChange>();
+  (void)_change;
+  (void)back;
+  }
+
+void InputModel::actOnChanges()
+  {
+  }
+
 
 }

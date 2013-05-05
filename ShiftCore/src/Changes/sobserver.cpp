@@ -4,6 +4,11 @@
 namespace Shift
 {
 
+Observer::Observer()
+  {
+  _entities.allocator() = TypeRegistry::generalPurposeAllocator();
+  }
+
 Observer::~Observer()
   {
   Q_FOREACH(Entity *ent, _entities)

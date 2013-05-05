@@ -144,8 +144,18 @@ Observer *Entity::ObserverStruct::getObserver()
   return 0;
   }
 
+void Entity::setupObservers()
+  {
+  if(!_observers.allocator().allocator())
+    {
+    _observers.allocator() = generalPurposeAllocator();
+    }
+  }
+
 void Entity::addDirtyObserver(DirtyObserver *in)
   {
+  setupObservers();
+
   ObserverStruct s;
   s.mode = ObserverStruct::Dirty;
   s.observer = in;
@@ -155,6 +165,8 @@ void Entity::addDirtyObserver(DirtyObserver *in)
 
 void Entity::addTreeObserver(TreeObserver *in)
   {
+  setupObservers();
+
   xAssert(in);
   ObserverStruct s;
   s.mode = ObserverStruct::Tree;
@@ -165,6 +177,8 @@ void Entity::addTreeObserver(TreeObserver *in)
 
 void Entity::addConnectionObserver(ConnectionObserver *in)
   {
+  setupObservers();
+
   ObserverStruct s;
   s.mode = ObserverStruct::Connection;
   s.observer = in;
