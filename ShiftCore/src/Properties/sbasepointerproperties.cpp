@@ -13,15 +13,7 @@ void Pointer::createTypeInformation(PropertyInformationTyped<Pointer> *,
 
 void Pointer::setPointed(const Property *prop)
   {
-  if(hasInput())
-    {
-    input()->disconnect(this);
-    }
-
-  if(prop)
-    {
-    prop->connect(this);
-    }
+  setInput(prop);
   }
 
 /*const PropertyInformation *Pointer::pointedToType() const

@@ -58,6 +58,7 @@
 # define PropertyDoChangeNonLocal(type, ths, ...) {\
   type change(__VA_ARGS__); \
   ((Change&)change).apply(); \
+  ((Change&)change).inform(false); \
   }
 #endif
 

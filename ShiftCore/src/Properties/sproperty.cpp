@@ -132,6 +132,7 @@ Property::Property()
 void Property::setInput(const Property *inp)
   {
   SProfileFunction
+  Block b(handler());
 
   if(input())
     {
