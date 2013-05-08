@@ -720,12 +720,12 @@ void InputModel::setRoot(Entity *ent)
 
 int InputModel::rowCount(const QModelIndex &parent) const
   {
+  xAssert(!_change);
   Attribute *attr = const_cast<Entity*>(_root->entity());
   if(parent.isValid())
     {
     attr = attributeFromIndex(parent);
     }
-
 
   xAssert(attr);
   const PropertyInformation *info = attr->typeInformation();
@@ -737,6 +737,11 @@ int InputModel::rowCount(const QModelIndex &parent) const
     return 0;
     }
 
+  if(attr != _root.entity())
+    {
+    return 0;
+    }
+
   Attribute *children = _childAttr->locate(cont);
   Container *childrenCont = children->uncheckedCastTo<Container>();
   return (int)childrenCont->size();
@@ -744,6 +749,7 @@ int InputModel::rowCount(const QModelIndex &parent) const
 
 QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
   {
+  xAssert(!_change);
   Attribute *parentAttr = const_cast<Entity*>(_root.entity());
   if(parent.isValid())
     {
@@ -773,6 +779,7 @@ QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
 
 QModelIndex InputModel::parent(const QModelIndex &child) const
   {
+  xAssert(!_change);
   Attribute *attr = attributeFromIndex(child);
 
   if(attr == _root.entity())
@@ -812,9 +819,62 @@ QModelIndex InputModel::parent(const QModelIndex &child) const
 
 void InputModel::onConnectionChange(const Change *c, bool back)
   {
-  const Property::ConnectionChange *_change = c->castTo<Property::ConnectionChange>();
-  (void)_change;
-  (void)back;
+  const Property::ConnectionChange *change = c->castTo<Property::ConnectionChange>();
+  if(change)
+    {
+    const Property *src = change->driver();
+    const Property *dest = change->driven();
+
+    if(!src->typeInformation()->inheritsFromType(_itemType))
+      {
+      return;
+      }
+
+    const Container *dstContainer = dest->parent();
+    xAssert(dstContainer);
+    const Container *dstContatinerHolder = dstContainer->parent();
+    xAssert(dstContatinerHolder);
+    if(!dstContatinerHolder->typeInformation()->inheritsFromType(_treeType))
+      {
+      return;
+      }
+
+    if(_childAttr->locate(dstContatinerHolder) != dstContainer)
+      {
+      return;
+      }
+    
+    _change = change;
+    Q_EMIT layoutAboutToBeChanged();
+
+    xsize i = dest->index();
+    if(_change->mode(back) == Property::ConnectionChange::Disconnect)
+      {
+      changePersistentIndex(CommonModel::index((Property*)src), QModelIndex());
+      Q_EMIT beginRemoveRows(CommonModel::index((Property*)dstContatinerHolder), (int)i, (int)i);
+      _change = 0;
+      Q_EMIT endRemoveRows();
+      }
+    else if(_change->mode(back) == Property::ConnectionChange::Connect)
+      {
+      Q_EMIT beginInsertRows(CommonModel::index((Property*)dstContatinerHolder), (int)i, (int)i);
+      _change = 0;
+      Q_EMIT endInsertRows();
+      }
+
+    Q_EMIT layoutChanged();
+    }
+  }
+
+void InputModel::onTreeChange(const Change *c, bool)
+  {
+  const Property::NameChange *nameChange = c->castTo<Property::NameChange>();
+  if(nameChange)
+    {
+    const Attribute *prop = nameChange->attribute();
+    QModelIndex ind = CommonModel::index((Attribute*)prop);
+    Q_EMIT dataChanged(ind, ind);
+    }
   }
 
 void InputModel::actOnChanges()

@@ -117,7 +117,7 @@ private:
   };
 
 
-class SHIFT_EXPORT InputModel : public CommonModel, ConnectionObserver
+class SHIFT_EXPORT InputModel : public CommonModel, ConnectionObserver, TreeObserver
   {
   Q_OBJECT
 public:
@@ -129,6 +129,7 @@ public:
   Q_INVOKABLE virtual QModelIndex parent( const QModelIndex &child ) const X_OVERRIDE;
 
   void onConnectionChange(const Change *, bool back) X_OVERRIDE;
+  void onTreeChange(const Change *, bool back) X_OVERRIDE;
   void actOnChanges() X_OVERRIDE;
 
   void setRoot(Entity *ent) X_OVERRIDE;
@@ -137,7 +138,7 @@ private:
   const PropertyInformation *_itemType;
   const PropertyInformation *_treeType;
   const EmbeddedPropertyInstanceInformation *_childAttr;
-  Property::ConnectionChange *_change;
+  const Property::ConnectionChange *_change;
   };
 
 }

@@ -86,6 +86,8 @@ public:
   Eks::String path() const;
   Eks::String path(const Attribute *from) const;
 
+  xsize index() const;
+
   bool isDescendedFrom(const Attribute *ent) const;
   Attribute *resolvePath(const Eks::String &path);
   const Attribute *resolvePath(const Eks::String &path) const;
