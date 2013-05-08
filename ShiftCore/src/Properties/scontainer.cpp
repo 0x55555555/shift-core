@@ -254,41 +254,31 @@ void Container::terminateTree()
 #endif
   }
 
-Name Container::makeUniqueName(const NameArg &name) const
+void Container::makeUniqueName(
+    const Attribute *prop,
+    const NameArg &name,
+    Name& newName) const
   {
-  Name newName;
+  const PropertyInformation *info = prop->typeInformation();
+  NameArg typeWrap(info->typeName());
+  const NameArg *inName = name.isEmpty() ? &typeWrap : &name;
 
-  xuint32 id = 1;
-  name.toName(newName);
+  xsize id = info->instances();
+  inName->toName(newName);
   newName.appendType(id);
   while(internalFindChild(newName))
     {
-    name.toName(newName);
+    inName->toName(newName);
     newName.appendType(id);
 
     ++id;
     }
-  return newName;
   }
 
 Attribute *Container::addAttribute(const PropertyInformation *info, xsize index, const NameArg& name, PropertyInstanceInformationInitialiser *init)
   {
   xAssert(index >= containedProperties());
-
-
-  Attribute *newProp = database()->createDynamicAttribute(info, this, init);
-
-  bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
-  if(!nameUnique)
-    {
-    ((PropertyInstanceInformation*)newProp->_instanceInfo)->name() = makeUniqueName(name);
-    }
-  else
-    {
-    name.toName(((PropertyInstanceInformation*)newProp->_instanceInfo)->name());
-    }
-
-  PropertyDoChange(TreeChange, (Container*)0, this, newProp, index);
+  Attribute *newProp = database()->addDynamicAttribute(info, name, index, this, init);
   return newProp;
   }
 
@@ -302,7 +292,9 @@ void Container::moveAttribute(Container *c, Attribute *p)
     {
     Block b(database());
 
-    p->setName(c->makeUniqueName(name));
+    Name newName;
+    c->makeUniqueName(p, name, newName);
+    p->setName(newName);
     PropertyDoChange(TreeChange, this, c, p, X_UINT8_SENTINEL);
     }
   else
@@ -403,7 +395,10 @@ void Container::internalSetup(Attribute *newProp)
   {
   // set up state info
 #ifdef S_CENTRAL_CHANGE_HANDLER
-  newProp->_handler = Handler::findHandler(this, newProp);
+  if (Entity *ent = newProp->castTo<Entity>())
+    {
+    ent->_handler = Handler::findHandler(this, ent);
+    }
 #else
   Container *cont = newProp->castTo<Container>();
   if(cont)

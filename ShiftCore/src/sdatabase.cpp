@@ -53,8 +53,6 @@ Database::Database()
 #endif
   xAssert(_memory);
 
-  _temporaryMemory = temporaryAllocator();
-
 #ifdef S_CENTRAL_CHANGE_HANDLER
   _handler = this;
 #else
@@ -116,7 +114,12 @@ void Database::save(const QString &type, QIODevice *device, Entity *saveRoot, bo
   s.writeToDevice(device, saveRoot, includeRoot);
   }
 
-Attribute *Database::createDynamicAttribute(const PropertyInformation *type, Container *parentToBe, PropertyInstanceInformationInitialiser *init)
+Attribute *Database::addDynamicAttribute(
+    const PropertyInformation *type,
+    const NameArg & name,
+    xsize index,
+    Container *parent,
+    PropertyInstanceInformationInitialiser *init)
   {
   SProfileFunction
   xAssert(type);
@@ -151,16 +154,35 @@ Attribute *Database::createDynamicAttribute(const PropertyInformation *type, Con
 
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
-  prop->_handler = Handler::findHandler(parentToBe, prop);
-  xAssert(_handler);
-#else
-  (void)parentToBe;
+  if (Entity *ent = prop->castTo<Entity>())
+    {
+    ent->_handler = Handler::findHandler(parent, ent);
+    xAssert(_handler);
+    xAssert(ent->_handler);
+    }
 #endif
 
   initiateAttribute(prop);
   xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
+
+  // insert the property into the tree, before running post initiate operations
+  // this allows things like connections to be made in initiate attribute.
+  bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
+  if(!nameUnique)
+    {
+    makeUniqueName(prop, name, ((PropertyInstanceInformation*)prop->_instanceInfo)->name());
+    }
+  else
+    {
+    name.toName(((PropertyInstanceInformation*)prop->_instanceInfo)->name());
+    }
+
+  PropertyDoChange(TreeChange, (Container*)0, parent, prop, index);
+
+
   postInitiateAttribute(prop);
   xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
+
   return prop;
   }
 
@@ -260,10 +282,6 @@ void Database::initiateAttribute(Attribute *prop)
 
     initiateAttributeFromMetaData(container, metaData);
     }
-
-#ifdef S_CENTRAL_CHANGE_HANDLER
-  xAssert(prop->handler());
-#endif
   }
 
 void Database::postInitiateAttribute(Attribute *prop)
@@ -299,10 +317,6 @@ void Database::postInitiateAttribute(Attribute *prop)
       }
     info = info->parentTypeInformation();
     }
-#endif
-
-#ifdef S_CENTRAL_CHANGE_HANDLER
-  xAssert(prop->handler());
 #endif
   }
 

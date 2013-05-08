@@ -49,6 +49,7 @@
   S_REGISTER_TYPE_FUNCTION(myName)
 
 // its possible we might want to not use a handler globally, and just apply all changes directly.
+#define S_CENTRAL_CHANGE_HANDLER
 #ifdef S_CENTRAL_CHANGE_HANDLER
 # define PropertyDoChangeNonLocal(type, ths, ...) {\
   Handler *hand = ths->handler(); \
@@ -58,8 +59,10 @@
 # define PropertyDoChangeNonLocal(type, ths, ...) {\
   type change(__VA_ARGS__); \
   ((Change&)change).apply(); \
-  ((Change&)change).inform(false); \
   }
+
+// todo: informing when there is no handler???
+//((Change&)change).inform(false);
 #endif
 
 #define PropertyDoChange(type, ...) PropertyDoChangeNonLocal(type, this, __VA_ARGS__)

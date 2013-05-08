@@ -4,7 +4,12 @@
 namespace Shift
 {
 
-Handler::Handler() : _database(0), _blockLevel(0), _stateStorageEnabled(false)
+Handler::Handler()
+  : _database(0),
+    _blockLevel(0),
+    _stateStorageEnabled(false),
+    _blockObservers(TypeRegistry::generalPurposeAllocator()),
+    _blockSize(TypeRegistry::generalPurposeAllocator())
   {
   }
 
@@ -22,7 +27,7 @@ void Handler::clearChanges()
   _done.clear();
   }
 
-Handler *Handler::findHandler(Container *parent, Property *prop)
+Handler *Handler::findHandler(Container *parent, Entity *prop)
   {
   Handler *handler = prop->findInterface<Handler>();
   if(handler)
@@ -40,9 +45,19 @@ Eks::AllocatorBase *Handler::changeAllocator()
   return _database->persistantAllocator();
   }
 
-Eks::TemporaryAllocatorCore *Handler::temporaryAllocator()
+Eks::TemporaryAllocatorCore *Handler::temporaryAllocator() const
   {
   return _database->temporaryAllocator();
+  }
+
+Eks::AllocatorBase *Handler::persistentBlockAllocator() const
+  {
+  return _database->persistantAllocator();
+  }
+
+Eks::AllocatorBase *Handler::generalPurposeAllocator() const
+  {
+  return TypeRegistry::generalPurposeAllocator();
   }
 
 void Handler::beginBlock()

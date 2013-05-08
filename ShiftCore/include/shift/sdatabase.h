@@ -61,10 +61,10 @@ public:
     return _memory;
     }
 
-  /// A temporary allocator root to be used when allocating temporary memory inside Shift, for example, during computation.
+  /// A temporary allocator root to be used when allocating temporary memory inside Shift. For example, during computation.
   Eks::TemporaryAllocatorCore *temporaryAllocator()
     {
-    return _temporaryMemory;
+    return TypeRegistry::temporaryAllocator();
     }
 
 protected:
@@ -72,7 +72,12 @@ protected:
   void initiateInheritedDatabaseType(const PropertyInformation *info);
 
 private:
-  Attribute *createDynamicAttribute(const PropertyInformation *info, Container *parentToBe, PropertyInstanceInformationInitialiser *inst);
+  Attribute *addDynamicAttribute(
+      const PropertyInformation *info,
+      const NameArg &name,
+      xsize index,
+      Container *parent,
+      PropertyInstanceInformationInitialiser *inst);
   void deleteDynamicAttribute(Attribute *);
 
   DynamicInstanceInformation _instanceInfoData;
@@ -84,7 +89,6 @@ private:
   void uninitiateAttributeFromMetaData(Container *container, const PropertyInformation *mD);
 
   Eks::AllocatorBase *_memory;
-  Eks::TemporaryAllocatorCore *_temporaryMemory;
 
   friend class Property;
   friend class Container;

@@ -54,11 +54,11 @@ template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&...
 #define DO_CHANGE_IMPL(...) { \
   SProfileFunction \
   StateStorageBlock ss(false, this); \
-  if(!oldStateStorageEnabled) { \
+  if(!ss.wasEnabled()) { \
     CLS change(__VA_ARGS__); \
     ((Change&)change).apply(); \
     ((Change&)change).inform(false); \
-  }else { \
+  } else { \
     QMutexLocker l(&_doChange); \
     void *mem = changeAllocator()->alloc(sizeof(CLS)); \
     Change* change = new(mem) CLS(__VA_ARGS__); \

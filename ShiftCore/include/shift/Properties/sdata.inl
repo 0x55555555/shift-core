@@ -5,6 +5,7 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "XTemporaryAllocator"
 #include "shift/Changes/spropertychanges.h"
+#include "shift/Changes/shandler.inl"
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/TypeInformation/spropertygroup.h"
 
@@ -36,18 +37,16 @@ public:
     return true;
     }
 
+  bool inform(bool)
+    {
+    // no informing from compute.
+    return true;
+    }
+
 private:
   bool unApply()
     {
     xAssertFail();
-    return true;
-    }
-  bool inform(bool)
-    {
-    if(property()->entity())
-      {
-      property()->entity()->informDirtyObservers(property());
-      }
     return true;
     }
   };

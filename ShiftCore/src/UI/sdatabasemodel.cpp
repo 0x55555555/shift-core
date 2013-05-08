@@ -631,7 +631,7 @@ void DatabaseModel::onTreeChange(const Change *c, bool back)
       const Container *parent = tC->after(back);
       xAssert(parent);
 
-      int i = xMin((int)(parent->size()-1), (int)tC->index());
+      int i = (int)xMin(parent->size()-1, tC->index());
       Q_EMIT beginInsertRows(createIndex((int)parent->parent()->index(parent), 0, (Property*)parent), (int)i, (int)i);
       _currentTreeChange = 0;
       Q_EMIT endInsertRows();

@@ -13,7 +13,6 @@
 namespace Shift
 {
 
-xCompileTimeAssert(sizeof(Property) <= (sizeof(Attribute) + sizeof(void*) * 4));
 S_IMPLEMENT_PROPERTY(Property, Shift)
 
 

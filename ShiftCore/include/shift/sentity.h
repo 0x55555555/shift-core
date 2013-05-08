@@ -95,6 +95,7 @@ class SHIFT_EXPORT Entity : public Container, public XWeakSharedData
   S_ENTITY(Entity, Container, 0);
 
 public:
+  Entity();
   ~Entity();
 
   /// Used to hold dynamic child entities, allowing dynamic tree structures to be built.
@@ -173,6 +174,11 @@ public:
   const Entity *findChildEntity(const NameArg &) const;
   /// @}
 
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  /// \brief find the change handler for this entity
+  Handler *handler() { return _handler; }
+#endif
+
 private:
   struct ObserverStruct
     {
@@ -188,7 +194,15 @@ private:
     Observer *getObserver();
     };
   Eks::Vector<ObserverStruct> _observers;
+
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  Handler *_handler;
+#endif
+
   void setupObservers();
+
+  friend class Database;
+  friend class Container;
   };
 
 }

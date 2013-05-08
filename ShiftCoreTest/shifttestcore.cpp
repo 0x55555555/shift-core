@@ -3,6 +3,9 @@
 #include "shift/TypeInformation/spropertygroup.h"
 #include "shift/Properties/sdata.inl"
 
+xCompileTimeAssert(sizeof(Shift::Attribute) == sizeof(void*));
+xCompileTimeAssert(sizeof(Shift::Property) <= (sizeof(Shift::Attribute) + sizeof(void*) * 4));
+
 namespace Test
 {
 Shift::PropertyGroup &propertyGroup()

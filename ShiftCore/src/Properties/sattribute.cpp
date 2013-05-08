@@ -7,12 +7,11 @@
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "shift/Changes/shandler.h"
+#include "shift/Changes/shandler.inl"
 #include "XStringBuffer"
 
 namespace Shift
 {
-
-xCompileTimeAssert(sizeof(Attribute) == sizeof(void*));
 
 static PropertyGroup::Information _sAttribyteTypeInformation =
   Shift::propertyGroup().registerPropertyInformation(&_sAttribyteTypeInformation,
@@ -70,9 +69,6 @@ void Attribute::createTypeInformation(PropertyInformationTyped<Attribute> *info,
   }
 
 Attribute::Attribute() : _instanceInfo(0)
-#ifdef S_CENTRAL_CHANGE_HANDLER
-    , _handler(0)
-  #endif
 #ifdef S_PROPERTY_USER_DATA
     , _userData(0)
 #endif
@@ -139,7 +135,7 @@ void Attribute::setName(const NameArg &in)
 Handler *Attribute::handler()
   {
 #ifdef S_CENTRAL_CHANGE_HANDLER
-  return _handler;
+  return entity()->handler();
 #else
   return 0;
 #endif
@@ -273,6 +269,7 @@ Entity *Attribute::entity()
   while(!e && prop)
     {
     prop = prop->parent();
+    xAssert(prop);
     e = prop->castTo<Entity>();
     }
 

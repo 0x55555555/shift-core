@@ -53,6 +53,13 @@ template <typename T> void xRemoveAll(Eks::Vector<T>& vec, const T &ptr)
     }
   }
 
+Entity::Entity()
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    : _handler(0)
+#endif
+  {
+  }
+
 Entity::~Entity()
   {
   for(xsize o = 0; o < _observers.size(); ++o)

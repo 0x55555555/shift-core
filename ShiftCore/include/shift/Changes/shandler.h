@@ -29,7 +29,7 @@ public:
 
   void clearChanges();
 
-  static Handler *findHandler(Container *parent, Property *prop);
+  static Handler *findHandler(Container *parent, Entity *prop);
 
   void beginBlock();
   void endBlock(bool cancel = false);
@@ -49,7 +49,9 @@ public:
 
   Eks::Vector<Observer *> &currentBlockObserverList() { return _blockObservers; }
 
-  Eks::TemporaryAllocatorCore *temporaryAllocator();
+  Eks::TemporaryAllocatorCore *temporaryAllocator() const;
+  Eks::AllocatorBase *persistentBlockAllocator() const;
+  Eks::AllocatorBase *generalPurposeAllocator() const;
 
   bool stateStorageEnabled() const { return _stateStorageEnabled; }
   void setStateStorageEnabled(bool enable) { _stateStorageEnabled = enable; }
@@ -116,6 +118,7 @@ public:
     }
 
 #ifdef S_CENTRAL_CHANGE_HANDLER
+  bool wasEnabled() const { return _oldValue; }
 private:
   Handler *_handler;
   bool _oldValue;

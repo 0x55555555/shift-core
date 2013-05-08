@@ -2,6 +2,7 @@
 #include "shift/Properties/sbaseproperties.h"
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbasepointerproperties.h"
+#include "shift/Changes/shandler.inl"
 #include "shift/sentity.h"
 #include "QColor"
 #include "QString"

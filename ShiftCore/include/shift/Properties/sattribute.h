@@ -180,10 +180,6 @@ private:
 
   const BaseInstanceInformation *_instanceInfo;
 
-#ifdef S_CENTRAL_CHANGE_HANDLER
-  Handler *_handler;
-#endif
-
 #ifdef S_PROPERTY_USER_DATA
   UserData *_userData;
 #endif
