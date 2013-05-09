@@ -213,7 +213,9 @@ private:
   friend void setDependantsDirty(Property* prop, bool force);
 
   Attribute *_dynamicChild;
+#ifndef S_CENTRAL_CHANGE_HANDLER
   Database *_database;
+#endif
 
   void terminateTree();
 

@@ -686,7 +686,10 @@ InputModel::InputModel(Database *db, Entity *ent, const PropertyInformation *ite
     _itemType(itemType),
     _treeType(treeType),
     _childAttr(childGroup),
-    _change(0)
+    _holderChanging(0),
+    _itemChanging(0),
+    _itemIndexChanging(X_SIZE_SENTINEL),
+    _changingAdding(false)
   {
   if(_root.isValid())
     {
@@ -720,7 +723,6 @@ void InputModel::setRoot(Entity *ent)
 
 int InputModel::rowCount(const QModelIndex &parent) const
   {
-  xAssert(!_change);
   Attribute *attr = const_cast<Entity*>(_root->entity());
   if(parent.isValid())
     {
@@ -742,14 +744,26 @@ int InputModel::rowCount(const QModelIndex &parent) const
     return 0;
     }
 
+  int extra = 0;
+  if(_holderChanging == attr)
+    {
+    if(_changingAdding)
+      {
+      extra = -1;
+      }
+    else
+      {
+      extra = 1;
+      }
+    }
+
   Attribute *children = _childAttr->locate(cont);
   Container *childrenCont = children->uncheckedCastTo<Container>();
-  return (int)childrenCont->size();
+  return (int)childrenCont->size() + extra;
   }
 
 QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
   {
-  xAssert(!_change);
   Attribute *parentAttr = const_cast<Entity*>(_root.entity());
   if(parent.isValid())
     {
@@ -763,6 +777,28 @@ QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
   if(row >= cont->size())
     {
     return QModelIndex();
+    }
+
+  if(_holderChanging == parentAttr)
+    {
+    if(_changingAdding)
+      {
+      if(row >= _itemIndexChanging)
+        {
+        row += 1;
+        }
+      }
+    else
+      {
+      if(row == _itemIndexChanging)
+        {
+        return CommonModel::index((Container *)_itemChanging);
+        }
+      else if(row > _itemIndexChanging)
+        {
+        row -= 1;
+        }
+      }
     }
 
   Attribute *attr = cont->at(row);
@@ -779,12 +815,16 @@ QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
 
 QModelIndex InputModel::parent(const QModelIndex &child) const
   {
-  xAssert(!_change);
   Attribute *attr = attributeFromIndex(child);
 
   if(attr == _root.entity())
     {
     return QModelIndex();
+    }
+
+  if(attr == _itemChanging)
+    {
+    return CommonModel::index((Container *)_holderChanging);
     }
 
   if(!attr->typeInformation()->inheritsFromType(_itemType))
@@ -843,22 +883,34 @@ void InputModel::onConnectionChange(const Change *c, bool back)
       {
       return;
       }
-    
-    _change = change;
-    Q_EMIT layoutAboutToBeChanged();
 
     xsize i = dest->index();
-    if(_change->mode(back) == Property::ConnectionChange::Disconnect)
+
+    _holderChanging = dstContatinerHolder;
+    _itemChanging = src;
+    _itemIndexChanging = i;
+    _changingAdding = change->mode(back) == Property::ConnectionChange::Connect;
+    Q_EMIT layoutAboutToBeChanged();
+
+    if(change->mode(back) == Property::ConnectionChange::Disconnect)
       {
       changePersistentIndex(CommonModel::index((Property*)src), QModelIndex());
       Q_EMIT beginRemoveRows(CommonModel::index((Property*)dstContatinerHolder), (int)i, (int)i);
-      _change = 0;
+
+      _holderChanging = 0;
+      _itemChanging = 0;
+      _itemIndexChanging = 0;
+
       Q_EMIT endRemoveRows();
       }
-    else if(_change->mode(back) == Property::ConnectionChange::Connect)
+    else if(change->mode(back) == Property::ConnectionChange::Connect)
       {
       Q_EMIT beginInsertRows(CommonModel::index((Property*)dstContatinerHolder), (int)i, (int)i);
-      _change = 0;
+
+      _holderChanging = 0;
+      _itemChanging = 0;
+      _itemIndexChanging = 0;
+
       Q_EMIT endInsertRows();
       }
 

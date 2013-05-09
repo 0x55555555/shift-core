@@ -138,7 +138,11 @@ private:
   const PropertyInformation *_itemType;
   const PropertyInformation *_treeType;
   const EmbeddedPropertyInstanceInformation *_childAttr;
-  const Property::ConnectionChange *_change;
+
+  const Container *_holderChanging;
+  const Property *_itemChanging;
+  xsize _itemIndexChanging;
+  bool _changingAdding;
   };
 
 }
