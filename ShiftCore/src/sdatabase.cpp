@@ -56,7 +56,7 @@ Database::Database()
 #ifdef S_CENTRAL_CHANGE_HANDLER
   _handler = this;
 #else
-  Container::_database = this;
+  Entity::_database = this;
 #endif
   setDatabase(this);
   _instanceInfo = &_instanceInfoData;
@@ -277,7 +277,10 @@ void Database::initiateAttribute(Attribute *prop)
     xAssert(metaData);
 
 #ifndef S_CENTRAL_CHANGE_HANDLER
-    container->_database = Container::_database;
+    if(Entity *ent = container->castTo<Entity>())
+      {
+      ent->_database = Entity::_database;
+      }
 #endif
 
     initiateAttributeFromMetaData(container, metaData);

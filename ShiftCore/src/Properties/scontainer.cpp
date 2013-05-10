@@ -117,9 +117,6 @@ bool Container::TreeChange::inform(bool back)
 
 Container::Container()
   : Property(), _dynamicChild(0)
-#ifndef S_CENTRAL_CHANGE_HANDLER
-    , _database(0)
-#endif
   {
   }
 
@@ -400,11 +397,11 @@ void Container::internalSetup(Attribute *newProp)
     ent->_handler = Handler::findHandler(this, ent);
     }
 #else
-  Container *cont = newProp->castTo<Container>();
-  if(cont)
+  Entity *ent = newProp->castTo<Entity>();
+  if(ent)
     {
-    xAssert(_database);
-    cont->_database = _database;
+    xAssert(database());
+    ent->_database = database();
     }
 #endif
 

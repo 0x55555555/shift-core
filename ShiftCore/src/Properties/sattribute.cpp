@@ -151,7 +151,7 @@ Database *Attribute::database()
 #ifdef S_CENTRAL_CHANGE_HANDLER
   return handler()->database();
 #else
-  Container *cont = parent();
+  Entity *cont = entity();
   return cont->_database;
 #endif
   }
@@ -161,7 +161,7 @@ const Database *Attribute::database() const
 #ifdef S_CENTRAL_CHANGE_HANDLER
   return handler()->database();
 #else
-  return parent()->_database;
+  return entity()->_database;
 #endif
   }
 

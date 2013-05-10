@@ -177,6 +177,8 @@ public:
 #ifdef S_CENTRAL_CHANGE_HANDLER
   /// \brief find the change handler for this entity
   Handler *handler() { return _handler; }
+#else
+  Database *_database;
 #endif
 
 private:
