@@ -83,7 +83,7 @@ void Entity::reparent(Entity *ent)
 Attribute *Entity::addChild(const PropertyInformation *info, const NameArg& name)
   {
   Block b(handler());
-  Attribute *ent = children.add(info, X_UINT8_SENTINEL, name);
+  Attribute *ent = children.add(info, X_SIZE_SENTINEL, name);
   xAssert(ent);
   return ent;
   }
@@ -91,7 +91,7 @@ Attribute *Entity::addChild(const PropertyInformation *info, const NameArg& name
 Attribute *Entity::addProperty(const PropertyInformation *info, const NameArg& name, PropertyInstanceInformationInitialiser *inst)
   {
   Block b(handler());
-  Attribute *p = Container::addAttribute(info, X_UINT8_SENTINEL, name, inst);
+  Attribute *p = Container::addAttribute(info, X_SIZE_SENTINEL, name, inst);
   xAssert(p);
   return p;
   }

@@ -53,6 +53,7 @@ public:
 
   using QAbstractItemModel::index;
   QModelIndex index(Attribute *p) const;
+  QModelIndex index(Attribute *p, xsize row) const;
 
   Attribute *attributeFromIndex(const QModelIndex &index) const;
 
@@ -138,6 +139,8 @@ private:
   const PropertyInformation *_itemType;
   const PropertyInformation *_treeType;
   const EmbeddedPropertyInstanceInformation *_childAttr;
+
+  void manageObserver(Attribute *attr, bool add);
 
   const Container *_holderChanging;
   const Property *_itemChanging;

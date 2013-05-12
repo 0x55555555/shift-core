@@ -1,5 +1,6 @@
 #include "shift/UI/sdatabasemodel.h"
 #include "shift/Properties/scontaineriterators.h"
+#include "shift/Properties/sbasepointerproperties.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
@@ -352,18 +353,27 @@ QHash<int, QByteArray> CommonModel::roleNames() const
 QModelIndex CommonModel::index(Attribute *p) const
   {
   xAssert(p);
+
   Container *c = p->parent();
   if(!c)
     {
     return QModelIndex();
     }
 
+  xsize idx = c->index(p);
+
+  return index(p, idx);
+  }
+
+QModelIndex CommonModel::index(Attribute *p, xsize row) const
+  {
+  xAssert(p);
   if(p == _root.entity())
     {
     return createIndex(0, 0, (Attribute *)p);
     }
 
-  return createIndex((int)c->index(p), 0, (Attribute *)p);
+  return createIndex((int)row, 0, (Attribute *)p);
   }
 
 Attribute *CommonModel::attributeFromIndex(const QModelIndex &index) const
@@ -693,7 +703,7 @@ InputModel::InputModel(Database *db, Entity *ent, const PropertyInformation *ite
   {
   if(_root.isValid())
     {
-    _root->addConnectionObserver(this);
+    manageObserver(_root.entity(), true);
     }
   }
 
@@ -701,7 +711,7 @@ InputModel::~InputModel()
   {
   if(_root.isValid())
     {
-    _root->removeConnectionObserver(this);
+    manageObserver(_root.entity(), false);
     }
   }
 
@@ -710,14 +720,63 @@ void InputModel::setRoot(Entity *ent)
   {
   if(_root)
     {
-    _root->removeConnectionObserver(this);
+    manageObserver(_root.entity(), false);
     }
 
   CommonModel::setRoot(ent);
 
   if(_root)
     {
-    _root->addConnectionObserver(this);
+    manageObserver(_root.entity(), true);
+    }
+  }
+
+void InputModel::manageObserver(Attribute *attr, bool add)
+  {
+  const PropertyInformation *info = attr->typeInformation();
+  if(!info->inheritsFromType(_treeType))
+    {
+    return;
+    }
+
+  Entity *ent = attr->entity();
+  xAssert(ent);
+  if(add)
+    {
+    ent->addConnectionObserver(this);
+    }
+  else
+    {
+    ent->removeConnectionObserver(this);
+    }
+
+  Container *c = attr->castTo<Container>();
+  if(!c)
+    {
+    xAssertFail();
+    return;
+    }
+
+  Attribute *children = _childAttr->locate(c);
+  if(!children)
+    {
+    xAssertFail();
+    return;
+    }
+
+  Container *childCont = children->castTo<Container>();
+  if(!childCont)
+    {
+    xAssertFail();
+    return;
+    }
+
+  xForeach(auto child, childCont->walker<Shift::Pointer>())
+    {
+    if(child->pointed())
+      {
+      manageObserver(child->pointed(), add);
+      }
     }
   }
 
@@ -735,11 +794,6 @@ int InputModel::rowCount(const QModelIndex &parent) const
 
   Container *cont = attr->uncheckedCastTo<Container>();
   if(!info->inheritsFromType(_treeType))
-    {
-    return 0;
-    }
-
-  if(attr != _root.entity())
     {
     return 0;
     }
@@ -810,7 +864,7 @@ QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
     return CommonModel::index(prop);
     }
 
-  return CommonModel::index(prop->input());
+  return CommonModel::index(prop->input(), row);
   }
 
 QModelIndex InputModel::parent(const QModelIndex &child) const
@@ -884,7 +938,7 @@ void InputModel::onConnectionChange(const Change *c, bool back)
       return;
       }
 
-    xsize i = dest->index();
+    xsize i = dstContainer->index(dest);
 
     _holderChanging = dstContatinerHolder;
     _itemChanging = src;
@@ -901,6 +955,8 @@ void InputModel::onConnectionChange(const Change *c, bool back)
       _itemChanging = 0;
       _itemIndexChanging = 0;
 
+      manageObserver(const_cast<Property*>(src), false);
+
       Q_EMIT endRemoveRows();
       }
     else if(change->mode(back) == Property::ConnectionChange::Connect)
@@ -910,6 +966,8 @@ void InputModel::onConnectionChange(const Change *c, bool back)
       _holderChanging = 0;
       _itemChanging = 0;
       _itemIndexChanging = 0;
+
+      manageObserver(const_cast<Property*>(src), true);
 
       Q_EMIT endInsertRows();
       }

@@ -1,5 +1,6 @@
 #include "shifttest.h"
 #include "shift/Properties/sdata.inl"
+#include "shift/Properties/scontaineriterators.h"
 
 void ShiftCoreTest::simpleOperationTest()
   {
@@ -50,4 +51,74 @@ void ShiftCoreTest::dataTest()
   }
 
   QCOMPARE(3, successful/count);
+  }
+
+void ShiftCoreTest::createDestroyTest()
+  {
+  TestDatabase db;
+
+  xsize actionCount = 0;
+  xsize count = 0;
+
+  QBENCHMARK {
+    ++count;
+    for(xsize i = 0; i < 100; ++i)
+      {
+      db.addChild<TestEntity>();
+      ++actionCount;
+      }
+
+    while(db.children.firstChild())
+      {
+      db.children.remove(db.children.firstChild());
+      ++actionCount;
+      }
+    }
+
+  QCOMPARE(actionCount/count, 200);
+
+  for(xsize i = 0; i < 20; ++i)
+    {
+    TestEntity *ent = db.addChild<TestEntity>();
+    QCOMPARE(db.children.at(i), ent);
+    QCOMPARE(db.children.index(ent), i);
+    }
+
+  {
+  xsize i = 0;
+  xForeach(auto ent, db.children.walker())
+    {
+    QCOMPARE(db.children.index(ent), i++);
+    }
+  }
+
+  db.children.remove(db.children.at(4));
+  db.children.remove(db.children.at(10));
+  db.children.remove(db.children.at(19));
+
+  {
+  xsize i = 0;
+  xForeach(auto ent, db.children.walker())
+    {
+    QCOMPARE(db.children.index(ent), i++);
+    }
+  }
+
+  Shift::Entity *e1 = db.children.add<TestEntity>(3);
+  QCOMPARE(db.children.index(e1), 3);
+  Shift::Entity *e2 = db.children.add<TestEntity>(6);
+  QCOMPARE(db.children.index(e2), 6);
+  Shift::Entity *e3 = db.children.add<TestEntity>(15);
+  QCOMPARE(db.children.index(e3), 15);
+
+  while(db.children.firstChild())
+    {
+    db.children.remove(db.children.firstChild());
+
+    xsize i = 0;
+    xForeach(auto ent, db.children.walker())
+      {
+      QCOMPARE(db.children.index(ent), i++);
+      }
+    }
   }

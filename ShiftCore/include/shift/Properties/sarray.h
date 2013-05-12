@@ -26,7 +26,7 @@ public:
     return Container::addAttribute(info, index, name, init);
     }
 
-  Attribute *add(const PropertyInformation *info, xsize index=X_UINT8_SENTINEL, const NameArg &name=NameArg())
+  Attribute *add(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const NameArg &name=NameArg())
     {
     return Container::addAttribute(info, index, name, 0);
     }

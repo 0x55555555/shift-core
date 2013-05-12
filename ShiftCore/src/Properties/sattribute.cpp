@@ -363,13 +363,6 @@ Eks::String Attribute::path(const Attribute *from) const
   return "";
   }
 
-xsize Attribute::index() const
-  {
-  const BaseInstanceInformation* inst = baseInstanceInformation();
-
-  return inst->isDynamic() ? inst->dynamicInfo()->index() : inst->embeddedInfo()->index();
-  }
-
 const Eks::String &Attribute::mode() const
   {
   return baseInstanceInformation()->modeString();

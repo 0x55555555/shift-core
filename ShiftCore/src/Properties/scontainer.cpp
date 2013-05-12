@@ -373,13 +373,12 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     {
     newPropInstInfo->setIndex(propIndex);
 
-    ++propIndex;
-
     if(!newPropInstInfo->nextSibling())
     {
       break;
     }
 
+    ++propIndex;
     newPropInstInfo =
         const_cast<DynamicPropertyInstanceInformation*>(
           newPropInstInfo->nextSibling()->dynamicBaseInstanceInformation());
@@ -467,9 +466,14 @@ void Container::internalRemove(Attribute *oldProp)
         removed = true;
         oldPropInstInfo->setInvalidIndex();
 
-        propInstInfo->setNextSibling(oldPropInstInfo->nextSibling());
+        auto next = oldPropInstInfo->nextSibling();
+        propInstInfo->setNextSibling(next);
 
-        indexUpdate = propInstInfo;
+        if(next)
+          {
+          indexUpdate =
+              const_cast<DynamicPropertyInstanceInformation*>(next->dynamicBaseInstanceInformation());
+          }
 
         break;
         }
@@ -478,11 +482,12 @@ void Container::internalRemove(Attribute *oldProp)
       }
     }
 
+  xsize newIndex = oldIndex;
   while(indexUpdate)
     {
-    indexUpdate->setIndex(oldIndex);
+    indexUpdate->setIndex(newIndex);
 
-    ++oldIndex;
+    ++newIndex;
 
     if(!indexUpdate->nextSibling())
     {
@@ -514,22 +519,22 @@ void Container::internalUnsetup(Attribute *oldProp)
 
 const Attribute *Container::at(xsize i) const
   {
-  xForeach(auto x, walker())
-    {
-    if(!i)
-      {
-      return x;
-      }
-    --i;
-    }
-
-  return 0;
+  return const_cast<Container*>(this)->at(i);
   }
 
 Attribute *Container::at(xsize i)
   {
+#if X_ASSERTS_ENABLED
+  xsize idx = 0;
+#endif
+
   xForeach(auto x, walker())
     {
+#if X_ASSERTS_ENABLED
+    xAssert(index(x) == idx);
+    ++idx;
+#endif
+
     if(!i)
       {
       return x;

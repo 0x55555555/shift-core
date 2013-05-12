@@ -36,6 +36,7 @@ public:
 
 private Q_SLOTS:
   void dataTest();
+  void createDestroyTest();
   void simpleOperationTest();
   void simpleDirtyCompute();
   void entityCompute();
