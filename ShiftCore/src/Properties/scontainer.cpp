@@ -302,7 +302,7 @@ void Container::moveAttribute(Container *c, Attribute *p)
 
 void Container::removeAttribute(Attribute *oldProp)
   {
-  xAssert(oldProp->parent() == this);
+  xAssert(oldProp && oldProp->parent() == this);
 
   Handler* db = handler();
 

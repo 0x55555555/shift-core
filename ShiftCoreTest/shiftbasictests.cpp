@@ -22,6 +22,56 @@ void ShiftCoreTest::simpleOperationTest()
   QCOMPARE(a->in.x.input(), nullptr);
   }
 
+void ShiftCoreTest::tearDownTest()
+  {
+  TestDatabase db;
+
+  QBENCHMARK {
+    Shift::Entity *e = &db;
+    for(xsize i = 0; i < 20; ++i)
+      {
+      auto newA = e->addChild<TestEntity>();
+      auto newB = e->addChild<TestEntity>();
+      auto newC = e->addChild<TestEntity>();
+
+
+      newA->in.setInput(e);
+      QCOMPARE(newA->in.input(), e);
+      newB->in.setInput(e);
+      QCOMPARE(newB->in.input(), e);
+      newC->in.setInput(e);
+      QCOMPARE(newC->in.input(), e);
+      
+      QCOMPARE(e->output(), &newA->in);
+      QCOMPARE(e->output()->nextOutput(), &newB->in);
+      QCOMPARE(e->output()->nextOutput()->nextOutput(), &newC->in);
+      QCOMPARE(e->output()->nextOutput()->nextOutput()->nextOutput(), nullptr);
+
+      newA->in.disconnect();
+      QCOMPARE(newA->in.input(), nullptr);
+      newC->in.disconnect();
+      QCOMPARE(newC->in.input(), nullptr);
+
+      QCOMPARE(e->output(), &newB->in);
+      QCOMPARE(e->output()->nextOutput(), nullptr);
+
+      newA->in.setInput(e);
+      QCOMPARE(newA->in.input(), e);
+      newC->in.setInput(e);
+      QCOMPARE(newB->in.input(), e);
+
+      QCOMPARE(e->output(), &newB->in);
+      QCOMPARE(e->output()->nextOutput(), &newA->in);
+      QCOMPARE(e->output()->nextOutput()->nextOutput(), &newC->in);
+      QCOMPARE(e->output()->nextOutput()->nextOutput()->nextOutput(), nullptr);
+
+      e = newA;
+      }
+
+    db.children.clear();
+  }
+  }
+
 void ShiftCoreTest::dataTest()
   {
   TestDatabase db;
@@ -94,7 +144,7 @@ void ShiftCoreTest::createDestroyTest()
 
   db.children.remove(db.children.at(4));
   db.children.remove(db.children.at(10));
-  db.children.remove(db.children.at(19));
+  db.children.remove(db.children.at(17));
 
   {
   xsize i = 0;
