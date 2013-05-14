@@ -313,7 +313,7 @@ public:
         }
 
       ChildTreeExtraData &d = i.data();
-      auto walker = d._currentParent->walkerFrom<Entity>(current);
+      auto walker = d._currentParent->walkerFromTyped<Entity>(current);
       auto walkerIt = ++walker.begin();
       Entity *n = *walkerIt;
 
@@ -324,7 +324,7 @@ public:
         Entity* parentEntity = d._currentParent->parent()->castTo<Entity>();
         Container *parent = parentEntity->parent();
 
-        auto walker = parent->walkerFrom<Entity>(parentEntity);
+        auto walker = parent->walkerFromTyped<Entity>(parentEntity);
         auto walkerIt = ++walker.begin();
         n = *walkerIt;
         d._currentParent = parent;

@@ -185,11 +185,11 @@ public:
   template <typename T> ContainerTypedIteratorWrapperFrom<T, Container, ContainerIterator<T, Container> > walker();
   template <typename T> ContainerTypedIteratorWrapperFrom<const T, const Container, ContainerIterator<const T, const Container> > walker() const;
 
-  template <typename T> ContainerTypedIteratorWrapperFrom<T, Container, ContainerIterator<T, Container> > walkerFrom(T *);
-  template <typename T> ContainerTypedIteratorWrapperFrom<const T, const Container, ContainerIterator<const T, const Container> > walkerFrom(const T *) const;
+  template <typename T> ContainerTypedIteratorWrapperFrom<T, Container, ContainerIterator<T, Container> > walkerFromTyped(T *);
+  template <typename T> ContainerTypedIteratorWrapperFrom<const T, const Container, ContainerIterator<const T, const Container> > walkerFromTyped(const T *) const;
 
-  template <typename T> ContainerTypedIteratorWrapperFrom<T, Container, ContainerIterator<T, Container> > walkerFrom(Attribute *);
-  template <typename T> ContainerTypedIteratorWrapperFrom<const T, const Container, ContainerIterator<const T, const Container> > walkerFrom(const Attribute *) const;
+  template <typename T> ContainerTypedIteratorWrapperFrom<T, Container, ContainerIterator<T, Container> > walkerFromTyped(Attribute *);
+  template <typename T> ContainerTypedIteratorWrapperFrom<const T, const Container, ContainerIterator<const T, const Container> > walkerFromTyped(const Attribute *) const;
 
   ContainerTypedIteratorWrapperFrom<Attribute, Container, ContainerBaseIterator<Attribute, Container> > walker();
   ContainerTypedIteratorWrapperFrom<const Attribute, const Container, ContainerBaseIterator<const Attribute, const Container> > walker() const;

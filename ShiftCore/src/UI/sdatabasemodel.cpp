@@ -782,6 +782,10 @@ void InputModel::manageObserver(Attribute *attr, bool add)
 
 int InputModel::rowCount(const QModelIndex &parent) const
   {
+  if(!_root)
+    {
+    return 0;
+    }
   Attribute *attr = const_cast<Entity*>(_root->entity());
   if(parent.isValid())
     {
@@ -912,7 +916,12 @@ QModelIndex InputModel::parent(const QModelIndex &child) const
   }
 
 void InputModel::onConnectionChange(const Change *c, bool back)
-  {
+{
+  if(!_root)
+    {
+    return;
+    }
+
   const Property::ConnectionChange *change = c->castTo<Property::ConnectionChange>();
   if(change)
     {
