@@ -186,25 +186,25 @@ template <typename Res, typename T, typename Cont> Res makeWalkerFromNext(Cont *
 
   if(!prop->isDynamic())
     {
-    idx = prop->baseInstanceInformation()->index();
+    idx = prop->embeddedInstanceInformation()->index();
 
-    EmbeddedInstanceInformation* inst = type->childFromIndex(idx);
+    const EmbeddedPropertyInstanceInformation* inst = type->childFromIndex(idx);
     while(inst && !inst->childInformation()->inheritsFromType(type))
       {
       ++idx;
       inst = type->childFromIndex(idx);
       }
 
-    dyProp = firstDynamicChild<T>();
+    dyProp = c->firstDynamicChild<T>();
     }
   else
     {
-    idx = xMin(0U, (xsize)type->childCount());
-    Property* itProp = prop;
+    idx = xMin((xsize)0, (xsize)type->childCount());
+    Attribute* itProp = prop;
     while(!dyProp && itProp)
       {
       dyProp = itProp->castTo<T>();
-      itProp = nextDynamicSibling(itProp);
+      itProp = c->nextDynamicSibling(itProp);
       }
     }
 
@@ -255,25 +255,25 @@ template <typename T> WRAPPER_TYPE_FROM(const T, const Container) Container::wal
   return detail::makeWalker<WRAPPER_TYPE_FROM(const T, const Container), T>(this);
   }
 
-template <typename T> WRAPPER_TYPE_FROM(T, Container) Container::walkerFrom(T *prop)
+template <typename T> WRAPPER_TYPE_FROM(T, Container) Container::walkerFromTyped(T *prop)
   {
   return detail::makeWalkerFrom<WRAPPER_TYPE_FROM(T, Container)>(this, prop);
   }
 
 template <typename T> WRAPPER_TYPE_FROM(const T, const Container)
-    Container::walkerFrom(const T *prop) const
+    Container::walkerFromTyped(const T *prop) const
   {
   return detail::makeWalkerFrom<WRAPPER_TYPE_FROM(const T, const Container)>(this, prop);
   }
 
-template <typename T> WRAPPER_TYPE_FROM(T, Container) Container::walkerFrom(Attribute *prop)
+template <typename T> WRAPPER_TYPE_FROM(T, Container) Container::walkerFromTyped(Attribute *prop)
   {
-  return detail::makeWalkerFromNext<WRAPPER_TYPE_FROM(T, Container)>(this, p);
+  return detail::makeWalkerFromNext<WRAPPER_TYPE_FROM(T, Container)>(this, prop);
   }
 
-template <typename T> WRAPPER_TYPE_FROM(const T, const Container) Container::walkerFrom(const Attribute *prop) const
+template <typename T> WRAPPER_TYPE_FROM(const T, const Container) Container::walkerFromTyped(const Attribute *prop) const
   {
-  return detail::makeWalkerFromNext<WRAPPER_TYPE_FROM(const T, const Container)>(this, p);
+  return detail::makeWalkerFromNext<WRAPPER_TYPE_FROM(const T, const Container)>(this, prop);
   }
 
 inline WRAPPER_TYPE_FROM_BASE(Attribute, Container) Container::walker()
