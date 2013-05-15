@@ -193,6 +193,12 @@ void Property::disconnect() const
     ((Property*)_input)->disconnect((Property*)this);
     }
 
+  int i = 0;
+  if(i)
+    {
+    qDebug() << path();
+    }
+
   while(_output)
     {
     disconnect(_output);
