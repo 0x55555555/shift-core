@@ -6,15 +6,6 @@
 xCompileTimeAssert(sizeof(Shift::Attribute) == sizeof(void*));
 xCompileTimeAssert(sizeof(Shift::Property) <= (sizeof(Shift::Attribute) + sizeof(void*) * 4));
 
-namespace Test
-{
-Shift::PropertyGroup &propertyGroup()
-  {
-  static Shift::PropertyGroup grp;
-  return grp;
-  }
-}
-
 S_IMPLEMENT_PROPERTY(TestVector, Test)
 
 void TestVector::createTypeInformation(
@@ -65,4 +56,5 @@ void TestEntity::createTypeInformation(
     }
   }
 
+S_IMPLEMENT_TEST
 QTEST_APPLESS_MAIN(ShiftCoreTest)

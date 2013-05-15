@@ -10,7 +10,7 @@ QT       -= gui
 
 include("../../Eks/EksCore/GeneralOptions.pri")
 
-TARGET = computetest
+TARGET = ShiftCoreTest
 CONFIG   += console
 CONFIG   -= app_bundle
 
@@ -29,7 +29,8 @@ INCLUDEPATH += $$ROOT/shift/GraphicsCore \
     $$ROOT/Eks/EksScript \
     $$ROOT/Shift/ShiftCore/include
 
-LIBS += -lShiftCore -lEksCore -lEks3D -lEksScript -lShiftGraphicsCore
+LIBS += -lShiftCore -lEksCore -lEks3D -lEksScript
 
 HEADERS += \
-    shifttest.h
+    shifttest.h \
+    shifttestcommon.h

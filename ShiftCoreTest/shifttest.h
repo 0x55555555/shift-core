@@ -4,18 +4,13 @@
 #include <QtTest>
 #include "XCore"
 #include "XGlobalAllocator"
+#include "shifttestcommon.h"
 #include "shift/sentity.h"
-#include "shift/sdatabase.h"
 #include "shift/Properties/sbaseproperties.h"
 
 // future tests
 // casting test, benchmarking shallow and deep hierarchies
 // iteration test, and benchmarks, including typing...
-
-namespace Test
-{
-Shift::PropertyGroup &propertyGroup();
-}
 
 class ShiftCoreTest : public QObject
   {
@@ -92,26 +87,5 @@ public:
   xsize evaluationCount;
   };
 
-class TestDatabase : public Shift::Database
-  {
-public:
-  TestDatabase()
-    {
-    initiateInheritedDatabaseType(staticTypeInformation());
-    }
-  };
-
-namespace QTest
-{
-
-template <typename T1, typename T2>
-inline bool qCompare(T1 const &t1, T2 const &t2, const char *actual, const char *expected,
-                    const char *file, int line)
-{
-    return compare_helper(t1 == t2, "Compared values are not the same",
-                          toString<T1>(t1), toString<T2>(t2), actual, expected, file, line);
-}
-
-}
 
 #endif // COMPUTETEST_H
