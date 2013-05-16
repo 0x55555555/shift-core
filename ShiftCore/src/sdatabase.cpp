@@ -162,9 +162,6 @@ Attribute *Database::addDynamicAttribute(
     }
 #endif
 
-  initiateAttribute(prop);
-  xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
-
   // insert the property into the tree, before running post initiate operations
   // this allows things like connections to be made in initiate attribute.
   bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
@@ -179,6 +176,9 @@ Attribute *Database::addDynamicAttribute(
 
   PropertyDoChange(TreeChange, (Container*)0, parent, prop, index);
 
+  // We call this after adding it to the tree so flags like ParentHasInput are setup at the root.
+  initiateAttribute(prop);
+  xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
 
   postInitiateAttribute(prop);
   xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());

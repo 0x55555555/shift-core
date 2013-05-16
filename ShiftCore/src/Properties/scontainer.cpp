@@ -64,9 +64,16 @@ Container::TreeChange::~TreeChange()
 bool Container::TreeChange::apply()
   {
   SProfileFunction
+
+  // its possible the tree is computed, but we are trying to insert into it.
+  // its also possible this node is part of a ParentHasInput chain.
+  // either way, rather than post setting this node, leaving a gaping hole in
+  // the dirty chain, we pre get and post set, ensuring dirty flags are correct.
+
   if(before(false))
     {
     _owner = true;
+    before()->preGet();
     before()->internalRemove(property());
     before()->postSet();
     }
@@ -74,6 +81,7 @@ bool Container::TreeChange::apply()
   if(after(false))
     {
     _owner = false;
+    after()->preGet();
     after()->internalInsert(property(), _index);
     after()->postSet();
     }
