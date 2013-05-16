@@ -143,16 +143,16 @@ void Container::disconnectTree()
   {
   disconnect();
 
-  xForeach(auto p, walker<Property>())
+  xForeach(auto p, LightWalker(this))
     {
     Container *c = p->castTo<Container>();
     if(c)
       {
       c->disconnectTree();
       }
-    else
+    else if(Property *prop = p->castTo<Property>())
       {
-      p->disconnect();
+      prop->disconnect();
       }
     }
   }
@@ -230,7 +230,11 @@ void Container::internalClear(Database *db)
   while(dynamic)
     {
     Attribute *next = nextDynamicSibling(dynamic);
-    if(Property *prop = dynamic->castTo<Property>())
+    if(Container *c = dynamic->castTo<Container>())
+      {
+      c->disconnectTree();
+      }
+    else if(Property *prop = dynamic->castTo<Property>())
       {
       prop->disconnect();
       }
@@ -412,7 +416,7 @@ void Container::internalSetup(Attribute *newProp)
       {
       prop->_flags.setFlag(ParentHasInput);
       }
-    
+
     bool parentAffects = !isDynamic() && embeddedInstanceInformation()->affectsSiblings();
     if(output() || parentAffects || _flags.hasFlag(ParentHasOutput))
       {

@@ -43,6 +43,9 @@ void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
   }
 
 Database::Database()
+#ifdef S_DEBUGGER
+    : debugger(this)
+#endif
   {
   _memory = TypeRegistry::persistentBlockAllocator();
   xAssert(_memory);
@@ -60,10 +63,16 @@ Database::Database()
 #endif
   setDatabase(this);
   _instanceInfo = &_instanceInfoData;
+
+#ifdef S_DEBUGGER
+  debugger.show();
+#endif
   }
 
 Database::~Database()
   {
+  Entity *e = children.findChild("Entity1")->entity()->children.findChild("Entity2")->entity();
+  qDebug() << e->path();
   uninitiateAttributeFromMetaData(this, typeInformation());
   _dynamicChild = 0;
 
@@ -205,6 +214,8 @@ void Database::deleteDynamicAttribute(Attribute *prop)
   uninitiateAttribute(prop);
 
   const PropertyInformation *info = prop->typeInformation();
+
+  prop->_instanceInfo = 0;
   void *mem = info->functions().destroy(prop);
 
   X_HEAP_CHECK
