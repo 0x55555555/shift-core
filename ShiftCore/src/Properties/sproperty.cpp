@@ -185,23 +185,46 @@ bool Property::isComputed() const
   return false;
   }
 
+bool Property::outputsTo(const Property *p) const
+  {
+  const Property * const* op = &_output;
+  while(*op)
+    {
+    if(*op == p)
+      {
+      return true;
+      }
+    op = &(*op)->_nextOutput;
+    }
+
+  return false;
+  }
+
 void Property::disconnect() const
   {
   SProfileFunction
   if(_input)
     {
+#if X_ASSERTS_ENABLED
+    Property *p = _input;
+    xAssert(p->outputsTo(this));
+#endif
     ((Property*)_input)->disconnect((Property*)this);
-    }
-
-  int i = 0;
-  if(i)
-    {
-    qDebug() << path();
+#if X_ASSERTS_ENABLED
+    xAssert(!_input && !p->outputsTo(this));
+#endif
     }
 
   while(_output)
     {
+#if X_ASSERTS_ENABLED
+    Property *p = _output;
+    xAssert(outputsTo(p));
+#endif
     disconnect(_output);
+#if X_ASSERTS_ENABLED
+    xAssert(!p->input() && !outputsTo(p));
+#endif
     }
   }
 

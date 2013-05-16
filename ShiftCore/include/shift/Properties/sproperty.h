@@ -40,6 +40,8 @@ public:
   void disconnect(Property *) const;
   void disconnect() const;
 
+  bool outputsTo(const Property *p) const;
+
   bool isDirty() const { return _dirty; }
   bool isUpdating() const { return _updating; }
   bool isComputed() const;
