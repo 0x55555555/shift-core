@@ -71,8 +71,6 @@ Database::Database()
 
 Database::~Database()
   {
-  Entity *e = children.findChild("Entity1")->entity()->children.findChild("Entity2")->entity();
-  qDebug() << e->path();
   uninitiateAttributeFromMetaData(this, typeInformation());
   _dynamicChild = 0;
 

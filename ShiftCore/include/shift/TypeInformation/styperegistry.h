@@ -63,66 +63,6 @@ private:
   friend class PropertyGroup;
   };
 
-/*
-  const InterfaceBaseFactory *interfaceFactory(xuint32 type) const;
-
-  template <typename T> void addInterfaceFactory(T *factory)
-    {
-    addInterfaceFactoryInternal(T::InterfaceType::InterfaceTypeId, factory);
-    }
-  template <typename T> void addStaticInterface(T *factory)
-    {
-    addInterfaceFactory(factory);
-    }
-  void addInterfaceFactoryInternal(xuint32 typeId, InterfaceBaseFactory *);
-
-#ifdef S_PROPERTY_USER_DATA
-  template <typename T> void addAddonInterface() const;
-#endif
-
-
-
-  template <typename T> void addInheritedInterface()
-    {
-    class InheritedInterface : public InterfaceBaseFactory
-      {
-      S_INTERFACE_FACTORY_TYPE(T)
-    public:
-      InheritedInterface() : InterfaceBaseFactory(true) { }
-      virtual InterfaceBase *classInterface(Property *prop)
-        {
-        return prop->castTo<PropType>();
-        }
-      };
-
-    PropertyInformation::addInterfaceFactoryInternal(InheritedInterface::InterfaceType::InterfaceTypeId, new InheritedInterface);
-    }
-
-void PropertyInformation::addInterfaceFactoryInternal(xuint32 typeId, InterfaceBaseFactory *factory)
-  {
-  xAssert(factory);
-  xAssert(typeId != SInterfaceTypes::Invalid);
-
-  _interfaceFactories.insert(typeId, factory);
-
-  factory->setReferenceCount(factory->referenceCount() + 1);
-  xAssert(interfaceFactory(typeId) == factory);
-  }
-
-const InterfaceBaseFactory *PropertyInformation::interfaceFactory(xuint32 type) const
-  {
-  const InterfaceBaseFactory *fac = 0;
-  const PropertyInformation *info = this;
-  while(!fac && info)
-    {
-    fac = info->_interfaceFactories.value(type, 0);
-    info = info->parentTypeInformation();
-    }
-
-  return fac;
-  }
-*/
-
 }
 
 #endif // STYPEREGISTRY_H

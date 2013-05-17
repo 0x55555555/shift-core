@@ -24,7 +24,12 @@ void Handler::clearChanges()
     {
     changeAllocator()->destroy(ch);
     }
+
   _done.clear();
+  _done.squeeze();
+
+  _blockSize.clear();
+  _blockSize.squeeze();
   }
 
 Handler *Handler::findHandler(Container *parent, Entity *prop)
