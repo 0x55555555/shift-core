@@ -8,6 +8,10 @@
 
 class QGraphicsScene;
 
+#ifdef X_DEBUG
+# define S_DEBUGGER
+#endif
+
 namespace Shift
 {
 

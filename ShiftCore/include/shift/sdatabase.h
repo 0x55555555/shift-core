@@ -7,11 +7,7 @@
 #include "shift/Serialisation/sloader.h"
 #include "shift/Changes/shandler.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
-
-#ifdef X_DEBUG
-# define S_DEBUGGER
-# include "shift/UI/sdebugger.h"
-#endif
+#include "XUniquePointer"
 
 namespace Eks
 {
@@ -96,7 +92,7 @@ private:
   Eks::AllocatorBase *_memory;
 
 #ifdef S_DEBUGGER
-  Shift::Debugger debugger;
+  Eks::UniquePointer<Shift::Debugger> _debugger;
 #endif
 
   friend class Property;

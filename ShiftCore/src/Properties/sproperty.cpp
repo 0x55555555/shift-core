@@ -4,6 +4,7 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/schange.h"
 #include "shift/Changes/shandler.inl"
+#include "shift/Properties/scontainerinternaliterators.h"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Utilities/satomichelper.h"
 #include "XProfiler"
@@ -76,12 +77,8 @@ void Property::setDependantsDirty()
     Container *c = castTo<Container>();
     if(c)
       {
-      const PropertyInformation *info = c->typeInformation();
-      for(xsize i = 0, s = info->childCount(); i < s; ++i)
+      xForeach(auto child, LightWalker(c))
         {
-        const EmbeddedPropertyInstanceInformation *inst = info->childFromIndex(i);
-        Attribute *child = inst->locate(c);
-
         if(Property *childProp = child->castTo<Property>())
           {
           childProp->setDirty();
