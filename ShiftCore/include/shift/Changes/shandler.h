@@ -3,6 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "shift/TypeInformation/sinterface.h"
+#include "QtCore/QMutex"
 
 namespace Eks
 {

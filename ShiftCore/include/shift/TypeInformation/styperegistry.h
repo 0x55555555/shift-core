@@ -2,6 +2,7 @@
 #define STYPEREGISTRY_H
 
 #include "shift/sglobal.h"
+#include "XVector"
 
 namespace Eks
 {

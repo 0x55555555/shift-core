@@ -1,4 +1,6 @@
 #include "shift/Utilities/satomichelper.h"
+#include "XResourceDescription"
+#include "XAssert"
 
 #if defined(Q_CC_MSVC)
 # include "Windows.h"

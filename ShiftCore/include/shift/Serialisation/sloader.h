@@ -2,6 +2,8 @@
 #define SLOADER_H
 
 #include "shift/sglobal.h"
+#include "XProperty"
+#include "XStringSimple"
 #include "QtCore/QTextStream"
 #include "QtCore/QDataStream"
 

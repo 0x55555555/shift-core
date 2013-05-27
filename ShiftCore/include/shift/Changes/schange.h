@@ -3,6 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "XProperty"
+#include "XStringSimple"
 
 #define S_CHANGE_ID(CHANGE_TYPE) (Change::getChangeTypeId<CHANGE_TYPE::SubType>(CHANGE_TYPE::Type))
 

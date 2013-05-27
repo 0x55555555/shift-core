@@ -4,6 +4,11 @@
 #include "XProperty"
 #include "shift/sglobal.h"
 
+namespace Eks
+{
+class AllocatorBase;
+}
+
 namespace Shift
 {
 

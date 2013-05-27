@@ -2,6 +2,7 @@
 #define SDEBUGGER_H
 
 #include "shift/sglobal.h"
+#include "XUnorderedMap"
 #include "QtWidgets/QWidget"
 #include "QtWidgets/QGraphicsItem"
 #include "QtGui/QStaticText"
