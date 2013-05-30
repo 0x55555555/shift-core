@@ -7,14 +7,14 @@
 namespace Shift
 {
 
-class SResourceDescription : public Eks::ResourceDescription
+class ResourceDescription : public Eks::ResourceDescription
   {
 public:
   template <typename U, typename PropType>
-  SResourceDescription &operator+=(U PropType::* ptr)
+  ResourceDescription &operator+=(U PropType::* ptr)
     {
     (void)ptr;
-    ((Eks::ResourceDescription&)*this) += SResourceDescription::createForInstanceInformation<U>();
+    ((Eks::ResourceDescription&)*this) += ResourceDescription::createForInstanceInformation<U>();
     return *this;
     }
 

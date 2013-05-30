@@ -23,8 +23,7 @@ struct TypeData
       observers(allocator),
       bucketAllocator(allocator, DefaultAllocation, ExpandingAllocation),
       interfaces(allocator),
-      baseAllocator(allocator),
-      temporaryAllocator(allocator)
+      baseAllocator(allocator)
     {
     }
 
@@ -37,7 +36,6 @@ struct TypeData
   Eks::UnorderedMap<InterfaceKey, InterfaceBaseFactory*> interfaces;
 
   Eks::AllocatorBase *baseAllocator;
-  Eks::TemporaryAllocatorCore temporaryAllocator;
   };
 
 static TypeData *_internalTypes = 0;
@@ -110,7 +108,7 @@ Eks::AllocatorBase *TypeRegistry::interfaceAllocator()
 
 Eks::TemporaryAllocatorCore *TypeRegistry::temporaryAllocator()
   {
-  return &_internalTypes->temporaryAllocator;
+  return Eks::Core::temporaryAllocator();
   }
 
 void TypeRegistry::addPropertyGroup(PropertyGroup &g)
