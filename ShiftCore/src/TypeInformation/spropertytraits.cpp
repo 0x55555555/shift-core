@@ -3,6 +3,7 @@
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Serialisation/sloader.h"
+#include "XEventLogger"
 
 namespace Shift
 {

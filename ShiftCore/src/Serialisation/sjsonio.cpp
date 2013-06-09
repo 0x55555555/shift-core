@@ -5,6 +5,7 @@
 #include "shift/Changes/shandler.h"
 #include "QDebug"
 #include "Serialisation/JsonParser/JSON_parser.h"
+#include "XEventLogger"
 
 namespace Shift
 {

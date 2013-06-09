@@ -2,6 +2,7 @@
 #include "shift/Properties/scontainerinternaliterators.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/sentity.h"
+#include "XEventLogger"
 
 namespace Shift
 {

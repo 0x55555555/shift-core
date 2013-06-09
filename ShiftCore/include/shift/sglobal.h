@@ -29,8 +29,8 @@
 # include "XProfiler"
 # define ShiftCoreProfileScope 1043
 # define ShiftDataModelProfileScope 1044
-# define SProfileFunction XProfileFunctionBase(ShiftCoreProfileScope)
-# define SProfileScopedBlock(mess) XProfileScopedBlockBase(ShiftCoreProfileScope, mess)
+# define SProfileFunction X_EVENT_FUNCTION;
+# define SProfileScopedBlock(mess) X_EVENT_FUNCTION;
 #else
 # define SProfileFunction
 # define SProfileScopedBlock(mess)
