@@ -76,8 +76,8 @@ void Handler::endBlock(bool cancel)
   xAssert(_blockLevel > 0);
   _blockLevel--;
 
-  xsize previousPoint = _blockSize.back();
-  _blockSize.popBack();
+  xsize previousPoint = _blockSize.popBack();
+
   if(cancel)
     {
     undoTo(previousPoint);
