@@ -14,6 +14,8 @@ enum
 
 typedef Eks::StringBase<Eks::Char, NamePreallocSize> Name;
 
+Q_DECLARE_METATYPE(Name)
+
 class SHIFT_EXPORT NameArg
   {
 public:
@@ -72,10 +74,24 @@ private:
 
 }
 
+#include "XScriptFunction.h"
 #include "XConvertFromScript.h"
 
 namespace XScript
 {
+
+namespace internal
+{
+template <> struct ConvertArg<const Shift::NameArg &, Shift::Name>
+  {
+  static Shift::Name conv(const Shift::NameArg &a)
+    {
+    Shift::Name n;
+    a.toName(n);
+    return n;
+    }
+  };
+}
 
 namespace Convert
 {
@@ -98,6 +114,7 @@ template <> struct JSToNative<const Shift::NameArg &>
 
 namespace detail
 {
+
 template <typename T> class MatchOut
   {
   typedef typename std::remove_const<T>::type NoConst;

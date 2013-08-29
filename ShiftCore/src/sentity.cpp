@@ -22,7 +22,7 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
 
   if(data.registerInterfaces)
     {
-    XScript::Interface<Entity> *api = info->apiInterface();
+    auto api = info->apiInterface();
 
     static XScript::ClassDef<0,0,7> cls = {
       {

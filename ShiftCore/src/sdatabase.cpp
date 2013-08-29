@@ -15,6 +15,8 @@
 # include "XLoggingAllocator"
 #endif
 
+Q_DECLARE_METATYPE(Eks::Vector<Shift::Attribute *>)
+
 #ifdef S_DEBUGGER
 # include "shift/UI/sdebugger.h"
 #endif
