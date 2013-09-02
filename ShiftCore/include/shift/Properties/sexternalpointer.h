@@ -119,6 +119,7 @@ public:
 
   void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE
     {
+#####
     Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
     propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();
     }
