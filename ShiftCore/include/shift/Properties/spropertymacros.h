@@ -21,29 +21,29 @@
   inline const DynamicInstanceInformation *dynamicInstanceInformation() const \
     { return static_cast<const DynamicInstanceInformation *>(dynamicBaseInstanceInformation()); }
 
-#define S_ADD_STATIC_INFO(name, version) \
-  public: enum { Version = version, IsAbstract = false };
+#define S_ADD_STATIC_INFO(name) \
+  public: enum { IsAbstract = false };
 
-#define S_ADD_ABSTRACT_STATIC_INFO(name, version) \
-  public: enum { Version = version, IsAbstract = true };
+#define S_ADD_ABSTRACT_STATIC_INFO(name) \
+  public: enum { IsAbstract = true };
 
-#define S_PROPERTY_ROOT(myName, version) \
+#define S_PROPERTY_ROOT(myName) \
   public: \
-  S_ADD_STATIC_INFO(myName, version); \
+  S_ADD_STATIC_INFO(myName); \
   S_ADD_INSTANCE_INFORMATION(myName) \
   typedef void ParentType; \
   S_REGISTER_TYPE_FUNCTION(myName)
 
-#define S_PROPERTY(myName, superName, version) \
+#define S_PROPERTY(myName, superName) \
   public: \
-  S_ADD_STATIC_INFO(myName, version) \
+  S_ADD_STATIC_INFO(myName) \
   S_ADD_INSTANCE_INFORMATION(myName) \
   typedef superName ParentType; \
   S_REGISTER_TYPE_FUNCTION(myName)
 
-#define S_ABSTRACT_PROPERTY(myName, superName, version) \
+#define S_ABSTRACT_PROPERTY(myName, superName) \
   public: \
-  S_ADD_ABSTRACT_STATIC_INFO(myName, version) \
+  S_ADD_ABSTRACT_STATIC_INFO(myName) \
   S_ADD_INSTANCE_INFORMATION(myName) \
   typedef superName ParentType; \
   S_REGISTER_TYPE_FUNCTION(myName)

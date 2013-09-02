@@ -10,8 +10,8 @@
 namespace Shift
 {
 
-#define S_ENTITY(name, parent, version) S_PROPERTY_CONTAINER(name, parent, version)
-#define S_ABSTRACT_ENTITY(name, parent, version) S_ABSTRACT_PROPERTY_CONTAINER(name, parent, version)
+#define S_ENTITY(name, parent) S_PROPERTY_CONTAINER(name, parent)
+#define S_ABSTRACT_ENTITY(name, parent) S_ABSTRACT_PROPERTY_CONTAINER(name, parent)
 
 /** \brief An item in a database.
 
@@ -92,7 +92,7 @@ namespace Shift
  */
 class SHIFT_EXPORT Entity : public Container, public XWeakSharedData
   {
-  S_ENTITY(Entity, Container, 0);
+  S_ENTITY(Entity, Container);
 
 public:
   Entity();

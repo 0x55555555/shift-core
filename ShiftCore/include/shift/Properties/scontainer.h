@@ -29,7 +29,7 @@ template <typename T, typename Cont, typename Iterator> class ContainerTypedIter
 
 class SHIFT_EXPORT Container : public Property
   {
-  S_PROPERTY_CONTAINER(Container, Property, 0);
+  S_PROPERTY_CONTAINER(Container, Property);
 
 public:
   typedef detail::PropertyContainerTraits Traits;

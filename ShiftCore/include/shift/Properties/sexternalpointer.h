@@ -44,7 +44,7 @@ public:
   typedef EmbeddedInstanceInformation::ResolveResult ResolveResult;
 
 private:
-  S_PROPERTY(ExternalPointer, Property, 0)
+  S_PROPERTY(ExternalPointer, Property)
 
 public:
 
@@ -81,7 +81,7 @@ public:
 class UuidEntity;
 class SHIFT_EXPORT ExternalUuidPointer : public ExternalPointer
   {
-  S_PROPERTY(ExternalUuidPointer, ExternalPointer, 0)
+  S_PROPERTY(ExternalUuidPointer, ExternalPointer)
 
 public:
   class Traits;
@@ -97,7 +97,7 @@ private:
 
 class SHIFT_EXPORT UuidEntity : public Entity
   {
-  S_ENTITY(UuidEntity, Entity, 0)
+  S_ENTITY(UuidEntity, Entity)
 
 public:
     const QUuid &uuid() const { return _uuid(); }

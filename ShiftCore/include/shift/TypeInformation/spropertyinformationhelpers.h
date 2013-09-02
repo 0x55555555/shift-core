@@ -431,7 +431,6 @@ private:
     info->setChildData(0);
     info->setChildCount(0);
 
-    info->setVersion(PropType::Version);
     info->setSize(sizeof(PropType));
     info->setDynamicInstanceInformationFormat(
       Eks::ResourceDescriptionTypeHelper<typename PropType::DynamicInstanceInformation>::createFor());

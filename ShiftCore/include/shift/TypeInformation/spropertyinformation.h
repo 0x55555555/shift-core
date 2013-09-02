@@ -82,8 +82,6 @@ XProperties:
 
   XProperty(xsize, propertyDataOffset, setPropertyDataOffset);
 
-  XProperty(xuint32, version, setVersion);
-
   XByRefProperty(Name, typeName, setTypeName);
 
   XProperty(const PropertyInformation *, parentTypeInformation, setParentTypeInformation);

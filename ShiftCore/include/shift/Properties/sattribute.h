@@ -39,7 +39,7 @@ public:
   typedef DynamicPropertyInstanceInformation DynamicInstanceInformation;
   typedef detail::PropertyBaseTraits Traits;
 
-  S_PROPERTY_ROOT(Attribute, 0)
+  S_PROPERTY_ROOT(Attribute)
 
 public:
   Attribute();

@@ -36,8 +36,6 @@ void PropertyInformation::initiate(PropertyInformation *info, const PropertyInfo
   // update template constructor too
   info->setFunctions(from->functions());
 
-  info->setVersion(from->version());
-
   info->setSize(from->size());
   info->setPropertyDataOffset(from->propertyDataOffset());
   info->setDynamicInstanceInformationFormat(from->dynamicInstanceInformationFormat());

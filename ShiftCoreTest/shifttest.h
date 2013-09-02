@@ -43,7 +43,7 @@ private:
 
 class TestVector : public Shift::Container
   {
-  S_ENTITY(TestVector, Container, 0)
+  S_ENTITY(TestVector, Container)
 public:
 
   Shift::FloatProperty x;
@@ -74,7 +74,7 @@ public:
 
 class TestEntity : public Shift::Entity
   {
-  S_ENTITY(TestEntity, Entity, 0)
+  S_ENTITY(TestEntity, Entity)
 public:
   TestEntity()
     {

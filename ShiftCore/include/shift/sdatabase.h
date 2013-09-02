@@ -38,7 +38,7 @@ namespace Shift
  */
 class SHIFT_EXPORT Database : public Entity, public Handler
   {
-  S_ENTITY(Database, Entity, 0);
+  S_ENTITY(Database, Entity);
 
 public:
   Database();

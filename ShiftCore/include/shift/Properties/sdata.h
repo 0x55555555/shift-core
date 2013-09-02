@@ -45,7 +45,7 @@ public:
   typedef detail::PODEmbeddedInstanceInformation<PODPropertyType, IsCopyable> EmbeddedInstanceInformation;
   typedef typename ParentType::DynamicInstanceInformation DynamicInstanceInformation;
 
-  S_PROPERTY(PODPropertyType, ParentType, 0);
+  S_PROPERTY(PODPropertyType, ParentType);
 
 public:
   typedef T PODType;

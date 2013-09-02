@@ -9,7 +9,7 @@ namespace Shift
 
 class SHIFT_EXPORT Array : public Container
   {
-  S_PROPERTY_CONTAINER(Array, Container, 0);
+  S_PROPERTY_CONTAINER(Array, Container);
 
 public:
   template <typename T> T *add(const NameArg& name)

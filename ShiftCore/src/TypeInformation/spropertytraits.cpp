@@ -31,14 +31,6 @@ void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
   writeValue(l, p->name());
   l.endAttribute("name");
 
-  xuint32 v(type->version());
-  if(v != 0)
-    {
-    l.beginAttribute("version");
-    writeValue(l, v);
-    l.endAttribute("version");
-    }
-
   bool dyn(p->isDynamic());
   if(dyn)
     {
@@ -210,11 +202,6 @@ Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
     xAssert(affectsCount == numAffects);
     }
 #endif
-
-  l.beginAttribute("version");
-  xuint32 version=0;
-  readValue(l, version);
-  l.endAttribute("version");
 
   Attribute *attr = 0;
   if(dynamic != 0)

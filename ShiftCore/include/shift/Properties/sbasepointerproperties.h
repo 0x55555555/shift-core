@@ -11,7 +11,7 @@ namespace Shift
 
 class SHIFT_EXPORT Pointer : public Property
   {
-  S_PROPERTY(Pointer, Property, 0);
+  S_PROPERTY(Pointer, Property);
 
 public:
   typedef Property PtrType;
@@ -128,7 +128,7 @@ private:
 
 #define S_TYPED_POINTER_TYPE(exportType, name, type) \
   class exportType name : public Shift::TypedPointer<type> { \
-    S_PROPERTY(name, Pointer, 0); }; \
+    S_PROPERTY(name, Pointer); }; \
   S_PROPERTY_INTERFACE(name)
 
 #define S_IMPLEMENT_TYPED_POINTER_TYPE(name, group) \
@@ -202,7 +202,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
 
 #define S_TYPED_POINTER_ARRAY_TYPE(exportType, name, type) \
   class exportType name : public Shift::TypedPointerArray<type> { \
-  S_PROPERTY_CONTAINER(name, Container, 0); }; \
+  S_PROPERTY_CONTAINER(name, Container); }; \
 
 #define S_IMPLEMENT_TYPED_POINTER_ARRAY_TYPE(name, group) \
   S_IMPLEMENT_PROPERTY(name, group) \
