@@ -100,7 +100,8 @@ class SHIFT_EXPORT UuidEntity : public Entity
   S_ENTITY(UuidEntity, Entity)
 
 public:
-    const QUuid &uuid() const { return _uuid(); }
+  UuidEntity() { }
+  const QUuid &uuid() const { return _uuid(); }
 
 private:
   Data<QUuid> _uuid;
@@ -109,14 +110,14 @@ private:
 
 namespace detail
 {
-template<int IsFull> class PODEmbeddedInstanceInformation<Data<QUuid>, IsFull>
+template<int IsFull, int Type> class PODEmbeddedInstanceInformation<Data<QUuid, Type>, IsFull>
         : public Property::EmbeddedInstanceInformation
   {
   typedef QUuid PODType;
 
 public:
 
-  virtual void initiateAttribute(Attribute *propertyToInitiate) const
+  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE
     {
     Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
     propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();

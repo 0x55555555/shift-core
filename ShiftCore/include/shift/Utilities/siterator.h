@@ -352,6 +352,36 @@ public:
     }
   };
 
+template <typename T> class Input : public Base<Input<T>, T, NilExtraData>
+  {
+public:
+  typedef typename Base<Input<T>, T, NilExtraData>::Iterator Iterator;
+
+  inline void first(Iterator &i) const
+    {
+    Attribute *attr = Base<Input<T>, T, NilExtraData>::attribute();
+    if(Property *prop = attr->castTo<Property>())
+      {
+      Property *inp = prop->input();
+      if(inp)
+        {
+        if(T* ptd = inp->castTo<T>())
+          {
+          i.setAttribute(ptd);
+          return;
+          }
+        }
+      }
+
+    i.setAttribute(0);
+    }
+
+  inline static void next(Iterator &i)
+    {
+    i.setAttribute(0);
+    }
+  };
+
 }
 
 }
