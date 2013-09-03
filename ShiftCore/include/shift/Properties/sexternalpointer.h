@@ -110,24 +110,24 @@ private:
 
 namespace detail
 {
-template<int IsFull, int Type> class PODEmbeddedInstanceInformation<Data<QUuid, Type>, IsFull>
-        : public Property::EmbeddedInstanceInformation
+class UuidPropertyInstanceInformation : public Property::EmbeddedInstanceInformation
   {
   typedef QUuid PODType;
 
 public:
-
-  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE
-    {
-#####
-    Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-    propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->_value = QUuid::createUuid();
-    }
+  UuidPropertyInstanceInformation() { }
+  
+  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE;
 
   QUuid defaultValue() const
     {
     return QUuid();
     }
+  };
+
+template<int IsFull, Shift::DataMode Type> class PODEmbeddedInstanceInformation<Data<QUuid, Type>, IsFull>
+    : public UuidPropertyInstanceInformation
+  {
   };
 }
 

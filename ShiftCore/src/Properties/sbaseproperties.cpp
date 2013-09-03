@@ -204,30 +204,6 @@ IMPLEMENT_POD_SHIFT_PROPERTY(QByteArray, FullData)
 IMPLEMENT_POD_SHIFT_PROPERTY(QUuid, FullData)
 IMPLEMENT_POD_SHIFT_PROPERTY(StringVector, FullData);
 
-#if 0
-S_IMPLEMENT_PROPERTY(Data<QUuid>, Shift)
-
-void UuidProperty::createTypeInformation(PropertyInformationTyped<Data<QUuid>> *,
-                                           const PropertyInformationCreateData &)
-  {
-  }
-
-S_IMPLEMENT_PROPERTY(Data<Eks::String>, Shift)
-
-void StringProperty::createTypeInformation(PropertyInformationTyped<Data<Eks::String>> *,
-                                           const PropertyInformationCreateData &)
-  {
-  }
-
-S_IMPLEMENT_PROPERTY(Filename, Shift)
-
-void FilenameProperty::createTypeInformation(PropertyInformationTyped<Filename> *,
-                                             const PropertyInformationCreateData &)
-  {
-  }
-
-#endif
-
 namespace detail
 {
 void podPreGet(const Property *p)
