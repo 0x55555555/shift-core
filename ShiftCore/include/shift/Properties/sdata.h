@@ -13,20 +13,11 @@ template <typename T> class PODComputeChange;
 template <typename T> class PODLock;
 template <typename T> class PODComputeLock;
 template <typename T, int IsAttribute, int IsFull> class PODPropertyTraits;
-template <typename T, int IsFull> class PODEmbeddedInstanceInformation;
+template <typename T> class DataEmbeddedInstanceInformation;
 
 SHIFT_EXPORT void podPreGet(const Property *);
 SHIFT_EXPORT void podPreGet(const Attribute *);
 }
-
-enum DataMode
-  {
-  AttributeData,
-  ComputedData,
-  FullData,
-
-  DataModeCount
-  };
 
 template <typename T, DataMode Mode=FullData> class Data
     : public Eks::IfElse<Mode != AttributeData, Property, Attribute>::Type
@@ -42,8 +33,15 @@ public:
     };
 
   typedef detail::PODPropertyTraits<PODPropertyType, IsAttribute, IsCopyable> Traits;
-  typedef detail::PODEmbeddedInstanceInformation<PODPropertyType, IsCopyable> EmbeddedInstanceInformation;
-  typedef typename ParentType::DynamicInstanceInformation DynamicInstanceInformation;
+  class EmbeddedInstanceInformation : public detail::DataEmbeddedInstanceInformation<PODPropertyType>
+    {
+  public:
+    EmbeddedInstanceInformation()
+      {
+      }
+    };
+
+  class DynamicInstanceInformation : public ParentType::DynamicInstanceInformation { };
 
   S_PROPERTY(PODPropertyType, ParentType);
 
@@ -53,7 +51,7 @@ public:
   typedef detail::PODChange<PODPropertyType> Change;
   typedef detail::PODComputeChange<PODPropertyType> ComputeChange;
 
-  Data<T, Mode> &operator=(const PODType &p)
+  PODPropertyType &operator=(const PODType &p)
     {
     assign(p);
     return *this;
@@ -89,7 +87,7 @@ protected:
   friend class Change;
   friend class Traits;
   friend class Lock;
-  friend class EmbeddedInstanceInformation;
+  friend class detail::DataEmbeddedInstanceInformation<PODPropertyType>;
 
 private:
   static Shift::PropertyInformation **staticTypeInformationInternal();

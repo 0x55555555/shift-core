@@ -59,6 +59,7 @@ HEADERS += \
     include/shift/sdatabase.h \
     include/shift/Properties/sproperty.h \
     include/shift/Properties/sbaseproperties.h \
+    include/shift/Properties/sbaseproperties.inl \
     include/shift/Properties/sbasepointerproperties.h \
     include/shift/Properties/spropertymacros.h \
     include/shift/Properties/sexternalpointer.h \

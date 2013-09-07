@@ -108,29 +108,6 @@ private:
   friend class ExternalUuidPointer;
   };
 
-namespace detail
-{
-class UuidPropertyInstanceInformation : public Property::EmbeddedInstanceInformation
-  {
-  typedef QUuid PODType;
-
-public:
-  UuidPropertyInstanceInformation() { }
-  
-  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE;
-
-  QUuid defaultValue() const
-    {
-    return QUuid();
-    }
-  };
-
-template<int IsFull, Shift::DataMode Type> class PODEmbeddedInstanceInformation<Data<QUuid, Type>, IsFull>
-    : public UuidPropertyInstanceInformation
-  {
-  };
-}
-
 }
 
 S_PROPERTY_INTERFACE(Shift::ExternalPointer)

@@ -116,17 +116,8 @@ void UuidEntity::createTypeInformation(PropertyInformationTyped<UuidEntity> *inf
   if(data.registerAttributes)
     {
     auto children = info->createChildrenBlock(data);
-    auto a = children.add(&UuidEntity::_uuid, "uuid");
 
-    Data<QUuid> pork;
-    a->initiateAttribute(&pork);
+    children.add(&UuidEntity::_uuid, "uuid");
     }
   }
-
-void detail::UuidPropertyInstanceInformation::initiateAttribute(Attribute *propertyToInitiate) const
-  {
-  Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-  propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->computeLock() = QUuid::createUuid();
-  }
-
 }

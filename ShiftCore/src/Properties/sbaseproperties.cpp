@@ -1,5 +1,5 @@
 #include "shift/Properties/sbaseproperties.h"
-#include "shift/Properties/sdata.inl"
+#include "shift/Properties/sbaseproperties.inl"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/shandler.inl"
@@ -750,5 +750,12 @@ void assignTo(const Attribute *f, Data<Eks::String> *to)
     return;
     }
   }
+
+void detail::UuidPropertyInstanceInformation::initiateAttribute(Attribute *propertyToInitiate) const
+  {
+  Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
+  propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->computeLock() = QUuid::createUuid();
+  }
+
 }
 }

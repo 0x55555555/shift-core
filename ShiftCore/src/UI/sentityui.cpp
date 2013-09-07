@@ -2,6 +2,7 @@
 #include "shift/UI/spropertydefaultui.h"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Properties/sproperty.h"
+#include "shift/Properties/sdata.inl"
 #include "shift/sentity.h"
 #include "QtWidgets/QFormLayout"
 #include "QtWidgets/QWidget"

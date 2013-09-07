@@ -56,6 +56,15 @@ class Property;
 class Observer;
 class PropertyGroup;
 
+enum DataMode
+  {
+  AttributeData,
+  ComputedData,
+  FullData,
+
+  DataModeCount
+  };
+
 PropertyGroup &propertyGroup();
 }
 

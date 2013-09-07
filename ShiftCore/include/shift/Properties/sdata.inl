@@ -1,7 +1,6 @@
-#ifndef SBASEPROPERTIES_INL
-#define SBASEPROPERTIES_INL
+#ifndef SDATA_INL
+#define SDATA_INL
 
-#include "sbaseproperties.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "XTemporaryAllocator"
 #include "shift/Changes/spropertychanges.h"
@@ -214,8 +213,7 @@ template <typename T, DataMode Mode>
     const Shift::PropertyInformation *Data<T, Mode>::
       bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator)
   {
-  typedef Data<T, Mode> ThisType;
-  Shift::detail::checkType<ThisType>();
+  Shift::detail::checkType<PODPropertyType>();
 
   Eks::TemporaryAllocator temp(TypeRegistry::temporaryAllocator());
   Eks::String name(&temp);
@@ -233,10 +231,10 @@ template <typename T, DataMode Mode>
   name.appendType(modeType);
   detail::MetaType::appendTypeName<T>(name);
 
-  Shift::PropertyInformationTyped<ThisType>::bootstrapTypeInformation(
+  Shift::PropertyInformationTyped<PODPropertyType>::bootstrapTypeInformation(
         staticTypeInformationInternal(),
         name.data(),
-        ThisType::ParentType::bootstrapStaticTypeInformation(allocator), allocator);
+        PODPropertyType::ParentType::bootstrapStaticTypeInformation(allocator), allocator);
 
   return staticTypeInformation();
   }
@@ -248,7 +246,7 @@ template <typename T> void getDefault(T *)
   {
   }
 
-template <typename T, int IsFull> class PODEmbeddedInstanceInformation
+template <typename T> class DataEmbeddedInstanceInformation
     : public Property::EmbeddedInstanceInformation
   {
 XProperties:
@@ -256,7 +254,7 @@ XProperties:
   XByRefProperty(PODType, defaultValue, setDefault);
 
 public:
-  PODEmbeddedInstanceInformation()
+  DataEmbeddedInstanceInformation()
     {
     detail::getDefault(&_defaultValue);
     }
@@ -280,11 +278,11 @@ public:
     }
   };
 
-template <typename T> class PODEmbeddedInstanceInformation<T, false>
+template <typename T> class DataEmbeddedInstanceInformation<Data<T, ComputedData>>
     : public Property::EmbeddedInstanceInformation
   {
 XProperties:
-  typedef typename T::PODType PODType;
+  typedef typename T PODType;
 
 public:
   };
@@ -368,4 +366,4 @@ public:
 }
 }
 
-#endif // SBASEPROPERTIES_INL
+#endif // SDATA_INL
