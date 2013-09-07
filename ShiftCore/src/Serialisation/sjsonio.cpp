@@ -46,11 +46,11 @@ QByteArray escape(const QByteArray &s)
 #define OBJECT_VALUE_CHAR_CHAR(key, valueString) COMMA_IF_REQUIRED NEWLINE_IF_REQUIRED TAB_ELEMENT _device->write("\"" key "\":\"" valueString "\"");
 #define OBJECT_VALUE_BYTEARRAY_BYTEARRAY(key, valueString) COMMA_IF_REQUIRED NEWLINE_IF_REQUIRED TAB_ELEMENT _device->write("\""); _device->write(escape(key)); _device->write("\":\""); _device->write(escape(valueString));  _device->write("\"");
 
-#define TYPE_KEY "__T"
-#define CHILD_COUNT_KEY "__C"
-#define CHILDREN_KEY "__H"
-#define VALUE_KEY "__V"
-#define NO_ROOT_KEY "__N"
+#define TYPE_KEY "type"
+#define CHILD_COUNT_KEY "count"
+#define CHILDREN_KEY "child"
+#define VALUE_KEY "val"
+#define NO_ROOT_KEY "noroot"
 
 JSONSaver::JSONSaver() : _autoWhitespace(false), _device(0), _root(0)
   {
@@ -95,7 +95,7 @@ void JSONSaver::writeToDevice(QIODevice *device, const Container *ent, bool incl
   _root = 0;
   }
 
-void JSONSaver::setType(const PropertyInformation *type)
+void JSONSaver::addType(const PropertyInformation *type)
   {
   SProfileFunction
   xAssert(_buffer.data().isEmpty());

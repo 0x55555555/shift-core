@@ -24,7 +24,7 @@ public:
   void writeToDevice(QIODevice *device, const Container *ent, bool includeRoot);
 
 private:
-  void setType(const PropertyInformation *);
+  void addType(const PropertyInformation *);
 
   void beginChildren();
   void endChildren();

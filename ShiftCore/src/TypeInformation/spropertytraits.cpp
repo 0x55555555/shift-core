@@ -25,8 +25,6 @@ void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
   SProfileFunction
   const PropertyInformation *type = p->typeInformation();
 
-  l.setType(type);
-
   l.beginAttribute("name");
   writeValue(l, p->name());
   l.endAttribute("name");
@@ -34,6 +32,8 @@ void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
   bool dyn(p->isDynamic());
   if(dyn)
     {
+    l.addType(type);
+
     l.beginAttribute("dynamic");
     writeValue(l, dyn ? 1 : 0);
     l.endAttribute("dynamic");
@@ -48,40 +48,6 @@ void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
       writeValue(l, mode);
       l.endAttribute("mode");
       }
-
-#if 0
-    xsize *affects = instInfo->affects();
-    if(affects)
-      {
-      xAssert(p->parent());
-      QString affectsString;
-
-      const PropertyInformation *contInfo = p->parent()->typeInformation();
-      while(*affects != 0)
-        {
-        const PropertyInstanceInformation *affectsInst = contInfo->child(*affects);
-
-        xAssert(affectsInst);
-        xAssert(!affectsInst->dynamic());
-        if(!affectsInst->dynamic())
-          {
-          QString fixedName = affectsInst->name();
-          affectsString.append(fixedName.replace(',', "\\,"));
-
-          if(affects[1] != 0)
-            {
-            affectsString.append(",");
-            }
-          }
-
-        ++affects;
-        }
-
-      l.beginAttribute("affects");
-      writeValue(l, affectsString);
-      l.endAttribute("affects");
-      }
-#endif
     }
 
   if(const Property* prop = p->castTo<Property>())
@@ -112,8 +78,6 @@ Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
     };
 
   SProfileFunction
-  const PropertyInformation *type = l.type();
-  xAssert(type);
 
   Initialiser initialiser;
 
@@ -131,81 +95,12 @@ Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
   readValue(l, initialiser.mode);
   l.endAttribute("mode");
 
-#if 0
-  l.beginAttribute("affects");
-  QString affectsString;
-  readValue(l, affectsString);
-  l.endAttribute("affects");
-  if(!affectsString.isEmpty())
-    {
-    xsize numAffects = 0;
-    bool escapeNext = false;
-    for(int i=0, s=affectsString.size(); i<s; ++i)
-      {
-      xAssert(!escapeNext || affectsString[i] == ',');
-      if((affectsString[i] == ',' || i == (s-1)) && !escapeNext)
-        {
-        numAffects++;
-        }
-
-      if(affectsString[i] == '\'')
-        {
-        escapeNext = true;
-        }
-      else
-        {
-        escapeNext = false;
-        }
-      }
-
-###
-    initialiser.affects = new xsize[numAffects+1];
-    initialiser.affects[numAffects] = 0;
-    const PropertyInformation *parentType = parent->typeInformation();
-
-    int num = 0;
-    int lastPos = 0;
-    xsize affectsCount = 0;
-    escapeNext = false;
-    for(int i=0, s=affectsString.size(); i<s; ++i)
-      {
-      xAssert(!escapeNext || affectsString[i] == ',');
-      if((affectsString[i] == ',' || i == (s-1)) && !escapeNext)
-        {
-        if(i == (s-1))
-          {
-          num++;
-          }
-
-        QString affectsName = affectsString.mid(lastPos, num);
-
-        const PropertyInstanceInformation *inst = parentType->childFromName(affectsName);
-        xAssert(inst);
-
-        initialiser.affects[affectsCount++] = inst->location();
-
-        num = 0;
-        lastPos = i+1;
-        }
-
-      if(affectsString[i] == '\'')
-        {
-        escapeNext = true;
-        }
-      else
-        {
-        escapeNext = false;
-        }
-      num++;
-      }
-
-    xAssert(affectsCount == numAffects);
-    }
-#endif
-
   Attribute *attr = 0;
   if(dynamic != 0)
     {
+    const PropertyInformation *type = l.type();
+    xAssert(type);
+
     attr = parent->addAttribute(type, X_UINT8_SENTINEL, name, &initialiser);
     xAssert(attr);
     }
@@ -213,7 +108,6 @@ Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
     {
     attr = parent->findChild(name);
     xAssert(attr);
-    xAssert(attr->typeInformation() == type);
     }
 
   if(Property *prop = attr->castTo<Property>())

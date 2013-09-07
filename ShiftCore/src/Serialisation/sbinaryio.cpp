@@ -26,7 +26,7 @@ void SBinarySaver::writeToDevice(QIODevice *device, const Entity *ent)
   _root = 0;
   }
 
-void SBinarySaver::setType(const PropertyInformation *)
+void SBinarySaver::addType(const PropertyInformation *)
   {
   xAssert(_buffer.data().isEmpty());
   xAssert(_inAttribute.isEmpty());

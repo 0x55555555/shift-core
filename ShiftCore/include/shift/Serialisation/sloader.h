@@ -78,7 +78,7 @@ public:
 
   void setStreamDevice(Mode m, QIODevice *d) { _streamMode = m; _ts.setDevice(d); _ds.setDevice(d); }
 
-  virtual void setType(const PropertyInformation *) = 0;
+  virtual void addType(const PropertyInformation *) = 0;
 
   void saveChildren(const Container *c);
 

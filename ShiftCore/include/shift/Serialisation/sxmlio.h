@@ -18,7 +18,7 @@ public:
   void writeToDevice(QIODevice *device, const Entity *ent);
 
 private:
-  void setType(const PropertyInformation *);
+  void addType(const PropertyInformation *);
 
   void beginChildren();
   void endChildren();
