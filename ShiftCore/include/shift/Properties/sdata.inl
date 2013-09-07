@@ -7,8 +7,6 @@
 #include "shift/Changes/shandler.inl"
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/TypeInformation/spropertygroup.h"
-#include "QtCore/QUuid"
-#include "XStringBuffer"
 
 #if X_ASSERTS_ENABLED
 #include "shift/sdatabase.h"
@@ -264,7 +262,7 @@ public:
   void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE
     {
     Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-    //propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
+    propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
     }
 
   virtual void setDefaultValueFromString(const Eks::String &val)
@@ -333,7 +331,6 @@ public:
       {
       using ::operator!=;
 
-      (void)ptr;
       const typename T::PODType &def = ptr->embeddedInstanceInformation()->defaultValue();
       const typename T::PODType &val = ptr->value();
 
@@ -341,7 +338,6 @@ public:
         {
         return true;
         }
-      return false;
       }
 
     return false;

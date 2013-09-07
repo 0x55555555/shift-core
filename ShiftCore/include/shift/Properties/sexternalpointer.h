@@ -101,7 +101,7 @@ class SHIFT_EXPORT UuidEntity : public Entity
 
 public:
   UuidEntity() { }
-  const QUuid &uuid() const { static QUuid a; return a; }
+  const QUuid &uuid() const { return _uuid(); }
 
 private:
   Data<QUuid> _uuid;
