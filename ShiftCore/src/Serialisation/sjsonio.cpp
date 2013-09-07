@@ -52,7 +52,7 @@ QByteArray escape(const QByteArray &s)
 #define VALUE_KEY "__V"
 #define NO_ROOT_KEY "__N"
 
-SJSONSaver::SJSONSaver() : _autoWhitespace(false), _device(0), _root(0)
+JSONSaver::JSONSaver() : _autoWhitespace(false), _device(0), _root(0)
   {
   if(_autoWhitespace)
     {
@@ -62,7 +62,7 @@ SJSONSaver::SJSONSaver() : _autoWhitespace(false), _device(0), _root(0)
   setStreamDevice(Text, &_buffer);
   }
 
-void SJSONSaver::writeToDevice(QIODevice *device, const Container *ent, bool includeRoot)
+void JSONSaver::writeToDevice(QIODevice *device, const Container *ent, bool includeRoot)
   {
   SProfileFunction
   _root = ent;
@@ -95,7 +95,7 @@ void SJSONSaver::writeToDevice(QIODevice *device, const Container *ent, bool inc
   _root = 0;
   }
 
-void SJSONSaver::setType(const PropertyInformation *type)
+void JSONSaver::setType(const PropertyInformation *type)
   {
   SProfileFunction
   xAssert(_buffer.data().isEmpty());
@@ -104,28 +104,28 @@ void SJSONSaver::setType(const PropertyInformation *type)
   OBJECT_VALUE_CHAR_BYTEARRAY(TYPE_KEY, type->typeName().toQString().toUtf8());
   }
 
-void SJSONSaver::beginChildren()
+void JSONSaver::beginChildren()
   {
   SProfileFunction
   xAssert(_inAttribute.isEmpty());
   START_ARRAY_IN_OBJECT_CHAR(CHILDREN_KEY);
   }
 
-void SJSONSaver::endChildren()
+void JSONSaver::endChildren()
   {
   SProfileFunction
   xAssert(_inAttribute.isEmpty());
   END_ARRAY
   }
 
-void SJSONSaver::beginNextChild()
+void JSONSaver::beginNextChild()
   {
   SProfileFunction
   xAssert(_buffer.data().isEmpty());
   START_OBJECT
   }
 
-void SJSONSaver::endNextChild()
+void JSONSaver::endNextChild()
   {
   SProfileFunction
   textStream().flush();
@@ -138,7 +138,7 @@ void SJSONSaver::endNextChild()
   END_OBJECT
   }
 
-void SJSONSaver::beginAttribute(const char *attrName)
+void JSONSaver::beginAttribute(const char *attrName)
   {
   SProfileFunction
   xAssert(_inAttribute.isEmpty());
@@ -149,7 +149,7 @@ void SJSONSaver::beginAttribute(const char *attrName)
   xAssert(_buffer.buffer().isEmpty());
   }
 
-void SJSONSaver::endAttribute(const char *attrName)
+void JSONSaver::endAttribute(const char *attrName)
   {
   SProfileFunction
   (void)attrName;
@@ -168,7 +168,7 @@ void SJSONSaver::endAttribute(const char *attrName)
   }
 
 
-SJSONLoader::SJSONLoader() : _current(Start)
+JSONLoader::JSONLoader() : _current(Start)
   {
   _buffer.open(QIODevice::ReadOnly);
 
@@ -187,15 +187,15 @@ SJSONLoader::SJSONLoader() : _current(Start)
   _jc = new_JSON_parser(&config);
   }
 
-SJSONLoader::~SJSONLoader()
+JSONLoader::~JSONLoader()
   {
   delete_JSON_parser(_jc);
   }
 
-int SJSONLoader::callback(void *ctx, int type, const JSON_value* value)
+int JSONLoader::callback(void *ctx, int type, const JSON_value* value)
   {
   SProfileFunction
-  SJSONLoader *ldr = (SJSONLoader*)ctx;
+  JSONLoader *ldr = (JSONLoader*)ctx;
 
   if(ldr->_current == Start)
     {
@@ -293,7 +293,7 @@ int SJSONLoader::callback(void *ctx, int type, const JSON_value* value)
   return 1;
   }
 
-void SJSONLoader::readNext() const
+void JSONLoader::readNext() const
   {
   SProfileFunction
   xAssert(_parseError == false);
@@ -313,7 +313,7 @@ void SJSONLoader::readNext() const
     }
   }
 
-void SJSONLoader::readAllAttributes()
+void JSONLoader::readAllAttributes()
   {
   SProfileFunction
   xAssert(_current == Attributes);
@@ -327,7 +327,7 @@ void SJSONLoader::readAllAttributes()
     }
   }
 
-void SJSONLoader::readFromDevice(QIODevice *device, Container *parent)
+void JSONLoader::readFromDevice(QIODevice *device, Container *parent)
   {
   Block b(parent->handler());
   SProfileFunction
@@ -369,7 +369,7 @@ void SJSONLoader::readFromDevice(QIODevice *device, Container *parent)
   _root = 0;
   }
 
-const PropertyInformation *SJSONLoader::type() const
+const PropertyInformation *JSONLoader::type() const
   {
   SProfileFunction
   xAssert(_root);
@@ -381,7 +381,7 @@ const PropertyInformation *SJSONLoader::type() const
   }
 
 
-bool SJSONLoader::beginChildren() const
+bool JSONLoader::beginChildren() const
   {
   SProfileFunction
   if(_current == AttributesEnd)
@@ -402,7 +402,7 @@ bool SJSONLoader::beginChildren() const
   return false;
   }
 
-void SJSONLoader::endChildren() const
+void JSONLoader::endChildren() const
   {
   SProfileFunction
   if(_current == Children)
@@ -414,7 +414,7 @@ void SJSONLoader::endChildren() const
   xAssert(_current == End);
   }
 
-bool SJSONLoader::hasNextChild() const
+bool JSONLoader::hasNextChild() const
   {
   SProfileFunction
   if(_current == Children)
@@ -437,7 +437,7 @@ bool SJSONLoader::hasNextChild() const
   return false;
   }
 
-void SJSONLoader::beginNextChild()
+void JSONLoader::beginNextChild()
   {
   _currentAttributes.clear();
   xAssert(_current != ChildrenEnd);
@@ -452,7 +452,7 @@ void SJSONLoader::beginNextChild()
   textStream().seek(0);
   }
 
-bool SJSONLoader::childHasValue() const
+bool JSONLoader::childHasValue() const
   {
   if(!_currentValue.isEmpty())
     {
@@ -472,7 +472,7 @@ bool SJSONLoader::childHasValue() const
   return false;
   }
 
-void SJSONLoader::endNextChild()
+void JSONLoader::endNextChild()
   {
   SProfileFunction
   if(_current == AttributesEnd)
@@ -488,7 +488,7 @@ void SJSONLoader::endNextChild()
   xAssert(_current == ChildrenEnd || _current == Attributes);
   }
 
-void SJSONLoader::beginAttribute(const char *attr)
+void JSONLoader::beginAttribute(const char *attr)
   {
   SProfileFunction
   xAssert(_currentAttributeValue.isEmpty());
@@ -501,7 +501,7 @@ void SJSONLoader::beginAttribute(const char *attr)
   textStream().seek(0);
   }
 
-void SJSONLoader::endAttribute(const char *)
+void JSONLoader::endAttribute(const char *)
   {
   SProfileFunction
   _buffer.close();
@@ -512,7 +512,7 @@ void SJSONLoader::endAttribute(const char *)
   _currentAttributeValue.clear();
   }
 
-void SJSONLoader::resolveInputAfterLoad(Property *prop, const InputString &path)
+void JSONLoader::resolveInputAfterLoad(Property *prop, const InputString &path)
   {
   SProfileFunction
   _resolveAfterLoad.insert(prop, path);

@@ -97,7 +97,7 @@ Eks::Vector<Attribute *> Database::load(const QString &type, QIODevice *device, 
   xAssert(type == "json");
   (void)type;
 
-  SJSONLoader s;
+  JSONLoader s;
 
   Attribute *p = loadRoot->lastChild();
 
@@ -122,7 +122,7 @@ void Database::save(const QString &type, QIODevice *device, Entity *saveRoot, bo
   xAssert(type == "json");
   (void)type;
 
-  SJSONSaver s;
+  JSONSaver s;
   s.setAutoWhitespace(readable);
 
   s.writeToDevice(device, saveRoot, includeRoot);

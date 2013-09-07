@@ -13,13 +13,13 @@ struct JSON_parser_struct;
 namespace Shift
 {
 
-class SHIFT_EXPORT SJSONSaver : private Saver
+class SHIFT_EXPORT JSONSaver : private Saver
   {
 XProperties:
   XProperty(bool, autoWhitespace, setAutoWhitespace);
 
 public:
-  SJSONSaver();
+  JSONSaver();
 
   void writeToDevice(QIODevice *device, const Container *ent, bool includeRoot);
 
@@ -43,11 +43,11 @@ private:
   QBuffer _buffer;
   };
 
-class SHIFT_EXPORT SJSONLoader : private Loader
+class SHIFT_EXPORT JSONLoader : private Loader
   {
 public:
-  SJSONLoader();
-  ~SJSONLoader();
+  JSONLoader();
+  ~JSONLoader();
 
   void readFromDevice(QIODevice *device, Container *parent);
 

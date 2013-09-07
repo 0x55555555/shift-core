@@ -5,7 +5,7 @@
 #include "shift/Properties/sbaseproperties.h"
 #include "shift/sentity.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
-#include "QUuid"
+#include "QtCore/QUuid"
 
 namespace Shift
 {
