@@ -14,7 +14,7 @@
 namespace Shift
 {
 
-#define DEFINE_POD_PROPERTY(name, type) typedef Shift::Data2<type> name;
+#define DEFINE_POD_PROPERTY(name, type) typedef Shift::Data<type> name;
 
 typedef Eks::Vector<Eks::String> StringVector;
 Q_DECLARE_METATYPE(xuint8);

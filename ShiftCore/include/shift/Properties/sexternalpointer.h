@@ -104,7 +104,7 @@ public:
   const QUuid &uuid() const { static QUuid a; return a; }
 
 private:
-  //Data<QUuid> _uuid;
+  Data<QUuid> _uuid;
   friend class ExternalUuidPointer;
   };
 
@@ -131,12 +131,7 @@ public:
     }
   };
 
-template<> class PODEmbeddedInstanceInformation3<Data<QUuid, FullData>, true>
-    : public UuidPropertyInstanceInformation
-  {
-  };
-
-template<> class PODEmbeddedInstanceInformation2<Data<QUuid, FullData>, true>
+template<> class DataEmbeddedInstanceInformation<Data<QUuid, FullData>>
     : public UuidPropertyInstanceInformation
   {
   };

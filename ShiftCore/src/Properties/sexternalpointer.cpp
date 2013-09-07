@@ -123,9 +123,7 @@ void UuidEntity::createTypeInformation(PropertyInformationTyped<UuidEntity> *inf
     
     thing();
 
-    detail::PODEmbeddedInstanceInformation<Data<QUuid, FullData>, true> aX;
-    detail::PODEmbeddedInstanceInformation2<Data<QUuid, FullData>, true> aY;
-    detail::PODEmbeddedInstanceInformation3<Data<QUuid, FullData>, true> aZ;
+    detail::DataEmbeddedInstanceInformation<Data<QUuid, FullData>> aX;
 
     Data<int, FullData>::EmbeddedInstanceInformation aZ2;
     Data<QUuid, FullData>::EmbeddedInstanceInformation aZ3;

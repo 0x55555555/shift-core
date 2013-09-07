@@ -6,8 +6,6 @@ namespace Shift
 
 void thing()
   {
-  detail::PODEmbeddedInstanceInformation<Data<QUuid, FullData>, true> aX;
-  detail::PODEmbeddedInstanceInformation2<Data<QUuid, FullData>, true> aY;
-  detail::PODEmbeddedInstanceInformation3<Data<QUuid, FullData>, true> aZ;
+  detail::DataEmbeddedInstanceInformation<Data<QUuid, FullData>> aX;
   }
 }
