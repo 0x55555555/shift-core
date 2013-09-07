@@ -51,7 +51,8 @@ SOURCES += \
     src/Changes/spropertychanges.cpp \
     src/Properties/sarray.cpp \
     src/Properties/scontainer.cpp \
-    src/Changes/schange.cpp
+    src/Changes/schange.cpp \
+    test.cpp
 
 HEADERS += \
     include/shift/sglobal.h \

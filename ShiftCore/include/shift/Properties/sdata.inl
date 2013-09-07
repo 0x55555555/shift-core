@@ -1,13 +1,14 @@
 #ifndef SBASEPROPERTIES_INL
 #define SBASEPROPERTIES_INL
 
-#include "sbaseproperties.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "XTemporaryAllocator"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/TypeInformation/spropertygroup.h"
+#include "QtCore/QUuid"
+#include "XStringBuffer"
 
 #if X_ASSERTS_ENABLED
 #include "shift/sdatabase.h"
@@ -199,6 +200,16 @@ template <typename T, DataMode Mode>
   PropertyDoChange(Change, Data<T, Mode>::_value, in, this);
   }
 
+template <typename T, DataMode Mode>
+    void Data2<T, Mode>::assign(const T &in)
+  {
+#if X_ASSERTS_ENABLED
+  bool a = Data2<T, Mode>::IsCopyable != 0;
+  xAssert(a);
+#endif
+  PropertyDoChange(Change, Data2<T, Mode>::_value, in, this);
+  }
+
 }
 
 namespace Shift
@@ -241,6 +252,43 @@ template <typename T, DataMode Mode>
   return staticTypeInformation();
   }
 
+template <typename T, DataMode Mode>
+    void Data2<T, Mode>::createTypeInformation(PropertyInformationTyped<Data2<T, Mode>> *,
+                                      const PropertyInformationCreateData &)
+  {
+  }
+
+template <typename T, DataMode Mode>
+    const Shift::PropertyInformation *Data2<T, Mode>::
+      bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator)
+  {
+  typedef Data2<T, Mode> ThisType;
+  Shift::detail::checkType<ThisType>();
+
+  Eks::TemporaryAllocator temp(TypeRegistry::temporaryAllocator());
+  Eks::String name(&temp);
+
+  const char *modeType = "Full";
+  if(Mode == ComputedData)
+    {
+    modeType = "Computed";
+    }
+  else if(Mode == AttributeData)
+    {
+    modeType = "Attribute";
+    }
+
+  name.appendType(modeType);
+  detail::MetaType::appendTypeName<T>(name);
+
+  Shift::PropertyInformationTyped<ThisType>::bootstrapTypeInformation(
+        staticTypeInformationInternal(),
+        name.data(),
+        ThisType::ParentType::bootstrapStaticTypeInformation(allocator), allocator);
+
+  return staticTypeInformation();
+  }
+
 namespace detail
 {
 
@@ -254,9 +302,26 @@ template <typename T, int IsFull> class PODEmbeddedInstanceInformation
 XProperties:
   typedef typename T::PODType PODType;
   XByRefProperty(PODType, defaultValue, setDefault);
+  };
+
+template <typename T> class PODEmbeddedInstanceInformation<T, false>
+    : public Property::EmbeddedInstanceInformation
+  {
+XProperties:
+  typedef typename T::PODType PODType;
 
 public:
-  PODEmbeddedInstanceInformation()
+  };
+
+template <typename T, int IsFull> class PODEmbeddedInstanceInformation3
+    : public Property::EmbeddedInstanceInformation
+  {
+XProperties:
+  typedef typename T::PODType PODType;
+  XByRefProperty(PODType, defaultValue, setDefault);
+
+public:
+  PODEmbeddedInstanceInformation3()
     {
     detail::getDefault(&_defaultValue);
     }
@@ -264,7 +329,7 @@ public:
   void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE
     {
     Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-    propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
+    //propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
     }
 
   virtual void setDefaultValueFromString(const Eks::String &val)
@@ -280,7 +345,7 @@ public:
     }
   };
 
-template <typename T> class PODEmbeddedInstanceInformation<T, false>
+template <typename T> class PODEmbeddedInstanceInformation3<T, false>
     : public Property::EmbeddedInstanceInformation
   {
 XProperties:
@@ -288,6 +353,48 @@ XProperties:
 
 public:
   };
+
+template <typename T, int IsFull> class PODEmbeddedInstanceInformation2
+    : public Property::EmbeddedInstanceInformation
+  {
+XProperties:
+  typedef typename T::PODType PODType;
+  XByRefProperty(PODType, defaultValue, setDefault);
+
+public:
+  PODEmbeddedInstanceInformation2()
+    {
+    detail::getDefault(&_defaultValue);
+    }
+
+  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE
+    {
+    Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
+    //propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
+    }
+
+  virtual void setDefaultValueFromString(const Eks::String &val)
+    {
+    Eks::String::Buffer s(&val);
+    Eks::String::IStream stream(&s);
+    xAssertFail();
+    }
+
+  void setDefaultValue(const PODType &val)
+    {
+    _defaultValue = val;
+    }
+  };
+
+template <typename T> class PODEmbeddedInstanceInformation2<T, false>
+    : public Property::EmbeddedInstanceInformation
+  {
+XProperties:
+  typedef typename T::PODType PODType;
+
+public:
+  };
+
 
 template <typename T, int IsAttribute, int IsFull> class PODPropertyTraits
   : public PropertyBaseTraits
@@ -333,13 +440,15 @@ public:
       {
       using ::operator!=;
 
-      const typename T::PODType &def = ptr->embeddedInstanceInformation()->defaultValue();
+      (void)ptr;
+      /*const typename T::PODType &def = ptr->embeddedInstanceInformation()->defaultValue();
       const typename T::PODType &val = ptr->value();
 
       if(ptr->isDynamic() || val != def)
         {
         return true;
-        }
+        }*/
+      return false;
       }
 
     return false;
@@ -353,7 +462,18 @@ public:
   };
 
 #define S_POD_INFO_NAME(T, Mode) _staticTypeInformation ## T ## Mode
+#define S_POD_INFO_NAME2(T, Mode) _staticTypeInformation2 ## T ## Mode
 #define IMPLEMENT_POD_PROPERTY(EXPORT, group, T, Mode, niceName) \
+  Shift::PropertyGroup::Information S_POD_INFO_NAME2(niceName, Mode) = \
+    group::propertyGroup().registerPropertyInformation( \
+      &S_POD_INFO_NAME2(niceName, Mode), \
+      Shift::Data2<T, Shift::Mode>::bootstrapStaticTypeInformation); \
+  template <> \
+      EXPORT const Shift::PropertyInformation *Shift::Data2<T, Shift::Mode>::staticTypeInformation() { \
+    return S_POD_INFO_NAME2(niceName, Mode).information; } \
+  template <> \
+      EXPORT Shift::PropertyInformation **Shift::Data2<T, Shift::Mode>::staticTypeInformationInternal() { \
+    return &S_POD_INFO_NAME2(niceName, Mode).information; } \
   Shift::PropertyGroup::Information S_POD_INFO_NAME(niceName, Mode) = \
     group::propertyGroup().registerPropertyInformation( \
       &S_POD_INFO_NAME(niceName, Mode), \

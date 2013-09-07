@@ -14,7 +14,7 @@
 namespace Shift
 {
 
-#define DEFINE_POD_PROPERTY(name, type) typedef Shift::Data<type> name;
+#define DEFINE_POD_PROPERTY(name, type) typedef Shift::Data2<type> name;
 
 typedef Eks::Vector<Eks::String> StringVector;
 Q_DECLARE_METATYPE(xuint8);
@@ -32,7 +32,6 @@ DEFINE_POD_PROPERTY(Vector4DProperty, Eks::Vector4D);
 DEFINE_POD_PROPERTY(QuaternionProperty, Eks::Quaternion);
 DEFINE_POD_PROPERTY(ColourProperty, Eks::Colour);
 DEFINE_POD_PROPERTY(ByteArrayProperty, QByteArray);
-DEFINE_POD_PROPERTY(UuidPropertyBase, QUuid);
 DEFINE_POD_PROPERTY(StringProperty, Eks::String);
 DEFINE_POD_PROPERTY(StringArrayProperty, StringVector);
 

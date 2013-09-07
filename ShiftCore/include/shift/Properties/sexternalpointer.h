@@ -101,13 +101,19 @@ class SHIFT_EXPORT UuidEntity : public Entity
 
 public:
   UuidEntity() { }
-  const QUuid &uuid() const { return _uuid(); }
+  const QUuid &uuid() const { static QUuid a; return a; }
 
 private:
-  Data<QUuid> _uuid;
+  //Data<QUuid> _uuid;
   friend class ExternalUuidPointer;
   };
 
+}
+
+#include "sdata.inl"
+
+namespace Shift
+{
 namespace detail
 {
 class UuidPropertyInstanceInformation : public Property::EmbeddedInstanceInformation
@@ -116,7 +122,7 @@ class UuidPropertyInstanceInformation : public Property::EmbeddedInstanceInforma
 
 public:
   UuidPropertyInstanceInformation() { }
-  
+
   void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE;
 
   QUuid defaultValue() const
@@ -125,7 +131,12 @@ public:
     }
   };
 
-template<int IsFull, Shift::DataMode Type> class PODEmbeddedInstanceInformation<Data<QUuid, Type>, IsFull>
+template<> class PODEmbeddedInstanceInformation3<Data<QUuid, FullData>, true>
+    : public UuidPropertyInstanceInformation
+  {
+  };
+
+template<> class PODEmbeddedInstanceInformation2<Data<QUuid, FullData>, true>
     : public UuidPropertyInstanceInformation
   {
   };

@@ -104,9 +104,11 @@ void ExternalUuidPointer::createTypeInformation(PropertyInformationTyped<Externa
 
 void ExternalUuidPointer::setPointed(const UuidEntity *entity)
   {
-  _id = entity->_uuid();
+  //_id = entity->_uuid();
   setInput(entity);
   }
+
+void thing();
 
 S_IMPLEMENT_PROPERTY(UuidEntity, Shift)
 
@@ -114,12 +116,32 @@ void UuidEntity::createTypeInformation(PropertyInformationTyped<UuidEntity> *inf
                                             const PropertyInformationCreateData &data)
   {
   if(data.registerAttributes)
-    {
-    auto children = info->createChildrenBlock(data);
-    auto a = children.add(&UuidEntity::_uuid, "uuid");
+    {    
+    //typedef decltype(UuidEntity::_uuid) UuidType;
+    //typedef UuidType::Traits::template TypeTraits<UuidType>::Type TypeTraits;
+    //const PropertyInformation *propInfo = UuidType::bootstrapStaticTypeInformation(data.allocator);
+    
+    thing();
 
+    detail::PODEmbeddedInstanceInformation<Data<QUuid, FullData>, true> aX;
+    detail::PODEmbeddedInstanceInformation2<Data<QUuid, FullData>, true> aY;
+    detail::PODEmbeddedInstanceInformation3<Data<QUuid, FullData>, true> aZ;
+
+    Data<int, FullData>::EmbeddedInstanceInformation aZ2;
+    Data<QUuid, FullData>::EmbeddedInstanceInformation aZ3;
+
+    /*detail::UuidPropertyInstanceInformation a1;
+    detail::PODEmbeddedInstanceInformation<Data<QUuid, FullData>, true> a2;
+    TypeTraits::StInst *inst = &a2;
+    detail::UuidPropertyInstanceInformation *ptr = &a2;
     Data<QUuid> pork;
-    a->initiateAttribute(&pork);
+    inst->initiateAttribute(&pork);
+    ptr->initiateAttribute(&pork);
+    //a->initiateAttribute(&pork);
+*/
+
+    auto children = info->createChildrenBlock(data);
+    //children.add(&UuidEntity::_uuid, "uuid");
     }
   }
 
