@@ -33,8 +33,15 @@ public:
     };
 
   typedef detail::PODPropertyTraits<PODPropertyType, IsAttribute, IsCopyable> Traits;
-  typedef detail::DataEmbeddedInstanceInformation<PODPropertyType> EmbeddedInstanceInformation;
-  typedef typename ParentType::DynamicInstanceInformation DynamicInstanceInformation;
+  class EmbeddedInstanceInformation : public detail::DataEmbeddedInstanceInformation<PODPropertyType>
+    {
+  public:
+    EmbeddedInstanceInformation()
+      {
+      }
+    };
+
+  class DynamicInstanceInformation : public ParentType::DynamicInstanceInformation { };
 
   S_PROPERTY(PODPropertyType, ParentType);
 
@@ -80,7 +87,7 @@ protected:
   friend class Change;
   friend class Traits;
   friend class Lock;
-  friend class EmbeddedInstanceInformation;
+  friend class detail::DataEmbeddedInstanceInformation<PODPropertyType>;
 
 private:
   static Shift::PropertyInformation **staticTypeInformationInternal();

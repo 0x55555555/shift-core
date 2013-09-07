@@ -116,37 +116,10 @@ void UuidEntity::createTypeInformation(PropertyInformationTyped<UuidEntity> *inf
                                             const PropertyInformationCreateData &data)
   {
   if(data.registerAttributes)
-    {    
-    //typedef decltype(UuidEntity::_uuid) UuidType;
-    //typedef UuidType::Traits::template TypeTraits<UuidType>::Type TypeTraits;
-    //const PropertyInformation *propInfo = UuidType::bootstrapStaticTypeInformation(data.allocator);
-    
-    thing();
-
-    detail::DataEmbeddedInstanceInformation<Data<QUuid, FullData>> aX;
-
-    Data<int, FullData>::EmbeddedInstanceInformation aZ2;
-    Data<QUuid, FullData>::EmbeddedInstanceInformation aZ3;
-
-    /*detail::UuidPropertyInstanceInformation a1;
-    detail::PODEmbeddedInstanceInformation<Data<QUuid, FullData>, true> a2;
-    TypeTraits::StInst *inst = &a2;
-    detail::UuidPropertyInstanceInformation *ptr = &a2;
-    Data<QUuid> pork;
-    inst->initiateAttribute(&pork);
-    ptr->initiateAttribute(&pork);
-    //a->initiateAttribute(&pork);
-*/
-
+    {
     auto children = info->createChildrenBlock(data);
-    //children.add(&UuidEntity::_uuid, "uuid");
+
+    children.add(&UuidEntity::_uuid, "uuid");
     }
   }
-
-void detail::UuidPropertyInstanceInformation::initiateAttribute(Attribute *propertyToInitiate) const
-  {
-  Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
-  propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->computeLock() = QUuid::createUuid();
-  }
-
 }

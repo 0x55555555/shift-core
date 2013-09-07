@@ -110,35 +110,6 @@ private:
 
 }
 
-#include "sdata.inl"
-
-namespace Shift
-{
-namespace detail
-{
-class UuidPropertyInstanceInformation : public Property::EmbeddedInstanceInformation
-  {
-  typedef QUuid PODType;
-
-public:
-  UuidPropertyInstanceInformation() { }
-
-  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE;
-
-  QUuid defaultValue() const
-    {
-    return QUuid();
-    }
-  };
-
-template<> class DataEmbeddedInstanceInformation<Data<QUuid, FullData>>
-    : public UuidPropertyInstanceInformation
-  {
-  };
-}
-
-}
-
 S_PROPERTY_INTERFACE(Shift::ExternalPointer)
 S_PROPERTY_INTERFACE(Shift::ExternalUuidPointer)
 S_PROPERTY_INTERFACE(Shift::UuidEntity)

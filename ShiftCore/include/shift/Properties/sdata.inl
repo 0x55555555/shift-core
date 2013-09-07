@@ -1,5 +1,5 @@
-#ifndef SBASEPROPERTIES_INL
-#define SBASEPROPERTIES_INL
+#ifndef SDATA_INL
+#define SDATA_INL
 
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "XTemporaryAllocator"
@@ -365,9 +365,9 @@ public:
     return S_POD_INFO_NAME(niceName, Mode).information; } \
   template <> \
       EXPORT Shift::PropertyInformation **Shift::Data<T, Shift::Mode>::staticTypeInformationInternal() { \
-    return &S_POD_INFO_NAME(niceName, Mode).information; } \
+    return &S_POD_INFO_NAME(niceName, Mode).information; }
 
 }
 }
 
-#endif // SBASEPROPERTIES_INL
+#endif // SDATA_INL
