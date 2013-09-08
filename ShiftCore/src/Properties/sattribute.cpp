@@ -426,14 +426,7 @@ Attribute *Attribute::resolvePath(const Eks::String &path)
             return 0;
             }
 
-          xForeach(auto child, container->walker())
-            {
-            if(child->name() == name)
-              {
-              cur = child;
-              break;
-              }
-            }
+          cur = container->findChild(name);
           }
 
         name.clear();
