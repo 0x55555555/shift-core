@@ -34,7 +34,7 @@ void Loader::read(Container *read)
   beginAttribute("dyn");
   int dynamic = 0;
   readValue(*this, dynamic);
-  _data.dynamic = dynamic;
+  _data.dynamic = dynamic;    
   endAttribute("dyn");
 
   if(_data.dynamic)
