@@ -29,13 +29,6 @@ void SXMLSaver::writeToDevice(QIODevice *device, const Entity *ent)
   _root = 0;
   }
 
-void SXMLSaver::addType(const PropertyInformation *type)
-  {
-  xAssert(_buffer.data().isEmpty());
-  xAssert(_inAttribute.isEmpty());
-  _writer.writeStartElement(type->typeName().toQString());
-  }
-
 void SXMLSaver::beginChildren()
   {
   xAssert(_inAttribute.isEmpty());

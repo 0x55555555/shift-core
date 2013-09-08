@@ -23,17 +23,42 @@ void Loader::loadChildren(Container *parent)
 
 void Loader::read(Container *read)
   {
-  const PropertyInformation *info = type();
-  xAssert(info);
-
-  xAssert(info->functions().load);
-
   bool shouldLoad = true;
   shouldLoad = childHasValue();
 
+
+  beginAttribute("name");
+  readValue(*this, _data.name);
+  endAttribute("name");
+
+  beginAttribute("dyn");
+  int dynamic = 0;
+  readValue(*this, dynamic);
+  _data.dynamic = dynamic;
+  endAttribute("dyn");
+
+  if(_data.dynamic)
+    {
+    beginAttribute("type");
+    Name typeName;
+    readValue(*this, typeName);
+    endAttribute("type");
+    _data.type = TypeRegistry::findType(typeName);
+    }
+  else
+    {
+    _data.existing = read->findChild(_data->name);
+    xAssert(_data.existing);
+
+    _data.type = _data.existing->typeInformation();
+    }
+
+  xAssert(_data.type);
+  xAssert(_data.type->functions().load);
+
   if(shouldLoad)
     {
-    info->functions().load(read, *this);
+    _data.type->functions().load(read, *this);
     }
   else
     {
@@ -82,6 +107,23 @@ void Saver::saveChildren(const Container *c)
 void Saver::write(const Attribute *prop)
   {
   const PropertyInformation *info = prop->typeInformation();
+
+  beginAttribute("name");
+  writeValue(*this, prop->name());
+  endAttribute("name");
+
+  bool dyn(prop->isDynamic());
+  if(dyn)
+    {
+    beginAttribute("type");
+    writeValue(*this, info->typeName());
+    endAttribute("type");
+
+    beginAttribute("dyn");
+    writeValue(*this, dyn ? 1 : 0);
+    endAttribute("dyn");
+    }
+
   xAssert(info);
   xAssert(info->functions().save);
 

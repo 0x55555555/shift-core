@@ -95,15 +95,6 @@ void JSONSaver::writeToDevice(QIODevice *device, const Container *ent, bool incl
   _root = 0;
   }
 
-void JSONSaver::addType(const PropertyInformation *type)
-  {
-  SProfileFunction
-  xAssert(_buffer.data().isEmpty());
-  xAssert(_inAttribute.isEmpty());
-
-  OBJECT_VALUE_CHAR_BYTEARRAY(TYPE_KEY, type->typeName().toQString().toUtf8());
-  }
-
 void JSONSaver::beginChildren()
   {
   SProfileFunction
@@ -368,18 +359,6 @@ void JSONLoader::readFromDevice(QIODevice *device, Container *parent)
   _buffer.close();
   _root = 0;
   }
-
-const PropertyInformation *JSONLoader::type() const
-  {
-  SProfileFunction
-  xAssert(_root);
-
-  QByteArray typeName = _currentAttributes.value(TYPE_KEY);
-  const PropertyInformation *info = TypeRegistry::findType(QString::fromUtf8(typeName));
-  xAssert(info);
-  return info;
-  }
-
 
 bool JSONLoader::beginChildren() const
   {

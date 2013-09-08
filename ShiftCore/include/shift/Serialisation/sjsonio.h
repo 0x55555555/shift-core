@@ -24,8 +24,6 @@ public:
   void writeToDevice(QIODevice *device, const Container *ent, bool includeRoot);
 
 private:
-  void addType(const PropertyInformation *);
-
   void beginChildren();
   void endChildren();
   void beginNextChild();
@@ -52,8 +50,6 @@ public:
   void readFromDevice(QIODevice *device, Container *parent);
 
 private:
-  const PropertyInformation *type() const;
-
   bool beginChildren() const;
   void endChildren() const;
   bool hasNextChild() const;

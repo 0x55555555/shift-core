@@ -23,20 +23,10 @@ void PropertyBaseTraits::save(const Attribute *p, Saver &l)
 void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
   {
   SProfileFunction
-  const PropertyInformation *type = p->typeInformation();
-
-  l.beginAttribute("name");
-  writeValue(l, p->name());
-  l.endAttribute("name");
 
   bool dyn(p->isDynamic());
   if(dyn)
     {
-    l.addType(type);
-
-    l.beginAttribute("dynamic");
-    writeValue(l, dyn ? 1 : 0);
-    l.endAttribute("dynamic");
 
     const PropertyInstanceInformation *instInfo = p->baseInstanceInformation();
 
@@ -81,32 +71,24 @@ Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
 
   Initialiser initialiser;
 
-  l.beginAttribute("name");
-  Name name;
-  readValue(l, name);
-  l.endAttribute("name");
-
-  l.beginAttribute("dynamic");
-  xuint32 dynamic=false;
-  readValue(l, dynamic);
-  l.endAttribute("dynamic");
+  const auto data = l.currentData();
 
   l.beginAttribute("mode");
   readValue(l, initialiser.mode);
   l.endAttribute("mode");
 
   Attribute *attr = 0;
-  if(dynamic != 0)
+  if(data->dynamic != 0)
     {
-    const PropertyInformation *type = l.type();
+    const PropertyInformation *type = data->type;
     xAssert(type);
 
-    attr = parent->addAttribute(type, X_UINT8_SENTINEL, name, &initialiser);
+    attr = parent->addAttribute(type, X_UINT8_SENTINEL, data->name, &initialiser);
     xAssert(attr);
     }
   else
     {
-    attr = parent->findChild(name);
+    attr = data->existing;
     xAssert(attr);
     }
 

@@ -2,6 +2,7 @@
 #define SLOADER_H
 
 #include "shift/sglobal.h"
+#include "shift/Utilities/spropertyname.h"
 #include "XProperty"
 #include "XStringSimple"
 #include "QtCore/QTextStream"
@@ -33,7 +34,15 @@ public:
 
   void setStreamDevice(Mode m, QIODevice *d) { _streamMode = m; _ts.setDevice(d); _ds.setDevice(d); }
 
-  virtual const PropertyInformation *type() const = 0;
+  struct CurrentData
+    {
+    Attribute *existing;
+    const PropertyInformation *type;
+    Name name;
+    bool dynamic;
+    };
+
+  virtual const CurrentData *currentData() const { return &_data; }
 
   void loadChildren(Container *parent);
 
@@ -59,6 +68,8 @@ public:
 private:
   QTextStream _ts;
   QDataStream _ds;
+
+  CurrentData _data;
   };
 
 class Saver
@@ -77,8 +88,6 @@ public:
   virtual ~Saver() { }
 
   void setStreamDevice(Mode m, QIODevice *d) { _streamMode = m; _ts.setDevice(d); _ds.setDevice(d); }
-
-  virtual void addType(const PropertyInformation *) = 0;
 
   void saveChildren(const Container *c);
 
