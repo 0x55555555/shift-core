@@ -47,7 +47,7 @@ void Loader::read(Container *read)
     }
   else
     {
-    _data.existing = read->findChild(_data->name);
+    _data.existing = read->findChild(_data.name);
     xAssert(_data.existing);
 
     _data.type = _data.existing->typeInformation();

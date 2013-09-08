@@ -342,9 +342,12 @@ void JSONLoader::readFromDevice(QIODevice *device, Container *parent)
 
   xAssert(_current == End);
 
-  xForeach(Property *prop, _resolveAfterLoad.keys())
+  auto it = _resolveAfterLoad.begin();
+  auto end = _resolveAfterLoad.end();
+  for(; it != end; ++it)
     {
-    Attribute* input = prop->resolvePath(_resolveAfterLoad.value(prop));
+    Property *prop = it.key();
+    Attribute* input = prop->resolvePath(it.value());
 
     xAssert(input);
     if(input)
