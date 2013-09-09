@@ -12,7 +12,7 @@ include("../../Eks/EksCore/GeneralOptions.pri")
 INCLUDEPATH += $$ROOT/Shift/ShiftCore/include \
     $$ROOT/Shift/ShiftCore/src \
     $$ROOT/Eks/EksCore/include \
-    $$ROOT/Eks/EksGui \
+    $$ROOT/Eks/EksGui/include \
     $$ROOT/Eks/EksScript
 
 LIBS += -lEksCore \
