@@ -191,9 +191,12 @@ public:
   template <typename T> ContainerTypedIteratorWrapperFrom<T, Container, ContainerIterator<T, Container> > walkerFromTyped(Attribute *);
   template <typename T> ContainerTypedIteratorWrapperFrom<const T, const Container, ContainerIterator<const T, const Container> > walkerFromTyped(const Attribute *) const;
 
-  ContainerTypedIteratorWrapperFrom<Attribute, Container, ContainerBaseIterator<Attribute, Container> > walker();
-  ContainerTypedIteratorWrapperFrom<const Attribute, const Container, ContainerBaseIterator<const Attribute, const Container> > walker() const;
-  ContainerTypedIteratorWrapperFrom<Attribute, Container, ContainerBaseIterator<Attribute, Container> > walkerFrom(Attribute *prop);
+  typedef ContainerTypedIteratorWrapperFrom<Attribute, Container, ContainerBaseIterator<Attribute, Container> > Walker;
+  typedef ContainerTypedIteratorWrapperFrom<const Attribute, const Container, ContainerBaseIterator<const Attribute, const Container> > ConstWalker;
+
+  Walker walker();
+  ConstWalker walker() const;
+  Walker walkerFrom(Attribute *prop);
 
 protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.

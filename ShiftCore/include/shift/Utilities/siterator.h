@@ -198,10 +198,10 @@ private:
   ParentType *_parent;
   };
 
-template <typename A, typename B> class Compound : public Forwarder<B, A>
+template <typename A, typename B> class Compound2 : public Forwarder<B, A>
   {
 public:
-  Compound(Property *root) : Forwarder<B, A>(&_a)
+  Compound2(Property *root) : Forwarder<B, A>(&_a)
     {
     _a.reset(root);
     }
@@ -219,6 +219,99 @@ public:
 
   Forwarder<B, A> _f;
   A _a;
+  };
+
+struct ChildrenExtraData
+  {
+  ChildrenExtraData()
+    {
+    }
+
+  Container::Walker _walker;
+  Container::Walker::Iterator _begin;
+  Container::Walker::Iterator _end;
+  };
+
+class Children : public Base<Children, Attribute, ChildrenExtraData>
+  {
+public:
+  typedef Base<Children, Attribute, ChildrenExtraData>::Iterator Iterator;
+
+  inline void first(Iterator& it) const
+    {
+    ChildrenExtraData &d = it.data();
+    auto container = attribute()->castTo<Container>();
+
+    if(container)
+      {
+      d._walker = container->walker();
+      d._begin = d._walker.begin();
+      d._end = d._walker.end();
+
+      if (d._begin != d._end)
+        {
+        it.setAttribute(*d._begin);
+        return;
+        }
+      }
+
+    it.setAttribute(nullptr);
+    }
+
+  static void next(Iterator &it)
+    {
+    ChildrenExtraData &d = it.data();
+
+    ++d._begin;
+    if (d._begin != d._end)
+      {
+      it.setAttribute(*d._begin);
+      return;
+      }
+
+    it.setAttribute(nullptr);
+    }
+  };
+
+class EntityChildren : public Base<EntityChildren, Attribute, ChildrenExtraData>
+  {
+public:
+  typedef Base<EntityChildren, Attribute, ChildrenExtraData>::Iterator Iterator;
+
+  inline void first(Iterator& it) const
+    {
+    ChildrenExtraData &d = it.data();
+    auto entity = attribute()->castTo<Entity>();
+
+    if(entity)
+      {
+      d._walker = entity->children.walker();
+      d._begin = d._walker.begin();
+      d._end = d._walker.end();
+
+      if (d._begin != d._end)
+        {
+        it.setAttribute(*d._begin);
+        return;
+        }
+      }
+
+    it.setAttribute(nullptr);
+    }
+
+  static void next(Iterator &it)
+    {
+    ChildrenExtraData &d = it.data();
+
+    ++d._begin;
+    if (d._begin != d._end)
+      {
+      it.setAttribute(*d._begin);
+      return;
+      }
+
+    it.setAttribute(nullptr);
+    }
   };
 
 struct ChildTreeExtraData

@@ -11,6 +11,14 @@ namespace Shift
 template <typename T, typename CONT> class ContainerBaseIterator
   {
 public:
+  ContainerBaseIterator()
+    : _c(0),
+      _info(0),
+      _index(0),
+      _fromDynamic(0)
+    {
+    }
+
   ContainerBaseIterator(CONT *c, const PropertyInformation *i, xsize idx, T *dP)
     : _c(c),
       _info(i),
@@ -61,6 +69,10 @@ protected:
 template <typename T, typename CONT> class ContainerIterator : public ContainerBaseIterator<T, CONT>
   {
 public:
+  ContainerIterator()
+    {
+    }
+
   ContainerIterator(CONT *c, const PropertyInformation *i, xsize idx, T *dP)
     : ContainerBaseIterator<T, CONT>(c, i, idx, dP)
     {
@@ -93,7 +105,7 @@ public:
   };
 
 
-template <typename T, typename Cont, typename Iterator> class ContainerTypedIteratorWrapperFrom
+template <typename T, typename Cont, typename _Iterator> class ContainerTypedIteratorWrapperFrom
   {
   Cont *_cont;
   const PropertyInformation *_info;
@@ -101,6 +113,16 @@ template <typename T, typename Cont, typename Iterator> class ContainerTypedIter
   T *_fromDynamic;
 
 public:
+  typedef _Iterator Iterator;
+
+  ContainerTypedIteratorWrapperFrom()
+    : _cont(0),
+      _info(0),
+      _index(0),
+      _fromDynamic(0)
+    {
+    }
+
   ContainerTypedIteratorWrapperFrom(Cont *cont,
                                              const PropertyInformation* info,
                                              xsize index,
@@ -219,7 +241,7 @@ template <typename Res, typename T, typename Cont> Res makeWalkerFromNext(Cont *
   }
 }
 
-inline WRAPPER_TYPE_FROM_BASE(Attribute, Container) Container::walkerFrom(Attribute *prop)
+inline Container::Walker Container::walkerFrom(Attribute *prop)
   {
   xAssert(prop->parent() == this);
   xuint8 idx = 0;
@@ -237,7 +259,7 @@ inline WRAPPER_TYPE_FROM_BASE(Attribute, Container) Container::walkerFrom(Attrib
     dyProp = prop;
     }
 
-  return WRAPPER_TYPE_FROM_BASE(Attribute, Container)(
+  return Container::Walker(
       this,
       info,
       idx,
@@ -276,14 +298,14 @@ template <typename T> WRAPPER_TYPE_FROM(const T, const Container) Container::wal
   return detail::makeWalkerFromNext<WRAPPER_TYPE_FROM(const T, const Container)>(this, prop);
   }
 
-inline WRAPPER_TYPE_FROM_BASE(Attribute, Container) Container::walker()
+inline Container::Walker Container::walker()
   {
-  return detail::makeTypelessWalker<WRAPPER_TYPE_FROM_BASE(Attribute, Container)>(this);
+  return detail::makeTypelessWalker<Container::Walker>(this);
   }
 
-inline WRAPPER_TYPE_FROM_BASE(const Attribute, const Container) Container::walker() const
+inline Container::ConstWalker Container::walker() const
   {
-  return detail::makeTypelessWalker<WRAPPER_TYPE_FROM_BASE(const Attribute, const Container)>(this);
+  return detail::makeTypelessWalker<Container::ConstWalker>(this);
   }
 
 #undef WRAPPER_TYPE_FROM
