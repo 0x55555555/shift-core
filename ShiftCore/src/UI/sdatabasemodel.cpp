@@ -905,6 +905,11 @@ QModelIndex InputModel::parent(const QModelIndex &child) const
       continue;
       }
 
+    if(tree == _root.entity())
+      {
+      return QModelIndex();
+      }
+
     if(tree->typeInformation()->inheritsFromType(_treeType))
       {
       return CommonModel::index(tree);
