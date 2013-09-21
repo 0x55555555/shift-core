@@ -51,41 +51,15 @@ void PropertyInstanceInformation::destroy(
     }
   }
 
-const Eks::String &_modeString(xsize i)
-  {
-  X_HACK(0, "static global", "allocate somewhere nice.")
-  static Eks::String g_modeStrings[] = {
-    /* Internal      */ "internal",
-    /* InputOutput   */ "inputoutput",
-    /* InternalInput */ "internalinput",
-    /* Input         */ "input",
-    /* Output        */ "output",
-    /* Computed      */ "computed",
-    /* InternalComputed */ "internalcomputed",
-    /* UserSettable  */ "usersettable"
-  };
-
-  return g_modeStrings[i];
-  }
-
 const Eks::String &PropertyInstanceInformation::modeString() const
   {
   xAssert(_mode < NumberOfModes);
-  return _modeString(_mode);
+  return TypeRegistry::getModeString(_mode);
   }
 
 void PropertyInstanceInformation::setModeString(const Eks::String &s)
   {
-  for(xsize i = 0; i < NumberOfModes; ++i)
-    {
-    if(_modeString(i) == s)
-      {
-      _mode = (Mode)i;
-      return;
-      }
-    }
-
-  _mode = Default;
+  _mode = (Mode)TypeRegistry::getModeFromString(s);
   }
 
 PropertyInstanceInformation::Mode PropertyInstanceInformation::mode() const

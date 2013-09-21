@@ -1,6 +1,7 @@
 #include "XBucketAllocator"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertygroup.h"
+#include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/Changes/sobserver.h"
 #include "shift/TypeInformation/sinterfaces.h"
@@ -25,12 +26,26 @@ struct TypeData
       interfaces(allocator),
       baseAllocator(allocator)
     {
+    _modeStrings[Shift::PropertyInstanceInformation::Internal] = "internal";
+    _modeStrings[Shift::PropertyInstanceInformation::InputOutput] = "inputoutput";
+    _modeStrings[Shift::PropertyInstanceInformation::InternalInput] = "internalinput";
+    _modeStrings[Shift::PropertyInstanceInformation::Input] = "input";
+    _modeStrings[Shift::PropertyInstanceInformation::Output] = "output";
+    _modeStrings[Shift::PropertyInstanceInformation::Computed] = "computed";
+    _modeStrings[Shift::PropertyInstanceInformation::InternalComputed] = "internalcomputed";
+    _modeStrings[Shift::PropertyInstanceInformation::UserSettable] = "usersettable";
     }
 
   Eks::Vector<const PropertyGroup *> groups;
   Eks::Vector<PropertyInformation *> types;
   Eks::Vector<TypeRegistry::Observer *> observers;
   Eks::BucketAllocator bucketAllocator;
+
+  enum
+    {
+    ModeCount = Shift::PropertyInstanceInformation::NumberOfModes
+    };
+  Eks::String _modeStrings[ModeCount];
 
   typedef QPair<const PropertyInformation *, xuint32> InterfaceKey;
   Eks::UnorderedMap<InterfaceKey, InterfaceBaseFactory*> interfaces;
@@ -167,6 +182,25 @@ const PropertyInformation *TypeRegistry::findType(const NameArg &in)
       }
     }
   return 0;
+  }
+
+const Eks::String &TypeRegistry::getModeString(xsize mode)
+  {
+  xAssert(mode < TypeData::ModeCount);
+  return _internalTypes->_modeStrings[mode];
+  }
+
+const xsize TypeRegistry::getModeFromString(const Eks::String &mode)
+  {
+  for(xsize i = 0; i < TypeData::ModeCount; ++i)
+    {
+    if(_internalTypes->_modeStrings[i] == mode)
+      {
+      return i;
+      }
+    }
+
+  return PropertyInstanceInformation::Default;
   }
 
 const InterfaceBaseFactory *TypeRegistry::interfaceFactory(

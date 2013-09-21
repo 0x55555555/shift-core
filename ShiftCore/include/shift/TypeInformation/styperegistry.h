@@ -46,6 +46,8 @@ public:
 
   static const PropertyInformation *findType(const NameArg &);
 
+  static const Eks::String& getModeString(xsize mode);
+  static const xsize getModeFromString(const Eks::String& mode);
 
   static const InterfaceBaseFactory *interfaceFactory(
       const PropertyInformation *info,
