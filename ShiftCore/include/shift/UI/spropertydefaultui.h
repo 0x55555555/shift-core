@@ -12,10 +12,10 @@
 #include "QtWidgets/QTextEdit"
 #include "QtWidgets/QFileDialog"
 #include "QtWidgets/QHBoxLayout"
-#include "XFloatWidget"
-#include "XVector2DWidget"
-#include "XVector3DWidget"
-#include "XColourWidget"
+#include "XFloatWidget.h"
+#include "XVector2DWidget.h"
+#include "XVector3DWidget.h"
+#include "XColourWidget.h"
 #include "XProperty"
 
 namespace Shift
