@@ -6,7 +6,9 @@ Eks.Library {
 
   property bool uiSupport: true
 
-  Depends { name: "EksCore" }
+  Depends {
+    name: "Eks.EksCore"
+  }
 
   Properties {
     condition: uiSupport
