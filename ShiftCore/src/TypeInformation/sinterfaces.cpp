@@ -112,7 +112,7 @@ struct Util
   {
   template <typename T> static void addPODInterface()
     {
-    Interface::addStaticInterface<T, PODPropertyVariantInterface<T, T::PODType> >();
+    Interface::addStaticInterface<T, PODPropertyVariantInterface<T, typename T::PODType> >();
     }
   };
 

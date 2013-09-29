@@ -3,6 +3,7 @@
 
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "XTemporaryAllocator"
+#include "shift/Changes/schange.h"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/TypeInformation/spropertytraits.h"
@@ -52,43 +53,45 @@ private:
 
 template <typename T> class PODChange : public PODComputeChange<T>
   {
+public:
   typedef typename T::PODType PODType;
-  S_CHANGE_TYPED(PODChange, PODComputeChange, Change::DataChange, PODType);
+
+private:
+  S_CHANGE_TYPED(PODChange<T>, PODComputeChange<T>, Change::DataChange, PODType);
 
 XProperties:
-  typedef typename T::PODType PODType;
   XRORefProperty(PODType, before);
   XRORefProperty(PODType, after);
 
 public:
   PODChange(const PODType &b, const PODType &a, T *prop)
-    : PODComputeChange(prop), _before(b), _after(a)
+    : PODComputeChange<T>(prop), _before(b), _after(a)
     { }
 
   bool apply()
     {
-    Attribute *prop = PODComputeChange::property();
+    Attribute *prop = PODComputeChange<T>::property();
     T* d = prop->uncheckedCastTo<T>();
     d->_value = after();
-    PODComputeChange::property()->postSet();
+    PODComputeChange<T>::property()->postSet();
     return true;
     }
 
   bool unApply()
     {
-    Attribute *prop = PODComputeChange::property();
+    Attribute *prop = PODComputeChange<T>::property();
     T* d = prop->uncheckedCastTo<T>();
     d->_value = before();
-    PODComputeChange::property()->postSet();
+    PODComputeChange<T>::property()->postSet();
     return true;
     }
 
   bool inform(bool)
     {
-    Entity *ent = PODComputeChange::property()->entity();
+    Entity *ent = PODComputeChange<T>::property()->entity();
     if(ent)
       {
-      ent->informDirtyObservers(PODComputeChange::property());
+      ent->informDirtyObservers(PODComputeChange<T>::property());
       }
     return true;
     }
@@ -282,7 +285,7 @@ template <typename T> class DataEmbeddedInstanceInformation<Data<T, ComputedData
     : public Property::EmbeddedInstanceInformation
   {
 XProperties:
-  typedef typename T PODType;
+  typedef T PODType;
 
 public:
   };

@@ -14,11 +14,11 @@ class SHIFT_EXPORT Array : public Container
 public:
   template <typename T> T *add(const NameArg& name)
     {
-    return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->castTo<T>();
+    return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->template castTo<T>();
     }
   template <typename T> T *add(xsize index=X_SIZE_SENTINEL, const NameArg &name=NameArg())
     {
-    return addAttribute(T::staticTypeInformation(), index, name)->castTo<T>();
+    return addAttribute(T::staticTypeInformation(), index, name)->template castTo<T>();
     }
 
   Attribute *add(const PropertyInformation *info, const NameArg &name, PropertyInstanceInformationInitialiser *init=0, xsize index=X_UINT8_SENTINEL)
@@ -45,7 +45,7 @@ public:
 
   ElementType *add()
     {
-    return addAttribute(T::staticTypeInformation())->castTo<T>();
+    return addAttribute(T::staticTypeInformation())->template castTo<T>();
     }
 
   void remove(Attribute *prop)
@@ -56,7 +56,7 @@ public:
   void resize(xsize s)
     {
     xsize sz = size();
-    xsize dif = s - sz;
+    xptrdiff dif = s - sz;
 
     if(dif > 0)
       {

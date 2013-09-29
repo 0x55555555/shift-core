@@ -26,14 +26,15 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
 
     typedef XScript::XMethodToGetter<Property, Eks::Vector<Property*> (), &Property::affects> AffectsGetter;
 
-    static XScript::ClassDef<0,4,0> cls = {
+    static XScript::ClassDef<0,3,0> cls = {
       {
         api->property<Property *, const Property *, &Property::input, &Property::setInput>("input"),
 
         api->property<Property *, &Property::output>("firstOutput"),
         api->property<Property *, &Property::nextOutput>("nextOutput"),
 
-        api->property<AffectsGetter>("affects")
+            // fix later? Maybe?
+//        api->property<AffectsGetter>("affects")
       }
     };
 

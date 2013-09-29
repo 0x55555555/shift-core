@@ -8,10 +8,10 @@
 #include "QtWidgets/QPushButton"
 #include "QtWidgets/QStyleOptionViewItem"
 
+Q_DECLARE_METATYPE(QModelIndex)
+
 namespace Shift
 {
-
-Q_DECLARE_METATYPE(QModelIndex)
 
 #define SDataModelProfileFunction XProfileFunctionBase(ShiftDataModelProfileScope)
 #define SDataModelProfileScopedBlock(mess) XProfileScopedBlockBase(ShiftDataModelProfileScope, mess)

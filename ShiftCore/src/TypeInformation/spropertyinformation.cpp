@@ -269,13 +269,13 @@ JSToNative<Shift::PropertyInformation>::ResultType JSToNative<Shift::PropertyInf
 
 Value NativeToJS<Shift::PropertyInformation>::operator()(const Shift::PropertyInformation &x) const
   {
-  return x.typeName().toQString();
+  return Eks::String(x.typeName());
   }
 
 Value NativeToJS<Shift::PropertyInformation>::operator()(const Shift::PropertyInformation *x) const
   {
   xAssert(x)
-  return x->typeName().toQString();
+  return Eks::String(x->typeName());
   }
 }
 }

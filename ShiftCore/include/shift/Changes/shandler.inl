@@ -12,7 +12,7 @@ template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&...
   SProfileFunction
   StateStorageBlock ss(false, this);
 
-  if(!oldStateStorageEnabled)
+  if(!ss.wasEnabled())
     {
     CLS change(std::forward<CLSARGS>(params)...);
     ((Change&)change).apply();

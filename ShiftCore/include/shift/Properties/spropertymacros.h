@@ -17,9 +17,9 @@
 
 #define S_ADD_INSTANCE_INFORMATION(name) \
   inline const EmbeddedInstanceInformation *embeddedInstanceInformation() const \
-    { return static_cast<const EmbeddedInstanceInformation *>(embeddedBaseInstanceInformation()); } \
+    { return static_cast<const EmbeddedInstanceInformation *>(Attribute::embeddedBaseInstanceInformation()); } \
   inline const DynamicInstanceInformation *dynamicInstanceInformation() const \
-    { return static_cast<const DynamicInstanceInformation *>(dynamicBaseInstanceInformation()); }
+    { return static_cast<const DynamicInstanceInformation *>(Attribute::dynamicBaseInstanceInformation()); }
 
 #define S_ADD_STATIC_INFO(name) \
   public: enum { IsAbstract = false };

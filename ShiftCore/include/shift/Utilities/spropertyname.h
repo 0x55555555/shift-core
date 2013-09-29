@@ -14,8 +14,6 @@ enum
 
 typedef Eks::StringBase<Eks::Char, NamePreallocSize> Name;
 
-Q_DECLARE_METATYPE(Name)
-
 class SHIFT_EXPORT NameArg
   {
 public:
@@ -134,5 +132,7 @@ public:
 
 }
 }
+
+Q_DECLARE_METATYPE(Shift::Name)
 
 #endif // SPROPERTYNAME_H

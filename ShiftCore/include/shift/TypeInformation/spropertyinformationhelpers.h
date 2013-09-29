@@ -8,6 +8,7 @@
 #include "shift/TypeInformation/spropertygroup.h"
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/Properties/sproperty.h"
+#include "shift/Properties/scontainer.h"
 #include "shift/Properties/sattribute.inl"
 #include "shift/Utilities/sresourcedescription.h"
 
@@ -42,7 +43,7 @@ namespace detail
 {
 template <typename PropType> static void checkType()
   {
-  typedef std::is_base_of<PropType::ParentType, PropType> Inherits;
+  typedef std::is_base_of<typename PropType::ParentType, PropType> Inherits;
   xCompileTimeAssert(Inherits::value == true);
   }
 
@@ -172,6 +173,16 @@ public:
   const EmbeddedPropertyInstanceInformation *child(xsize location) const;
   EmbeddedPropertyInstanceInformation *overrideChild(xsize location);
 
+  PropertyInformationChildrenCreator(
+          PropertyInformationChildrenCreator&& data) :
+  _temporaryAllocator(TypeRegistry::temporaryAllocator()),
+    _properties(&_temporaryAllocator), _data(data._data)
+  {
+      _properties = data._properties;
+
+  }
+
+
   ~PropertyInformationChildrenCreator();
 
 protected:
@@ -193,6 +204,8 @@ private:
 template <typename PropType> class PropertyInformationChildrenCreatorTyped
     : PropertyInformationChildrenCreator
   {
+
+
 public:
   template <typename U, typename AncestorPropType>
       PropertyInstanceInformationTyped<PropType, U> *add(
@@ -261,7 +274,7 @@ public:
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
 
     EmbeddedPropertyInstanceInformation *inst =
-        PropertyInformationChildrenCreator::add(data, newChildType, name);
+        PropertyInformationChildrenCreator::add(newChildType, name);
 
     return static_cast<PropertyInstanceInformationTyped<PropType, T> *>(inst);
     }

@@ -158,7 +158,7 @@ template <typename Res, typename T, typename Cont> Res makeWalker(Cont *c)
       c,
       info,
       idx,
-      c->firstDynamicChild<T>()
+      c->template firstDynamicChild<T>()
       );
   }
 
@@ -182,7 +182,7 @@ template <typename Res, typename T, typename Cont>  Res makeWalkerFrom(Cont *c, 
   if(!prop->isDynamic())
     {
     idx = prop->embeddedInstanceInformation()->index();
-    dyProp = c->firstDynamicChild<T>();
+    dyProp = c->template firstDynamicChild<T>();
     }
   else
     {
@@ -217,7 +217,7 @@ template <typename Res, typename T, typename Cont> Res makeWalkerFromNext(Cont *
       inst = type->childFromIndex(idx);
       }
 
-    dyProp = c->firstDynamicChild<T>();
+    dyProp = c->template firstDynamicChild<T>();
     }
   else
     {

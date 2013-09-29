@@ -17,7 +17,6 @@ namespace Shift
 #define DEFINE_POD_PROPERTY(name, type) typedef Shift::Data<type> name;
 
 typedef Eks::Vector<Eks::String> StringVector;
-Q_DECLARE_METATYPE(xuint8);
 
 DEFINE_POD_PROPERTY(BoolProperty, xuint8);
 DEFINE_POD_PROPERTY(IntProperty, xint32);
@@ -92,6 +91,8 @@ SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
 
 Q_DECLARE_METATYPE(Shift::StringVector)
 Q_DECLARE_METATYPE(QUuid)
+
+Q_DECLARE_METATYPE(xuint8);
 
 #endif
 

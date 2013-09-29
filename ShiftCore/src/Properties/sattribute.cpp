@@ -40,11 +40,11 @@ void Attribute::createTypeInformation(PropertyInformationTyped<Attribute> *info,
     typedef XScript::XMethodToGetter<Attribute, Container * (), &Property::parent> ParentGetter;
     typedef XScript::XMethodToSetter<Attribute, Container *, &Property::setParent> ParentSetter;
 
-    static XScript::ClassDef<0,7,4> cls = {
+    static XScript::ClassDef<0,6,4> cls = {
       {
         api->property<const PropertyInformation *, &Property::typeInformation>("typeInformation"),
 
-        api->property<ParentGetter, ParentSetter>("parent"),
+        //api->property<ParentGetter, ParentSetter>("parent"),
 
         api->property<const Eks::String &, &Property::mode>("mode"),
         api->property<bool, &Property::isDynamic>("dynamic"),

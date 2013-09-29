@@ -59,10 +59,10 @@ public:
 
   // pre gets here to make sure we clear any dirty flags that have flowed in through
   // dependencies
-  T *pointed() { preGet(); return input() ? input()->castTo<T>() : 0; }
+  T *pointed() { preGet(); return input() ? input()->template castTo<T>() : 0; }
   T *operator()() { preGet(); return pointed(); }
 
-  const T *pointed() const { preGet(); return input() ? input()->castTo<T>() : 0; }
+  const T *pointed() const { preGet(); return input() ? input()->template castTo<T>() : 0; }
   const T *operator()() const { preGet(); return pointed(); }
 
   void setPointed(const T *prop) { Pointer::setPointed(prop); }

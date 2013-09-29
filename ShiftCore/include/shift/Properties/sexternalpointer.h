@@ -55,7 +55,7 @@ public:
   template <typename T>
   const T *pointed() const
     {
-    const Property *p = pointed();
+    const Property *p = resolve();
     if(p)
       {
       return p->castTo<T>();
@@ -66,7 +66,7 @@ public:
   template <typename T>
   T *pointed()
     {
-    Property *p = pointed();
+    Property *p = resolve();
     if(p)
       {
       return p->castTo<T>();

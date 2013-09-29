@@ -1,4 +1,4 @@
-#include "shift\Utilities\spropertyname.h"
+#include "shift/Utilities/spropertyname.h"
 
 namespace Shift
 {

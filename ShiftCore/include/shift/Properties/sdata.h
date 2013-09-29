@@ -23,7 +23,7 @@ template <typename T, DataMode Mode=FullData> class Data
     : public Eks::IfElse<Mode != AttributeData, Property, Attribute>::Type
   {
 public:
-  typedef typename Eks::IfElse<Mode != AttributeData, Property, Attribute>::Type ParentType;
+  typedef typename Eks::IfElse<Mode != AttributeData, Property, Attribute>::Type PODParentType;
   typedef Data<T, Mode> PODPropertyType;
 
   enum
@@ -41,9 +41,9 @@ public:
       }
     };
 
-  class DynamicInstanceInformation : public ParentType::DynamicInstanceInformation { };
+  class DynamicInstanceInformation : public PODParentType::DynamicInstanceInformation { };
 
-  S_PROPERTY(PODPropertyType, ParentType);
+  S_PROPERTY(PODPropertyType, PODParentType);
 
 public:
   typedef T PODType;
@@ -82,12 +82,12 @@ public:
 protected:
   XPropertyMember(T, value);
 
-  friend class ComputeLock;
-  friend class ComputeChange;
-  friend class Change;
-  friend class Traits;
-  friend class Lock;
-  friend class detail::DataEmbeddedInstanceInformation<PODPropertyType>;
+  friend ComputeLock;
+  friend ComputeChange;
+  friend Change;
+  friend Traits;
+  friend Lock;
+  friend detail::DataEmbeddedInstanceInformation<PODPropertyType>;
 
 private:
   static Shift::PropertyInformation **staticTypeInformationInternal();

@@ -5,7 +5,7 @@
 #include "XProperty"
 #include "XStringSimple"
 
-#define S_CHANGE_ID(CHANGE_TYPE) (Change::getChangeTypeId<CHANGE_TYPE::SubType>(CHANGE_TYPE::Type))
+#define S_CHANGE_ID(CHANGE_TYPE) (Change::getChangeTypeId<typename CHANGE_TYPE::SubType>(CHANGE_TYPE::Type))
 
 // Casting macros
 #define S_CASTABLE( myName, superName, rootName ) \
