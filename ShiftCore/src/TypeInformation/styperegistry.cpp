@@ -92,9 +92,9 @@ void TypeRegistry::terminate()
 
   xForeach(InterfaceBaseFactory *fac, _internalTypes->interfaces)
     {
-      xAssertFail(); // WHAT?
-    //void *location = ((xuint8*)fac + fac->offset());
-    interfaceAllocator()->destroy(fac);
+    fac->~InterfaceBaseFactory();
+    void *location = ((xuint8*)fac + fac->offset());
+    interfaceAllocator()->free(location);
     }
 
   _internalTypes->baseAllocator->destroy(_internalTypes);
