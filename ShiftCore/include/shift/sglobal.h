@@ -25,10 +25,11 @@
 #  define SHIFT_EXPORT Q_DECL_IMPORT
 #endif
 
-#if X_EVENT_LOGGING_ENABLED
-# include "XProfiler"
 # define ShiftCoreProfileScope 1043
 # define ShiftDataModelProfileScope 1044
+
+#if X_EVENT_LOGGING_ENABLED
+# include "XProfiler"
 # define SProfileFunction X_EVENT_FUNCTION;
 # define SProfileScopedBlock(mess) X_EVENT_FUNCTION;
 #else

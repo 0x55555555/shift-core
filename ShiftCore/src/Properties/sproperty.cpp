@@ -7,7 +7,6 @@
 #include "shift/Properties/scontainerinternaliterators.h"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Utilities/satomichelper.h"
-#include "XProfiler"
 #include "XConvertScriptSTL.h"
 #include <QtConcurrent/QtConcurrentRun>
 

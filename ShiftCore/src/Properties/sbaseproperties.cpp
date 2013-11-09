@@ -215,7 +215,7 @@ void podPreGet(const Attribute *)
   {
   }
 
-void assignTo(const Attribute *, Attribute *)
+void assignTo(const Attribute *f, Attribute *to)
   {
   xAssertFail();
   }
@@ -744,6 +744,16 @@ void assignTo(const Attribute *f, ColourProperty *to)
 void assignTo(const Attribute *f, Data<Eks::String> *to)
   {
   const Data<Eks::String> *sProp = f->castTo<Data<Eks::String>>();
+  if(sProp)
+    {
+    to->assign(sProp->value());
+    return;
+    }
+  }
+
+void assignTo(const Attribute *f, Data<QUuid> *to)
+  {
+  const Data<QUuid> *sProp = f->castTo<Data<QUuid>>();
   if(sProp)
     {
     to->assign(sProp->value());

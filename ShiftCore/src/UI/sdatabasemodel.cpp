@@ -51,7 +51,6 @@ void DatabaseDelegate::setModelData(QWidget *, QAbstractItemModel *, const QMode
 
 QSize DatabaseDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
   {
-  SDataModelProfileFunction
   if(index == _currentIndex)
     {
       xAssert(_currentWidget);
@@ -92,7 +91,6 @@ CommonModel::CommonModel(Database *db, Entity *ent)
 
 int CommonModel::columnCount( const QModelIndex &parent ) const
   {
-  SDataModelProfileFunction
   const Property *prop = _root;
   if(parent.isValid())
     {
@@ -124,7 +122,6 @@ int CommonModel::columnCount( const QModelIndex &parent ) const
 
 QVariant CommonModel::data( const QModelIndex &index, int role ) const
   {
-  SDataModelProfileFunction
   const Property *prop = (const Property *)index.internalPointer();
   if(!index.isValid())
     {
@@ -226,7 +223,6 @@ QVariant CommonModel::data( const QModelIndex &index, int role ) const
 
 QVariant CommonModel::data( const QModelIndex &index, const QString &role) const
   {
-  SDataModelProfileFunction
   const QHash<int, QByteArray> &roles = roleNames();
 
   QHash<int, QByteArray>::const_iterator it = roles.begin();
@@ -247,7 +243,6 @@ QVariant CommonModel::data( const QModelIndex &index, const QString &role) const
 bool CommonModel::setData(const QModelIndex &index, const QVariant &val, int role)
   {
   //xAssert(!_currentTreeChange);
-  SDataModelProfileFunction
   Property *prop = (Property *)index.internalPointer();
   if(prop)
     {
@@ -311,7 +306,6 @@ bool CommonModel::setData(const QModelIndex &index, const QVariant &val, int rol
 
 bool CommonModel::setData(const QModelIndex &index, const QString &role, const QVariant &value)
   {
-  SDataModelProfileFunction
   const QHash<int, QByteArray> &roles = roleNames();
 
   QHash<int, QByteArray>::const_iterator it = roles.begin();
@@ -384,7 +378,6 @@ Attribute *CommonModel::attributeFromIndex(const QModelIndex &index) const
 
 Qt::ItemFlags CommonModel::flags(const QModelIndex &index) const
   {
-  SDataModelProfileFunction
   Attribute *prop = attributeFromIndex(index);
   //xAssert(!_currentTreeChange || _currentTreeChange->property() != prop);
   if(prop && index.column() < 2)
@@ -473,7 +466,6 @@ DatabaseModel::~DatabaseModel()
 
 int DatabaseModel::rowCount( const QModelIndex &parent ) const
   {
-  SDataModelProfileFunction
   const Attribute *prop = _root;
   if(parent.isValid())
     {
@@ -514,7 +506,6 @@ int DatabaseModel::rowCount( const QModelIndex &parent ) const
 
 QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent ) const
   {
-  SDataModelProfileFunction
   const Attribute *prop = _root;
   int size = 0;
   if(parent.isValid())
@@ -579,7 +570,6 @@ QModelIndex DatabaseModel::index( int row, int column, const QModelIndex &parent
 
 QModelIndex DatabaseModel::parent( const QModelIndex &child ) const
   {
-  SDataModelProfileFunction
   if(child.isValid())
     {
     Attribute *prop = attributeFromIndex(child);
