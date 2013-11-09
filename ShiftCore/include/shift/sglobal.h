@@ -25,7 +25,7 @@
 #  define SHIFT_EXPORT Q_DECL_IMPORT
 #endif
 
-#ifdef X_PROFILING_ENABLED
+#if X_EVENT_LOGGING_ENABLED
 # include "XProfiler"
 # define ShiftCoreProfileScope 1043
 # define ShiftDataModelProfileScope 1044

@@ -1,3 +1,4 @@
+import qbs	
 import "../../Eks/EksBuild" as Eks;
 
 Eks.Library {
@@ -6,25 +7,28 @@ Eks.Library {
 
   property bool uiSupport: true
 
+  Depends { name: "Qt.gui" }
+  Depends { name: "EksCore" }
+  Depends { name: "EksScript" }
+
   Depends {
-    name: "Eks.EksCore"
+    condition: uiSupport
+    name: "EksGui"
   }
 
   Properties {
     condition: uiSupport
-
-    Depends { name: "Qt.gui" }
-    Depends { name: "Qt.widgets" }
   }
 
   Export {
     Depends { name: "cpp" }
     Depends { name: "EksCore" }
+    Depends { name: "EksScript" }
 
     cpp.includePaths: [ "./include" ]
   }
 
-  Depends {
+  Eks.TestDependency {
     name: "ShiftCoreTest"
   }
 }

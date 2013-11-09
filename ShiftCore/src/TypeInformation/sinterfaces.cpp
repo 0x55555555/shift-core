@@ -4,8 +4,8 @@
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/sentity.h"
-#include "QColor"
-#include "QString"
+#include "QtGui/QColor"
+#include "QtCore/QString"
 
 namespace Shift
 {
