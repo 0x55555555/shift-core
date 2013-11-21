@@ -49,7 +49,7 @@ struct PropertyInformationFunctions
   typedef bool (*SaveQueryFunction)( const Attribute * );
   typedef void (*CreateTypeInformationFunction)(PropertyInformation *, const PropertyInformationCreateData &);
   typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(const Eks::Resource &data, const PropertyInstanceInformation *copy);
-  typedef const Eks::Resource &(*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
+  typedef Eks::Resource (*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
 
   CreateInstanceInformationFunction createEmbeddedInstanceInformation;
   CreateInstanceInformationFunction createDynamicInstanceInformation;

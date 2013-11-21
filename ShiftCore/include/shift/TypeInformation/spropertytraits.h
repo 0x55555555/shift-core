@@ -94,11 +94,6 @@ public:
 
       return t;
       }
-    static void createInPlace(Attribute *ptr)
-      {
-      Type* t = static_cast<Type*>(ptr);
-      new(t) Type();
-      }
     static Eks::Resource destroy(Attribute *ptr)
       {
       return Eks::Resource::destroy((Type*)ptr);
@@ -127,11 +122,11 @@ public:
 
     return allocation.create<StInst>();
     }
-  static void *destroyDynamicInstanceInformation(PropertyInstanceInformation *allocation)
+  static Eks::Resource destroyDynamicInstanceInformation(PropertyInstanceInformation *allocation)
     {
     return Eks::Resource::destroy((DyInst*)allocation);
     }
-  static void *destroyEmbeddedInstanceInformation(PropertyInstanceInformation *allocation)
+  static Eks::Resource destroyEmbeddedInstanceInformation(PropertyInstanceInformation *allocation)
     {
     return Eks::Resource::destroy((StInst*)allocation);
     }
