@@ -41,6 +41,11 @@ public:
 
   S_PROPERTY_ROOT(Attribute)
 
+  enum
+    {
+    HasDynamicChildren = false
+    };
+
 public:
   Attribute();
 

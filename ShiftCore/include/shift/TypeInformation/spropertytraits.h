@@ -9,7 +9,7 @@ namespace Shift
 template <typename TypeTraitsCreation, bool Abstract> class PropertyCreateSelector
   {
 public:
-  static Attribute *create(void *ptr)
+  static Attribute *create(const Eks::Resource &ptr)
     {
     return TypeTraitsCreation::create(ptr);
     }
@@ -17,7 +17,7 @@ public:
     {
     TypeTraitsCreation::createInPlace(ptr);
     }
-  static void *destroy(Attribute *ptr)
+  static Eks::Resource destroy(Attribute *ptr)
     {
     return TypeTraitsCreation::destroy(ptr);
     }
@@ -87,9 +87,9 @@ public:
 
   template <typename Type> struct Creation
     {
-    static Attribute *create(void *ptr)
+    static Attribute *create(const Eks::Resource &ptr)
       {
-      Type *t = new(ptr) Type();
+      Type *t = ptr.create<Type>();
       xAssert(t == ptr);
 
       return t;
@@ -99,46 +99,41 @@ public:
       Type* t = static_cast<Type*>(ptr);
       new(t) Type();
       }
-    static void *destroy(Attribute *ptr)
+    static Eks::Resource destroy(Attribute *ptr)
       {
-      (void)ptr;
-      ((Type*)ptr)->~Type();
-
-      return (Type*)ptr;
+      return Eks::Resource::destroy((Type*)ptr);
       }
     };
 
   static PropertyInstanceInformation *createDynamicInstanceInformation(
-      void *allocation,
+      const Eks::Resource &allocation,
       const PropertyInstanceInformation *cpy)
     {
     if(cpy)
       {
-      return new(allocation) DyInst(*static_cast<const DyInst*>(cpy));
+      return allocation.create<DyInst>(*static_cast<const DyInst*>(cpy));
       }
 
-    return new(allocation) DyInst;
+    return allocation.create<DyInst>();
     }
   static PropertyInstanceInformation *createEmbeddedInstanceInformation(
-      void *allocation,
+      const Eks::Resource &allocation,
       const PropertyInstanceInformation *cpy)
     {
     if(cpy)
       {
-      return new(allocation) StInst(*static_cast<const StInst*>(cpy));
+      return allocation.create<StInst>(*static_cast<const StInst*>(cpy));
       }
 
-    return new(allocation) StInst;
+    return allocation.create<StInst>();
     }
   static void *destroyDynamicInstanceInformation(PropertyInstanceInformation *allocation)
     {
-    ((DyInst*)allocation)->~DyInst();
-    return ((DyInst*)allocation);
+    return Eks::Resource::destroy((DyInst*)allocation);
     }
   static void *destroyEmbeddedInstanceInformation(PropertyInstanceInformation *allocation)
     {
-    ((StInst*)allocation)->~StInst();
-    return ((StInst*)allocation);
+    return Eks::Resource::destroy((StInst*)allocation);
     }
   };
 

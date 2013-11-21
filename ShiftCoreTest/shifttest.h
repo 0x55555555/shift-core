@@ -36,6 +36,7 @@ private Q_SLOTS:
   void simpleOperationTest();
   void simpleDirtyCompute();
   void entityCompute();
+  void initialiseTest();
 
 private:
   Eks::Core core;

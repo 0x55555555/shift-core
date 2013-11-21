@@ -20,7 +20,8 @@ TEMPLATE = app
 SOURCES += \
     shiftcomputetests.cpp \
     shiftbasictests.cpp \
-    shifttestcore.cpp
+    shifttestcore.cpp \
+    shiftinitialisetests.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 INCLUDEPATH += $$ROOT/shift/GraphicsCore \

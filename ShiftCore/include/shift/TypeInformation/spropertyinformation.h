@@ -38,9 +38,9 @@ public:
 
 struct PropertyInformationFunctions
   {
-  typedef Attribute *(*CreateFunction)(void *data);
+  typedef Attribute *(*CreateFunction)(const Eks::Resource &data);
   typedef void (*CreateInPlaceFunction)(Attribute *data);
-  typedef void *(*DestroyFunction)(Attribute *data);
+  typedef Eks::Resource (*DestroyFunction)(Attribute *data);
   typedef void (*PostCreateFunction)(Attribute *data);
   typedef void (*PostSetFunction)(Attribute *data);
   typedef void (*SaveFunction)( const Attribute *, Saver & );
@@ -48,8 +48,8 @@ struct PropertyInformationFunctions
   typedef void (*AssignFunction)( const Attribute *, Attribute * );
   typedef bool (*SaveQueryFunction)( const Attribute * );
   typedef void (*CreateTypeInformationFunction)(PropertyInformation *, const PropertyInformationCreateData &);
-  typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(void *data, const PropertyInstanceInformation *copy);
-  typedef void *(*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
+  typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(const Eks::Resource &data, const PropertyInstanceInformation *copy);
+  typedef const Eks::Resource &(*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
 
   CreateInstanceInformationFunction createEmbeddedInstanceInformation;
   CreateInstanceInformationFunction createDynamicInstanceInformation;
@@ -89,9 +89,18 @@ XProperties:
   XProperty(const EmbeddedPropertyInstanceInformation **, childData, setChildData);
   XProperty(xuint8, childCount, setChildCount);
 
-  XProperty(xsize, size, setSize);
-  XByRefProperty(Eks::ResourceDescription, dynamicInstanceInformationFormat, setDynamicInstanceInformationFormat);
-  XByRefProperty(Eks::ResourceDescription, embeddedInstanceInformationFormat, setEmbeddedInstanceInformationFormat);
+  XByRefProperty(
+    Eks::ResourceDescription,
+    format,
+    setFormat);
+  XByRefProperty(
+    Eks::ResourceDescription,
+    dynamicInstanceInformationFormat,
+    setDynamicInstanceInformationFormat);
+  XByRefProperty(
+    Eks::ResourceDescription,
+    embeddedInstanceInformationFormat,
+    setEmbeddedInstanceInformationFormat);
 
   XProperty(xsize, instances, setInstances);
 
@@ -131,9 +140,6 @@ public:
   // offset is the offset in bytes back from this base to the allocated base.
   PropertyInformation *findAllocatableBase(xsize &offset);
   const PropertyInformation *findAllocatableBase(xsize &offset) const;
-
-  // size of the property type, and its instance information
-  xsize dynamicSize() const { return size() + dynamicInstanceInformationFormat().allocatedSize(); }
 
   template <typename T> static PropertyInformation *createTypeInformation(
       const char *name,

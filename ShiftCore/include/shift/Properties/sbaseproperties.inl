@@ -13,6 +13,9 @@ class UuidPropertyInstanceInformation : public EmbeddedPropertyInstanceInformati
   typedef QUuid PODType;
 
 public:
+  UuidPropertyInstanceInformation()
+    {
+    }
   void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE;
 
   QUuid defaultValue() const
@@ -25,6 +28,9 @@ template<> class DataEmbeddedInstanceInformation<Data<QUuid, AttributeData>>
     : public UuidPropertyInstanceInformation
   {
 public:
+  DataEmbeddedInstanceInformation()
+    {
+    }
   void initiateAttribute(Attribute *propertyToInitiate) const { UuidPropertyInstanceInformation::initiateAttribute(propertyToInitiate); }
   };
 
@@ -32,6 +38,9 @@ template<> class DataEmbeddedInstanceInformation<Data<QUuid, FullData>>
     : public UuidPropertyInstanceInformation
   {
 public:
+  DataEmbeddedInstanceInformation()
+    {
+    }
   void initiateAttribute(Attribute *propertyToInitiate) const { UuidPropertyInstanceInformation::initiateAttribute(propertyToInitiate); }
   };
 }

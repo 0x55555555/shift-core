@@ -138,24 +138,19 @@ Attribute *Database::addDynamicAttribute(
   SProfileFunction
   xAssert(type);
 
-  xsize size = type->dynamicSize();
-  size = Eks::roundToAlignment(size, X_ALIGN_BYTE_COUNT);
+  const auto& fmt = type->format() + type->dynamicInstanceInformationFormat();
 
-  void *propMem = _memory->alloc(size);
+  Eks::Resource mem = _memory->alloc(fmt);
+  Eks::Resource instanceInfoMem;
+  Eks::Resource propMem = mem.alignAndIncrement(type->format(), &instanceInfoMem);
 
   // new the prop type
   xAssert(type->functions().create);
   Attribute *prop = type->functions().create(propMem);
 
   // new the instance information
-  xuint8 *alignedPtr = (xuint8*)(propMem) + type->size();
-  const xsize alignment = type->dynamicInstanceInformationFormat().alignment();
-
-  alignedPtr = Eks::roundToAlignment(alignedPtr, alignment);
-  xAssertIsSpecificAligned(alignedPtr, alignment);
-
-  PropertyInstanceInformation *instanceInfoMem = (PropertyInstanceInformation *)(alignedPtr);
-  PropertyInstanceInformation *instanceInfo = type->functions().createDynamicInstanceInformation(instanceInfoMem, 0);
+  PropertyInstanceInformation *instanceInfo =
+    type->functions().createDynamicInstanceInformation(instanceInfoMem, 0);
 
   prop->_instanceInfo = instanceInfo;
 
@@ -221,7 +216,7 @@ void Database::deleteDynamicAttribute(Attribute *prop)
   const PropertyInformation *info = prop->typeInformation();
 
   prop->_instanceInfo = 0;
-  void *mem = info->functions().destroy(prop);
+  Eks::Resource mem = info->functions().destroy(prop);
 
   X_HEAP_CHECK
 

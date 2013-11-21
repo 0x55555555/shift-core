@@ -215,7 +215,7 @@ void podPreGet(const Attribute *)
   {
   }
 
-void assignTo(const Attribute *f, Attribute *to)
+void assignTo(const Attribute *, Attribute *)
   {
   xAssertFail();
   }

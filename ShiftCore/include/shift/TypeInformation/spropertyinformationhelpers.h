@@ -218,6 +218,12 @@ public:
     //typedef std::is_base_of<AncestorPropType, PropType> Inherits;
     //xCompileTimeAssert(Inherits::value == true);
 
+    // If a class has this flag set it has children after its allocation which are not specified
+    // in the class definition. This type of class can only be added to PropertyInformation
+    // without a location
+    //
+    xCompileTimeAssert(U::HasDynamicChildren == false);
+
     xptrdiff location = findLocation(ptr);
 
     xsize offset = 0;
@@ -236,6 +242,12 @@ public:
     {
     PropertyInstanceInformationTyped<PropType, U> *instArray[SIZE];
     inst = inst ? inst : instArray;
+
+    // If a class has this flag set it has children after its allocation which are not specified
+    // in the class definition. This type of class can only be added to PropertyInformation
+    // without a location
+    //
+    xCompileTimeAssert(U::HasDynamicChildren == false);
 
     Name str;
     name.toName(str);
@@ -271,7 +283,12 @@ public:
       PropertyInstanceInformationTyped<PropType, T> *add(
           const NameArg &name)
     {
-    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation();
+    const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
+
+    // User must set this to indicate to users of their container that they may not be
+    // added statically to classes.
+    //
+    xCompileTimeAssert(PropType::HasDynamicChildren != false);
 
     EmbeddedPropertyInstanceInformation *inst =
         PropertyInformationChildrenCreator::add(newChildType, name);
@@ -285,6 +302,12 @@ public:
           const NameArg &name)
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
+
+    // If a class has this flag set it has children after its allocation which are not specified
+    // in the class definition. This type of class can only be added to PropertyInformation
+    // without a location
+    //
+    xCompileTimeAssert(T::HasDynamicChildren == false);
 
     EmbeddedPropertyInstanceInformation *inst =
       PropertyInformationChildrenCreator::add(newChildType, location, name, false);
@@ -444,7 +467,7 @@ private:
     info->setChildData(0);
     info->setChildCount(0);
 
-    info->setSize(sizeof(PropType));
+    info->setFormat(Eks::ResourceDescriptionTypeHelper<PropType>::createFor());
     info->setDynamicInstanceInformationFormat(
       Eks::ResourceDescriptionTypeHelper<typename PropType::DynamicInstanceInformation>::createFor());
     info->setEmbeddedInstanceInformationFormat(
