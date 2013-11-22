@@ -46,4 +46,7 @@ void ShiftCoreTest::initialiseTest()
   QVERIFY(ent->uuid() != QUuid());
   QCOMPARE(ent->number(), 300);
   QCOMPARE(ent->pork(), "testTest");
+
+# init a prop with dynamically added object and test the pointers are GUUUUD.
+# try with entity, and property both with and without v tables, and multiple inheritance before property.
   }

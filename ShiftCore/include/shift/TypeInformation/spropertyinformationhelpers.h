@@ -226,9 +226,10 @@ public:
 
     xptrdiff location = findLocation(ptr);
 
-    xsize offset = 0;
+    Eks::RelativeMemoryResource offset;
     _information->findAllocatableBase(offset);
-    location -= offset;
+    xAssert(offset.isPost())
+    location -= offset.value();
 
     return add<U>(location, name);
     }

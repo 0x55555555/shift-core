@@ -85,7 +85,7 @@ public:
   EmbeddedPropertyInstanceInformation();
   EmbeddedPropertyInstanceInformation(const EmbeddedPropertyInstanceInformation &);
 
-  static EmbeddedPropertyInstanceInformation *allocate(
+  static Eks::MemoryResource allocate(
     Eks::AllocatorBase *allocator,
     const Eks::ResourceDescription &fmt);
   static void destroy(Eks::AllocatorBase *allocator, EmbeddedPropertyInstanceInformation *);

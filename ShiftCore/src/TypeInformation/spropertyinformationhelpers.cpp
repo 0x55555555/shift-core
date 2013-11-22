@@ -121,19 +121,20 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::overrid
 
   const PropertyInformationFunctions& fns = newType->functions();
 
-  EmbeddedPropertyInstanceInformation* def =
+  Eks::MemoryResource def =
       EmbeddedPropertyInstanceInformation::allocate(
         _data.allocator, newType->embeddedInstanceInformationFormat());
 
-  PropertyInstanceInformation *inst = fns.createEmbeddedInstanceInformation(def, oldInst);
-  xAssert(inst == def);
+  EmbeddedPropertyInstanceInformation *inst =
+    static_cast<EmbeddedPropertyInstanceInformation*>(fns.createEmbeddedInstanceInformation(def, oldInst));
+  xAssert(inst == def.data());
 
-  def->setHoldingTypeInformation(_information);
+  inst->setHoldingTypeInformation(_information);
 
-  xAssert(!_properties[def->index()]);
-  _properties[def->index()] = def;
+  xAssert(!_properties[inst->index()]);
+  _properties[inst->index()] = inst;
 
-  return def;
+  return inst;
   }
 
 xsize *PropertyInformationChildrenCreator::createAffects(
@@ -147,32 +148,38 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
     const PropertyInformation *newChildType,
     const NameArg &name)
   {
-  xsize backwardsOffset = 0;
+  Eks::RelativeMemoryResource backwardsOffset = 0;
   PropertyInformation *allocatable = _information->findAllocatableBase(backwardsOffset);
   xAssert(allocatable);
 
-  // size of the old type
-  xsize oldAlignedSize = Eks::roundToAlignment(allocatable->size());
+  Eks::ResourceDescription allocatableFmt = allocatable->format();
+  Eks::ResourceDescription newAllocatableFmt = allocatableFmt + newChildType->format();
 
-  // the actual object will start at this offset before the type
-  xptrdiff firstFreeByte = oldAlignedSize - allocatable->propertyDataOffset();
-  xAssert(firstFreeByte > 0);
+  allocatable->setFormat(newAllocatableFmt);
 
-  // location of the Property Data
-  xsize propertyDataLocation = firstFreeByte + newChildType->propertyDataOffset();
+  Eks::RelativeMemoryResource allocatableRsc;
 
-  xsize finalSize = propertyDataLocation + newChildType->size();
+  // Find a relative resource after the allocated type.
+  Eks::RelativeMemoryResource afterAllocatable;
+  allocatableRsc.alignAndIncrement(allocatableFmt, &afterAllocatable);
 
-  allocatable->setSize(finalSize);
+  // Remove the property data offset from the pointer, this finds the free location for the resource
+  // if the allocatable information's ATTRIBUTE pointer is at 0x0
+  Eks::RelativeMemoryResource afterAllocatableAttr = afterAllocatable.decrememt(allocatable->propertyDataOffset());
+  xAssert(afterAllocatableAttr.isPost());
 
-  xAssert(propertyDataLocation > backwardsOffset);
-  xsize location = propertyDataLocation - backwardsOffset;
+  // find the location of the Attribute pointer relative to the allocatable base.
+  Eks::RelativeMemoryResource newAttrPropertyOffset = afterAllocatableAttr.increment(newChildType->propertyDataOffset());
+  xAssert(newAttrPropertyOffset > backwardsOffset);
 
-  EmbeddedPropertyInstanceInformation *def = add(newChildType, location, name, true);
+  // Location is the byte offset from the direct parent attribute to the child attribute's address
+  Eks::RelativeMemoryResource location = newAttrPropertyOffset - backwardsOffset;
+
+  EmbeddedPropertyInstanceInformation *def = add(newChildType, location.value(), name, true);
 
 #ifdef X_DEBUG
   const Attribute *prop = def->locate((const Container*)0);
-  xAssert((backwardsOffset + (xsize)prop) == propertyDataLocation);
+  xAssert(backwardsOffset.increment((xsize)prop) == newAttrPropertyOffset);
 #endif
 
   return def;
@@ -186,7 +193,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
   {
   xAssert(newChildType);
 
-  void *mem =
+  Eks::MemoryResource mem =
       EmbeddedPropertyInstanceInformation::allocate(
         _data.allocator, newChildType->embeddedInstanceInformationFormat());
 

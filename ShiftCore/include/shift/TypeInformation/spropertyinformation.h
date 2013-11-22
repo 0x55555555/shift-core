@@ -38,9 +38,9 @@ public:
 
 struct PropertyInformationFunctions
   {
-  typedef Attribute *(*CreateFunction)(const Eks::Resource &data);
+  typedef Attribute *(*CreateFunction)(const Eks::MemoryResource &data);
   typedef void (*CreateInPlaceFunction)(Attribute *data);
-  typedef Eks::Resource (*DestroyFunction)(Attribute *data);
+  typedef Eks::MemoryResource (*DestroyFunction)(Attribute *data);
   typedef void (*PostCreateFunction)(Attribute *data);
   typedef void (*PostSetFunction)(Attribute *data);
   typedef void (*SaveFunction)( const Attribute *, Saver & );
@@ -48,15 +48,14 @@ struct PropertyInformationFunctions
   typedef void (*AssignFunction)( const Attribute *, Attribute * );
   typedef bool (*SaveQueryFunction)( const Attribute * );
   typedef void (*CreateTypeInformationFunction)(PropertyInformation *, const PropertyInformationCreateData &);
-  typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(const Eks::Resource &data, const PropertyInstanceInformation *copy);
-  typedef Eks::Resource (*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
+  typedef PropertyInstanceInformation *(*CreateInstanceInformationFunction)(const Eks::MemoryResource &data, const PropertyInstanceInformation *copy);
+  typedef Eks::MemoryResource (*DestroyInstanceInformationFunction)(PropertyInstanceInformation *data);
 
   CreateInstanceInformationFunction createEmbeddedInstanceInformation;
   CreateInstanceInformationFunction createDynamicInstanceInformation;
   DestroyInstanceInformationFunction destroyEmbeddedInstanceInformation;
   DestroyInstanceInformationFunction destroyDynamicInstanceInformation;
   CreateFunction create;
-  CreateInPlaceFunction createInPlace;
   DestroyFunction destroy;
   SaveFunction save;
   LoadFunction load;
@@ -138,8 +137,8 @@ public:
 
   // find the sproperty information that will be allocated dynamically (ie has no static parent)
   // offset is the offset in bytes back from this base to the allocated base.
-  PropertyInformation *findAllocatableBase(xsize &offset);
-  const PropertyInformation *findAllocatableBase(xsize &offset) const;
+  PropertyInformation *findAllocatableBase(Eks::RelativeMemoryResource &offset);
+  const PropertyInformation *findAllocatableBase(Eks::RelativeMemoryResource &offset) const;
 
   template <typename T> static PropertyInformation *createTypeInformation(
       const char *name,

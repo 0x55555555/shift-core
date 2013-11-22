@@ -140,9 +140,9 @@ Attribute *Database::addDynamicAttribute(
 
   const auto& fmt = type->format() + type->dynamicInstanceInformationFormat();
 
-  Eks::Resource mem = _memory->alloc(fmt);
-  Eks::Resource instanceInfoMem;
-  Eks::Resource propMem = mem.alignAndIncrement(type->format(), &instanceInfoMem);
+  Eks::MemoryResource mem = _memory->alloc(fmt);
+  Eks::MemoryResource instanceInfoMem;
+  Eks::MemoryResource propMem = mem.alignAndIncrement(type->format(), &instanceInfoMem);
 
   // new the prop type
   xAssert(type->functions().create);
@@ -216,7 +216,7 @@ void Database::deleteDynamicAttribute(Attribute *prop)
   const PropertyInformation *info = prop->typeInformation();
 
   prop->_instanceInfo = 0;
-  Eks::Resource mem = info->functions().destroy(prop);
+  Eks::MemoryResource mem = info->functions().destroy(prop);
 
   X_HEAP_CHECK
 
@@ -246,7 +246,13 @@ void Database::initiateAttributeFromMetaData(Container *container, const Propert
 
     if(child->isExtraClassMember())
       {
-      childInformation->functions().createInPlace(thisProp);
+      Eks::MemoryResource thisAttrMem(thisProp);
+
+      const xsize dataOffset = childInformation->propertyDataOffset();
+      Eks::MemoryResource thisDerivedMem = thisAttrMem.decrememt(dataOffset);
+
+      Attribute *created = childInformation->functions().create(thisDerivedMem);
+      xAssert(created == thisProp);
       }
 
     thisProp->_instanceInfo = child;

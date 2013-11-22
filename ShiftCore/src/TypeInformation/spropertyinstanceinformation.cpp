@@ -39,7 +39,7 @@ void PropertyInstanceInformation::destroy(
     PropertyInformationFunctions::DestroyInstanceInformationFunction destroy =
       inst->childInformation()->functions().destroyEmbeddedInstanceInformation;
 
-    void *data = destroy(inst);
+    Eks::MemoryResource data = destroy(inst);
 
     if(destroyInfo)
       {
@@ -104,15 +104,15 @@ EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation(
   xAssert(!o.isExtraClassMember())
   }
 
-EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::allocate(
+Eks::MemoryResource EmbeddedPropertyInstanceInformation::allocate(
     Eks::AllocatorBase *allocator,
     const Eks::ResourceDescription &fmt)
   {
   xAssert(allocator);
-  void *ptr = allocator->alloc(fmt);
+  Eks::MemoryResource ptr = allocator->alloc(fmt);
 
-  xAssert(ptr);
-  return (EmbeddedPropertyInstanceInformation*)ptr;
+  xAssert(ptr.isValid());
+  return ptr;
   }
 
 void EmbeddedPropertyInstanceInformation::destroy(
@@ -291,31 +291,31 @@ void EmbeddedPropertyInstanceInformation::setDefaultInput(const EmbeddedProperty
   {
   xAssert(info->childInformation()->inheritsFromType(Property::staticTypeInformation()));
   // find the offset to the holding type information
-  xsize targetOffset = 0;
+  Eks::RelativeMemoryResource targetOffset;
   const PropertyInformation *targetBase = info->holdingTypeInformation()->findAllocatableBase(targetOffset);
   (void)targetBase;
   // add the instance location
-  targetOffset += info->location();
+  targetOffset.increment(info->location());
 
   // find the offset to the holding type information
-  xsize sourceOffset = 0;
+  Eks::RelativeMemoryResource sourceOffset;
   const PropertyInformation *sourceBase = holdingTypeInformation()->findAllocatableBase(sourceOffset);
   (void)sourceBase;
   // add the instance location
-  sourceOffset += location();
+  sourceOffset.increment(location());
 
   // cannot add a default input between to separate allocatable types.
   xAssert(sourceBase->inheritsFromType(targetBase));
 
-  xptrdiff inp = (xptrdiff)targetOffset - (xptrdiff)sourceOffset;
+  xptrdiff inp = targetOffset.value() - sourceOffset.value();
   xAssert(inp < X_INT16_MAX && inp > X_INT16_MIN)
   _defaultInput = inp;
 
-  xAssert(sourceOffset < sourceBase->size());
-  xAssert(targetOffset < sourceBase->size());
-  xAssert((sourceOffset + _defaultInput) < sourceBase->size());
-  xAssert((targetOffset - _defaultInput) < sourceBase->size());
-  xAssert(_defaultInput < (xptrdiff)sourceBase->size());
+  xAssert(sourceOffset < sourceBase->format().size());
+  xAssert(targetOffset < sourceBase->format().size());
+  xAssert(((xsize)sourceOffset.value() + _defaultInput) < sourceBase->format().size());
+  xAssert(((xsize)targetOffset.value() - _defaultInput) < sourceBase->format().size());
+  xAssert(_defaultInput < (xptrdiff)sourceBase->format().size());
   }
 
 Attribute *EmbeddedPropertyInstanceInformation::locate(Container *parent) const

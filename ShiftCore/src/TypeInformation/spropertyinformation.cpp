@@ -36,7 +36,7 @@ void PropertyInformation::initiate(PropertyInformation *info, const PropertyInfo
   // update template constructor too
   info->setFunctions(from->functions());
 
-  info->setSize(from->size());
+  info->setFormat(from->format());
   info->setPropertyDataOffset(from->propertyDataOffset());
   info->setDynamicInstanceInformationFormat(from->dynamicInstanceInformationFormat());
   info->setEmbeddedInstanceInformationFormat(from->embeddedInstanceInformationFormat());
@@ -166,9 +166,9 @@ const EmbeddedPropertyInstanceInformation *PropertyInformation::childFromName(co
   return 0;
   }
 
-const PropertyInformation *PropertyInformation::findAllocatableBase(xsize &offset) const
+const PropertyInformation *PropertyInformation::findAllocatableBase(Eks::RelativeMemoryResource &offset) const
   {
-  offset = 0;
+  offset = Eks::RelativeMemoryResource();
 
   const EmbeddedPropertyInstanceInformation *allocateOnInfo = extendedParent();
   if(!allocateOnInfo)
@@ -179,7 +179,7 @@ const PropertyInformation *PropertyInformation::findAllocatableBase(xsize &offse
   const PropertyInformation *allocateOn = this;
   while(allocateOnInfo)
     {
-    offset += allocateOnInfo->location();
+    offset.increment(allocateOnInfo->location());
 
     const PropertyInformation *holdingInfo = allocateOnInfo->holdingTypeInformation();
     if(!holdingInfo)
@@ -194,9 +194,9 @@ const PropertyInformation *PropertyInformation::findAllocatableBase(xsize &offse
   return 0;
   }
 
-PropertyInformation *PropertyInformation::findAllocatableBase(xsize &offset)
+PropertyInformation *PropertyInformation::findAllocatableBase(Eks::RelativeMemoryResource &offset)
   {
-  offset = 0;
+  offset = Eks::RelativeMemoryResource();
 
   const EmbeddedPropertyInstanceInformation *allocateOnInfo = extendedParent();
   if(!allocateOnInfo)
@@ -207,7 +207,7 @@ PropertyInformation *PropertyInformation::findAllocatableBase(xsize &offset)
   PropertyInformation *allocateOn = this;
   while(allocateOnInfo)
     {
-    offset += allocateOnInfo->location();
+    offset.increment(allocateOnInfo->location());
 
     PropertyInformation *holdingInfo = allocateOnInfo->holdingTypeInformation();
     if(!holdingInfo)
