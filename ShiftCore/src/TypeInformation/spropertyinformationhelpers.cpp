@@ -148,7 +148,7 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
     const PropertyInformation *newChildType,
     const NameArg &name)
   {
-  Eks::RelativeMemoryResource backwardsOffset = 0;
+  Eks::RelativeMemoryResource backwardsOffset;
   PropertyInformation *allocatable = _information->findAllocatableBase(backwardsOffset);
   xAssert(allocatable);
 
@@ -157,23 +157,21 @@ EmbeddedPropertyInstanceInformation *PropertyInformationChildrenCreator::add(
 
   allocatable->setFormat(newAllocatableFmt);
 
+  // Remove the property data offset from the pointer, this finds the start of the derived type.
   Eks::RelativeMemoryResource allocatableRsc;
+  allocatableRsc = allocatableRsc.decrememt(allocatable->propertyDataOffset());
 
-  // Find a relative resource after the allocated type.
-  Eks::RelativeMemoryResource afterAllocatable;
-  allocatableRsc.alignAndIncrement(allocatableFmt, &afterAllocatable);
-
-  // Remove the property data offset from the pointer, this finds the free location for the resource
-  // if the allocatable information's ATTRIBUTE pointer is at 0x0
-  Eks::RelativeMemoryResource afterAllocatableAttr = afterAllocatable.decrememt(allocatable->propertyDataOffset());
+  // Find a relative resource after the allocated type, from the attribute pointer
+  Eks::RelativeMemoryResource afterAllocatableAttr = allocatableRsc.increment(allocatableFmt);
   xAssert(afterAllocatableAttr.isPost());
 
   // find the location of the Attribute pointer relative to the allocatable base.
-  Eks::RelativeMemoryResource newAttrPropertyOffset = afterAllocatableAttr.increment(newChildType->propertyDataOffset());
-  xAssert(newAttrPropertyOffset > backwardsOffset);
+  Eks::RelativeMemoryResource newAttrPropertyOffset =
+    afterAllocatableAttr.increment(newChildType->propertyDataOffset());
 
   // Location is the byte offset from the direct parent attribute to the child attribute's address
-  Eks::RelativeMemoryResource location = newAttrPropertyOffset - backwardsOffset;
+  Eks::RelativeMemoryResource location = newAttrPropertyOffset.relativeTo(backwardsOffset);
+  xAssert(location.isPost());
 
   EmbeddedPropertyInstanceInformation *def = add(newChildType, location.value(), name, true);
 

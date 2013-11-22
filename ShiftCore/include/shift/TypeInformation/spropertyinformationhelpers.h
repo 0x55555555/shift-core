@@ -41,7 +41,7 @@ void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \
 
 namespace detail
 {
-template <typename PropType> static void checkType()
+template <typename PropType> void checkType()
   {
   typedef std::is_base_of<typename PropType::ParentType, PropType> Inherits;
   xCompileTimeAssert(Inherits::value == true);
@@ -228,7 +228,7 @@ public:
 
     Eks::RelativeMemoryResource offset;
     _information->findAllocatableBase(offset);
-    xAssert(offset.isPost())
+    xAssert(offset.isZero() || offset.isPost());
     location -= offset.value();
 
     return add<U>(location, name);
@@ -249,6 +249,8 @@ public:
     // without a location
     //
     xCompileTimeAssert(U::HasDynamicChildren == false);
+    typedef std::is_same<U, PropType> IsSame;
+    xCompileTimeAssert(IsSame::value == false);
 
     Name str;
     name.toName(str);
@@ -286,10 +288,8 @@ public:
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
 
-    // User must set this to indicate to users of their container that they may not be
-    // added statically to classes.
-    //
-    xCompileTimeAssert(PropType::HasDynamicChildren != false);
+    typedef std::is_same<T, PropType> IsSame;
+    xCompileTimeAssert(IsSame::value == false);
 
     EmbeddedPropertyInstanceInformation *inst =
         PropertyInformationChildrenCreator::add(newChildType, name);
@@ -309,6 +309,8 @@ public:
     // without a location
     //
     xCompileTimeAssert(T::HasDynamicChildren == false);
+    typedef std::is_same<T, PropType> IsSame;
+    xCompileTimeAssert(IsSame::value == false);
 
     EmbeddedPropertyInstanceInformation *inst =
       PropertyInformationChildrenCreator::add(newChildType, location, name, false);

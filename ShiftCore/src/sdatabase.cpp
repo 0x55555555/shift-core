@@ -138,11 +138,13 @@ Attribute *Database::addDynamicAttribute(
   SProfileFunction
   xAssert(type);
 
-  const auto& fmt = type->format() + type->dynamicInstanceInformationFormat();
+  auto fmt = type->format() + type->dynamicInstanceInformationFormat();
+  // bucket allocator requires this minimum alignemnt
+  fmt.alignTo(X_ALIGN_BYTE_COUNT);
 
-  Eks::MemoryResource mem = _memory->alloc(fmt);
-  Eks::MemoryResource instanceInfoMem;
-  Eks::MemoryResource propMem = mem.alignAndIncrement(type->format(), &instanceInfoMem);
+  Eks::MemoryResource propMem = _memory->alloc(fmt);
+  Eks::MemoryResource instanceInfoMemUnaligned = propMem.increment(type->format().size());
+  Eks::MemoryResource instanceInfoMem = instanceInfoMemUnaligned.align(type->dynamicInstanceInformationFormat().alignment());
 
   // new the prop type
   xAssert(type->functions().create);
