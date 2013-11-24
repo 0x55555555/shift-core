@@ -46,12 +46,13 @@ void Property::setDependantsDirty()
   for(Property *o=output(); o; o = o->nextOutput())
     {
     xAssert(o != o->nextOutput());
+
     o->setDirty();
     }
 
-  const PropertyInstanceInformation *childBase = baseInstanceInformation();
   if(!isDynamic())
     {
+    const PropertyInstanceInformation *childBase = baseInstanceInformation();
     const EmbeddedPropertyInstanceInformation *child = childBase->embeddedInfo();
     const xsize *affectsLocations = child->affects();
     if(affectsLocations)
@@ -121,7 +122,12 @@ void Property::setDependantsDirty()
   }
 
 Property::Property()
-  : _input(0), _output(0), _nextOutput(0), _updating(false), _flags(0), _dirty(true)
+  : _input(nullptr),
+    _output(nullptr),
+    _nextOutput(nullptr),
+    _updating(false),
+    _flags(0),
+    _dirty(true)
   {
   }
 
@@ -396,7 +402,8 @@ bool Property::beginUpdate() const
 void Property::endUpdate() const
   {
   Property *prop = const_cast<Property*>(this);
-  bool success = AtomicHelper::trySet(&prop->_updating, 0, 1);
+  X_USED_FOR_ASSERTS(bool success =)
+    AtomicHelper::trySet(&prop->_updating, 0, 1);
   xAssert(success);
   }
 

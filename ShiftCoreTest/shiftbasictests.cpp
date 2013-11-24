@@ -69,7 +69,8 @@ void ShiftCoreTest::tearDownTest()
       }
 
     db.children.clear();
-  }
+    QCOMPARE(db.output(), nullptr);
+    }
   }
 
 void ShiftCoreTest::dataTest()

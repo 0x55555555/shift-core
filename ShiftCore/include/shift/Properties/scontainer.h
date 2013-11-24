@@ -217,8 +217,6 @@ private:
 
   Attribute *_dynamicChild;
 
-  void terminateTree();
-
   void makeUniqueName(const Attribute *prop, const NameArg &name, Name &out) const;
   void internalInsert(Attribute *, xsize index);
   void internalSetup(Attribute *);

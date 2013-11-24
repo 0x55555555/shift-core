@@ -97,7 +97,8 @@ void Handler::undoTo(xsize p)
     {
     Change *c = _done[i];
 
-    bool result = c->unApply() && c->inform(true);
+    X_USED_FOR_ASSERTS(bool result =)
+      c->unApply() && c->inform(true);
     xAssert(result);
 
     // todo dont need this here, when undo fully implemented.B

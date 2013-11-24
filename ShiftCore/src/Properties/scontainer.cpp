@@ -6,11 +6,24 @@
 #include "shift/Changes/shandler.inl"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/sdatabase.h"
+#include "shift/Utilities/siterator.h"
 #include "shift/Properties/scontainerinternaliterators.h"
 #include "XStringBuffer"
 
 namespace Shift
 {
+
+void disconnectHelper(Attribute *a)
+  {
+  if(Container *c = a->castTo<Container>())
+    {
+    c->disconnectTree();
+    }
+  else if(Property *prop = a->castTo<Property>())
+    {
+    prop->disconnect();
+    }
+  }
 
 S_IMPLEMENT_PROPERTY(Container, Shift)
 
@@ -153,15 +166,7 @@ void Container::disconnectTree()
 
   xForeach(auto p, LightWalker(this))
     {
-    Container *c = p->castTo<Container>();
-    if(c)
-      {
-      c->disconnectTree();
-      }
-    else if(Property *prop = p->castTo<Property>())
-      {
-      prop->disconnect();
-      }
+    disconnectHelper(p);
     }
   }
 
@@ -238,29 +243,12 @@ void Container::internalClear(Database *db)
   while(dynamic)
     {
     Attribute *next = nextDynamicSibling(dynamic);
-    if(Container *c = dynamic->castTo<Container>())
-      {
-      c->disconnectTree();
-      }
-    else if(Property *prop = dynamic->castTo<Property>())
-      {
-      prop->disconnect();
-      }
+    disconnectHelper(dynamic);
     db->deleteDynamicAttribute(dynamic);
     dynamic = next;
     }
 
   _dynamicChild = 0;
-  }
-
-void Container::terminateTree()
-  {
-#if X_ASSERTS_ENABLED
-  xForeach(auto p, LightWalker(this))
-    {
-    p->terminate();
-    }
-#endif
   }
 
 void Container::makeUniqueName(
@@ -324,7 +312,18 @@ void Container::removeAttribute(Attribute *oldProp)
 
   Block b(db);
 
-  oldProp->terminate();
+#if X_ASSERTS_ENABLED
+  Iterator::ChildTree it(oldProp);
+  xForeach(auto a, it)
+    {
+    if(Property *prop = castTo<Property>())
+      {
+      xAssert(!prop->isUpdating());
+      }
+    }
+#endif
+
+  disconnectHelper(oldProp);
   PropertyDoChange(TreeChange, this, (Container*)0, oldProp, index(oldProp));
   }
 

@@ -25,8 +25,35 @@ public:
 class AttributeInitialiserHelper
   {
 public:
-  typedef void (*Callback)();
-  virtual void onTreeComplete(Callback cb) = 0;
+  typedef void (*Callback)(void* data);
+  virtual void onTreeComplete(Callback cb, void* data) = 0;
+
+  template<typename T> void onTreeComplete(T &&cb)
+    {
+    auto alloc = allocator();
+    auto data = alloc->create<Wrapper<T>>(std::move(cb), alloc);
+
+    onTreeComplete(wrapCallback<T>, data);
+    }
+
+protected:
+  template <typename T> struct Wrapper
+    {
+    Wrapper(T &&d, Eks::AllocatorBase *a) : cb(std::move(d)), allocator(a) { }
+    T cb;
+    Eks::AllocatorBase *allocator;
+    };
+
+  virtual Eks::AllocatorBase* allocator() = 0;
+
+private:
+  template <typename T> static void wrapCallback(void *data)
+    {
+    auto obj = static_cast<Wrapper<T>*>(data);
+
+    obj->cb();
+    obj->allocator->destroy(obj);
+    }
   };
 
 // Child information

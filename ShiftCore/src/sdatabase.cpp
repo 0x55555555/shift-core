@@ -27,10 +27,38 @@ namespace Shift
 class AttributeInitialiserHelperImpl : public AttributeInitialiserHelper
   {
 public:
-  AttributeInitialiserHelperImpl(Database *db);
-  void treeComplete();
+  AttributeInitialiserHelperImpl(Database *db) : alloc(db->temporaryAllocator()), _calls(&alloc)
+    {
+    }
 
-  void onTreeComplete(Callback cb);
+  void treeComplete()
+    {
+    xForeach(const auto &c, _calls)
+      {
+      c.cb(c.data);
+      }
+    }
+
+  void onTreeComplete(Callback cb, void *data) X_OVERRIDE
+    {
+    Call call = { cb, data };
+    _calls.pushBack(call);
+    }
+
+  virtual Eks::AllocatorBase* allocator() X_OVERRIDE
+    {
+    return &alloc;
+    }
+
+private:
+  Eks::TemporaryAllocator alloc;
+
+  struct Call
+    {
+    Callback cb;
+    void *data;
+    };
+  Eks::Vector<Call> _calls;
   };
 
 S_IMPLEMENT_PROPERTY(Database, Shift)
@@ -164,6 +192,7 @@ Attribute *Database::addDynamicAttribute(
     type->functions().createDynamicInstanceInformation(instanceInfoMem, 0);
 
   prop->_instanceInfo = instanceInfo;
+  xAssert(prop->isDynamic());
 
   if(init)
     {
@@ -200,7 +229,6 @@ Attribute *Database::addDynamicAttribute(
 
   // We call this after adding it to the tree so flags like ParentHasInput are setup at the root.
   initiateAttribute(prop, &helper);
-  xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
 
   helper.treeComplete();
   xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
@@ -269,7 +297,8 @@ void Database::initiateAttributeFromMetaData(
       const xsize dataOffset = childInformation->propertyDataOffset();
       Eks::MemoryResource thisDerivedMem = thisAttrMem.decrememt(dataOffset);
 
-      Attribute *created = childInformation->functions().create(thisDerivedMem);
+      X_USED_FOR_ASSERTS(Attribute *created =)
+        childInformation->functions().create(thisDerivedMem);
       xAssert(created == thisProp);
       }
 
@@ -340,6 +369,8 @@ void Database::initiateAttribute(Attribute *prop, AttributeInitialiserHelper* in
     info = info->parentTypeInformation();
     }
 #endif
+
+  xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
   }
 
 void Database::uninitiateAttribute(Attribute *prop)

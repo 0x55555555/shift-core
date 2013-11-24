@@ -133,7 +133,7 @@ void EmbeddedPropertyInstanceInformation::initiateAttribute(
   {
   if(defaultInput())
     {
-    helper->onTreeReady([this, propertyToInitiate]()
+    helper->onTreeComplete([this, propertyToInitiate]()
       {
       Property *thsProp = propertyToInitiate->uncheckedCastTo<Property>();
       xuint8 *data = (xuint8*)propertyToInitiate;
@@ -294,26 +294,28 @@ void EmbeddedPropertyInstanceInformation::setDefaultValue(const QString &)
 
 void EmbeddedPropertyInstanceInformation::setDefaultInput(const EmbeddedPropertyInstanceInformation *info)
   {
+  xAssert(info != this);
   xAssert(info->childInformation()->inheritsFromType(Property::staticTypeInformation()));
   // find the offset to the holding type information
   Eks::RelativeMemoryResource targetOffset;
   const PropertyInformation *targetBase = info->holdingTypeInformation()->findAllocatableBase(targetOffset);
   (void)targetBase;
   // add the instance location
-  targetOffset.increment(info->location());
+  targetOffset = targetOffset.increment(info->location());
 
   // find the offset to the holding type information
   Eks::RelativeMemoryResource sourceOffset;
   const PropertyInformation *sourceBase = holdingTypeInformation()->findAllocatableBase(sourceOffset);
   (void)sourceBase;
   // add the instance location
-  sourceOffset.increment(location());
+  sourceOffset = sourceOffset.increment(location());
 
   // cannot add a default input between to separate allocatable types.
   xAssert(sourceBase->inheritsFromType(targetBase));
 
   xptrdiff inp = targetOffset.value() - sourceOffset.value();
-  xAssert(inp < X_INT16_MAX && inp > X_INT16_MIN)
+  xAssert(inp < X_INT16_MAX && inp > X_INT16_MIN);
+  xAssert(inp != 0);
   _defaultInput = inp;
 
   xAssert(sourceOffset < sourceBase->format().size());

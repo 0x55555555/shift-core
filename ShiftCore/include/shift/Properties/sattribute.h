@@ -180,7 +180,6 @@ public:
 private:
   X_DISABLE_COPY(Attribute);
 
-  void terminate();
   void internalSetName(const NameArg &name);
 
   const BaseInstanceInformation *_instanceInfo;

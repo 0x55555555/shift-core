@@ -817,7 +817,8 @@ QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
     {
     parentAttr = attributeFromIndex(parent);
     }
-  const PropertyInformation *info = parentAttr->typeInformation();
+  X_USED_FOR_ASSERTS(const PropertyInformation *info =)
+    parentAttr->typeInformation();
   xAssert(info->inheritsFromType(_treeType));
 
   Attribute *children = _childAttr->locate(parentAttr->uncheckedCastTo<Container>());
