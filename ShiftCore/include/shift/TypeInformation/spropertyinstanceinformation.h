@@ -22,6 +22,13 @@ public:
   virtual void initialise(PropertyInstanceInformation*) = 0;
   };
 
+class AttributeInitialiserHelper
+  {
+public:
+  typedef void (*Callback)();
+  virtual void onTreeComplete(Callback cb) = 0;
+  };
+
 // Child information
 class SHIFT_EXPORT PropertyInstanceInformation
   {
@@ -95,7 +102,7 @@ public:
   const EmbeddedPropertyInstanceInformation *resolvePath(const Eks::String &) const;
 
   virtual void setDefaultValue(const QString &);
-  virtual void initiateAttribute(Attribute *propertyToInitiate) const;
+  virtual void initiateAttribute(Attribute *propertyToInitiate, AttributeInitialiserHelper *helper) const;
 
   Attribute *locate(Container *parent) const;
   const Attribute *locate(const Container *parent) const;

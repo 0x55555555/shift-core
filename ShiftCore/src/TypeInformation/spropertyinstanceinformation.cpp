@@ -127,20 +127,25 @@ void EmbeddedPropertyInstanceInformation::destroy(
   PropertyInstanceInformation::destroy(allocator, inst);
   }
 
-void EmbeddedPropertyInstanceInformation::initiateAttribute(Attribute *propertyToInitiate) const
+void EmbeddedPropertyInstanceInformation::initiateAttribute(
+    Attribute *propertyToInitiate,
+    AttributeInitialiserHelper *helper) const
   {
   if(defaultInput())
     {
-    Property *thsProp = propertyToInitiate->uncheckedCastTo<Property>();
-    xuint8 *data = (xuint8*)propertyToInitiate;
+    helper->onTreeReady([this, propertyToInitiate]()
+      {
+      Property *thsProp = propertyToInitiate->uncheckedCastTo<Property>();
+      xuint8 *data = (xuint8*)propertyToInitiate;
 
-    const xuint8 *inputPropertyData = data + defaultInput();
+      const xuint8 *inputPropertyData = data + defaultInput();
 
-    const Property *inputProperty = ((Attribute*)inputPropertyData)->uncheckedCastTo<Property>();
+      const Property *inputProperty = ((Attribute*)inputPropertyData)->uncheckedCastTo<Property>();
 
-    xAssert(inputProperty->isDirty());
-    xAssert(!propertyToInitiate->castTo<Property>() || propertyToInitiate->uncheckedCastTo<Property>()->isDirty());
-    inputProperty->connect(thsProp);
+      xAssert(inputProperty->isDirty());
+      xAssert(!propertyToInitiate->castTo<Property>() || propertyToInitiate->uncheckedCastTo<Property>()->isDirty());
+      inputProperty->connect(thsProp);
+      });
     }
   }
 

@@ -16,7 +16,7 @@ public:
   UuidPropertyInstanceInformation()
     {
     }
-  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE;
+  void initiateAttribute(Attribute *propertyToInitiate, AttributeInitialiserHelper *) const X_OVERRIDE;
 
   QUuid defaultValue() const
     {
@@ -31,7 +31,6 @@ public:
   DataEmbeddedInstanceInformation()
     {
     }
-  void initiateAttribute(Attribute *propertyToInitiate) const { UuidPropertyInstanceInformation::initiateAttribute(propertyToInitiate); }
   };
 
 template<> class DataEmbeddedInstanceInformation<Data<QUuid, FullData>>
@@ -41,7 +40,6 @@ public:
   DataEmbeddedInstanceInformation()
     {
     }
-  void initiateAttribute(Attribute *propertyToInitiate) const { UuidPropertyInstanceInformation::initiateAttribute(propertyToInitiate); }
   };
 }
 

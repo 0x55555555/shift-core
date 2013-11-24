@@ -24,6 +24,15 @@ Q_DECLARE_METATYPE(Eks::Vector<Shift::Attribute *>)
 namespace Shift
 {
 
+class AttributeInitialiserHelperImpl : public AttributeInitialiserHelper
+  {
+public:
+  AttributeInitialiserHelperImpl(Database *db);
+  void treeComplete();
+
+  void onTreeComplete(Callback cb);
+  };
+
 S_IMPLEMENT_PROPERTY(Database, Shift)
 
 void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
@@ -187,11 +196,13 @@ Attribute *Database::addDynamicAttribute(
 
   PropertyDoChange(TreeChange, (Container*)0, parent, prop, index);
 
+  AttributeInitialiserHelperImpl helper(this);
+
   // We call this after adding it to the tree so flags like ParentHasInput are setup at the root.
-  initiateAttribute(prop);
+  initiateAttribute(prop, &helper);
   xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
 
-  postInitiateAttribute(prop);
+  helper.treeComplete();
   xAssert(!prop->castTo<Property>() || prop->uncheckedCastTo<Property>()->isDirty());
 
   return prop;
@@ -228,13 +239,18 @@ void Database::deleteDynamicAttribute(Attribute *prop)
 
 void Database::initiateInheritedDatabaseType(const PropertyInformation *info)
   {
-  _instanceInfoData.setChildInformation(info);
-  initiateAttributeFromMetaData(this, info);
+  AttributeInitialiserHelperImpl helper(this);
 
-  postInitiateAttribute(this);
+  _instanceInfoData.setChildInformation(info);
+  initiateAttributeFromMetaData(this, info, &helper);
+
+  helper.treeComplete();
   }
 
-void Database::initiateAttributeFromMetaData(Container *container, const PropertyInformation *mD)
+void Database::initiateAttributeFromMetaData(
+    Container *container,
+    const PropertyInformation *mD,
+    AttributeInitialiserHelper *helper)
   {
   xAssert(mD);
 
@@ -259,7 +275,7 @@ void Database::initiateAttributeFromMetaData(Container *container, const Propert
 
     thisProp->_instanceInfo = child;
     container->internalSetup(thisProp);
-    initiateAttribute(thisProp);
+    initiateAttribute(thisProp, helper);
     }
   }
 
@@ -285,7 +301,7 @@ void Database::uninitiateAttributeFromMetaData(Container *container, const Prope
   xAssert(container->_dynamicChild == 0);
   }
 
-void Database::initiateAttribute(Attribute *prop)
+void Database::initiateAttribute(Attribute *prop, AttributeInitialiserHelper* initialiser)
   {
   prop->typeInformation()->reference();
 
@@ -302,30 +318,14 @@ void Database::initiateAttribute(Attribute *prop)
       }
 #endif
 
-    initiateAttributeFromMetaData(container, metaData);
-    }
-  }
-
-void Database::postInitiateAttribute(Attribute *prop)
-  {
-  Container *container = prop->castTo<Container>();
-  if(container)
-    {
-    const PropertyInformation *metaData = container->typeInformation();
-    xAssert(metaData);
-
-    xForeach(auto child, metaData->childWalker())
-      {
-      Attribute *thisProp = child->locate(container);
-      postInitiateAttribute(thisProp);
-      }
+    initiateAttributeFromMetaData(container, metaData, initialiser);
     }
 
   if(!prop->isDynamic())
     {
     const EmbeddedPropertyInstanceInformation *inst = prop->embeddedBaseInstanceInformation();
     xAssert(inst);
-    inst->initiateAttribute(prop);
+    inst->initiateAttribute(prop, initialiser);
     }
 
 #ifdef S_PROPERTY_POST_CREATE

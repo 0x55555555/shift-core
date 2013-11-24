@@ -16,6 +16,7 @@ class TemporaryAllocatorCore;
 
 namespace Shift
 {
+class AttributeInitialiserHelper;
 
 /** \brief A database.
 
@@ -83,9 +84,13 @@ private:
 
   DynamicInstanceInformation _instanceInfoData;
 
-  void initiateAttribute(Attribute *);
-  void postInitiateAttribute(Attribute *);
-  void initiateAttributeFromMetaData(Container *prop, const PropertyInformation *mD);
+  void initiateAttribute(
+      Attribute *,
+      AttributeInitialiserHelper* initialiser);
+  void initiateAttributeFromMetaData(
+      Container *prop,
+      const PropertyInformation *mD,
+      AttributeInitialiserHelper *helper);
   void uninitiateAttribute(Attribute *thisProp);
   void uninitiateAttributeFromMetaData(Container *container, const PropertyInformation *mD);
 

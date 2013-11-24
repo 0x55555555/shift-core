@@ -761,9 +761,11 @@ void assignTo(const Attribute *f, Data<QUuid> *to)
     }
   }
 
-void detail::UuidPropertyInstanceInformation::initiateAttribute(Attribute *propertyToInitiate) const
+void detail::UuidPropertyInstanceInformation::initiateAttribute(
+    Attribute *propertyToInitiate,
+    AttributeInitialiserHelper *helper) const
   {
-  Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
+  Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate, helper);
   propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->computeLock() = QUuid::createUuid();
   }
 

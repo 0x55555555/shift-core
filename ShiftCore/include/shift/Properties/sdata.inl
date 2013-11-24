@@ -262,9 +262,9 @@ public:
     detail::getDefault(&_defaultValue);
     }
 
-  void initiateAttribute(Attribute *propertyToInitiate) const X_OVERRIDE
+  void initiateAttribute(Attribute *propertyToInitiate, AttributeInitialiserHelper* helper) const X_OVERRIDE
     {
-    Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate);
+    Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate, helper);
     propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
     }
 

@@ -135,3 +135,35 @@ void ShiftCoreTest::initialiseTest()
 
   // deep default inputs.
   }
+
+void initTest(xsize s)
+  {
+  TestDatabase db;
+
+  QBENCHMARK {
+    for(xsize i = 0; i < s; ++i)
+      {
+      db.addChild<TestEmbeddingEmbedderEntity>();
+      }
+    }
+  }
+
+void ShiftCoreTest::initialiseProfileTest10()
+  {
+  initTest(10);
+  }
+
+void ShiftCoreTest::initialiseProfileTest100()
+  {
+  initTest(100);
+  }
+
+void ShiftCoreTest::initialiseProfileTest1000()
+  {
+  initTest(1000);
+  }
+
+void ShiftCoreTest::initialiseProfileTest10000()
+  {
+  initTest(10000);
+  }
