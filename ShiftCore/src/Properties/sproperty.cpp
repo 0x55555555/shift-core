@@ -8,6 +8,7 @@
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Utilities/satomichelper.h"
 #include "XConvertScriptSTL.h"
+#include "XIntrusiveLinkedList"
 #include <QtConcurrent/QtConcurrentRun>
 
 namespace Shift
@@ -15,66 +16,7 @@ namespace Shift
 
 S_IMPLEMENT_PROPERTY(Property, Shift)
 
-
-template <typename T,
-          T* (T::*Next)>
-          class IntrusiveLinkedList
-  {
-public:
-  static void append(T **start, T *val)
-    {
-    xAssert(!(val->*Next));
-    T **location = start;
-
-    while(*location)
-      {
-      Property **next = &((*location)->*Next);
-
-      xAssert(*next != val);
-      location = next;
-      }
-
-    if(location)
-      {
-      *location = val;
-      }
-    }
-
-  static void remove(T **start, T *val)
-    {
-    T **location = start;
-    while(*location)
-      {
-      xAssert(*location != (*location)->*Next);
-
-      if((*location) == val)
-        {
-        (*location) = (*location)->*Next;
-        break;
-        }
-
-      location = &((*location)->*Next);
-      }
-
-    (*location)->*Next = nullptr;
-    }
-
-  static bool contains(const T *const *start, const T *val)
-    {
-    const Property *const *op = start;
-    while(*op)
-      {
-      if(*op == val)
-        {
-        return true;
-        }
-      op = &((*op)->*Next);
-      }
-
-    return false;
-    }
-  };
-#define OutputLL IntrusiveLinkedList<Property, &Property::_nextOutput>
+#define OutputLL Eks::IntrusiveLinkedListMember<Property, &Property::_nextOutput>
 
 void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
                                       const PropertyInformationCreateData &data)

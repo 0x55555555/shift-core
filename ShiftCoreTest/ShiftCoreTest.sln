@@ -4,9 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "ShiftCoreTest", "..\..\bin\ShiftCoreTest.exe", "{977A0231-6CBE-4959-BDF1-ABF0413AA27C}"
 	ProjectSection(DebuggerProjectSystem) = preProject
 		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = F:\SpaceGame\bin\ShiftCoreTest.exe
+		Executable = C:\Users\Jorj\SpaceGamez\bin\ShiftCoreTest.exe
 		RemoteMachine = MRSWIRLEY
-		StartingDirectory = F:\SpaceGame\bin
+		StartingDirectory = C:\Users\Jorj\SpaceGamez\bin
 		Environment = Default
 		LaunchingEngine = 00000000-0000-0000-0000-000000000000
 		LaunchSQLEngine = No
@@ -18,7 +18,7 @@ Global
 		Debug|x64 = Debug|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{977A0231-6CBE-4959-BDF1-ABF0413AA27C}.Debug|x64.ActiveCfg = Debug|x64
+		{977A0231-6CBE-4959-BDF1-ABF0413AA27C}.Debug|x64.ActiveCfg = Debug
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

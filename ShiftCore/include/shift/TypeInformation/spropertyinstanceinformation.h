@@ -174,6 +174,9 @@ public:
   DynamicPropertyInstanceInformation(const DynamicPropertyInstanceInformation &);
 
   void setInvalidIndex();
+
+private:
+  friend class Container;
   };
 
 inline const EmbeddedPropertyInstanceInformation* PropertyInstanceInformation::embeddedInfo() const

@@ -33,6 +33,7 @@ private Q_SLOTS:
   void tearDownTest();
   void dataTest();
   void createDestroyTest();
+  void insertRemoveTest();
   void simpleOperationTest();
   void simpleDirtyCompute();
   void entityCompute();

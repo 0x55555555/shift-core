@@ -47,10 +47,20 @@ void ShiftCoreTest::tearDownTest()
       QCOMPARE(e->output()->nextOutput()->nextOutput(), &newC->in);
       QCOMPARE(e->output()->nextOutput()->nextOutput()->nextOutput(), nullptr);
 
+      QCOMPARE(e->outputsTo(&newA->in), true);
+      QCOMPARE(e->outputsTo(&newB->in), true);
+      QCOMPARE(e->outputsTo(&newC->in), true);
+
       newA->in.disconnect();
       QCOMPARE(newA->in.input(), nullptr);
+      QCOMPARE(e->outputsTo(&newA->in), false);
+      QCOMPARE(e->outputsTo(&newB->in), true);
+      QCOMPARE(e->outputsTo(&newC->in), true);
       newC->in.disconnect();
       QCOMPARE(newC->in.input(), nullptr);
+      QCOMPARE(e->outputsTo(&newA->in), false);
+      QCOMPARE(e->outputsTo(&newB->in), true);
+      QCOMPARE(e->outputsTo(&newC->in), false);
 
       QCOMPARE(e->output(), &newB->in);
       QCOMPARE(e->output()->nextOutput(), nullptr);
@@ -172,4 +182,34 @@ void ShiftCoreTest::createDestroyTest()
       QCOMPARE(db.children.index(ent), i++);
       }
     }
+  }
+
+void ShiftCoreTest::insertRemoveTest()
+  {
+  TestDatabase db;
+
+  auto a = db.children.add<TestEntity>(0);
+  QCOMPARE(db.children.index(a), 0);
+
+  auto b = db.children.add<TestEntity>(0);
+  QCOMPARE(db.children.index(a), 1);
+  QCOMPARE(db.children.index(b), 0);
+
+  auto c = db.children.add<TestEntity>(1);
+  QCOMPARE(db.children.index(a), 2);
+  QCOMPARE(db.children.index(b), 0);
+  QCOMPARE(db.children.index(c), 1);
+
+
+  auto a2 = db.addProperty<TestEntity>(1);
+  QCOMPARE(db.index(a), 1);
+
+  auto b2 = db.addProperty<TestEntity>(1);
+  QCOMPARE(db.index(a), 2);
+  QCOMPARE(db.index(b), 1);
+
+  auto c2 = db.addProperty<TestEntity>(2);
+  QCOMPARE(db.index(a), 3);
+  QCOMPARE(db.index(b), 1);
+  QCOMPARE(db.index(c), 2);
   }

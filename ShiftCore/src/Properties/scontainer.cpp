@@ -330,53 +330,50 @@ void Container::removeAttribute(Attribute *oldProp)
 
 void Container::internalInsert(Attribute *newProp, xsize index)
   {
+  preGet();
+
   // xAssert(newProp->_entity == 0); may be true because of post init
   DynamicPropertyInstanceInformation *newPropInstInfo =
       const_cast<DynamicPropertyInstanceInformation*>(newProp->dynamicBaseInstanceInformation());
   xAssert(newPropInstInfo->parent() == 0);
   xAssert(newPropInstInfo->nextSibling() == 0);
 
+  newPropInstInfo->setParent(this);
+
   const xuint8 containedProps = containedProperties();
 
   xsize propIndex = 0;
 
-  if(_dynamicChild && index > 0)
+  Attribute **prop = &_dynamicChild;
+  propIndex = containedProperties();
+
+  while(*prop)
     {
-    propIndex = containedProperties();
-    Attribute *prop = _dynamicChild;
-    while(prop)
+    DynamicPropertyInstanceInformation *propInstInfo =
+        const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
+
+
+    if((index == (propIndex+1) && index > containedProps) ||
+       !propInstInfo->nextSibling())
       {
-      DynamicPropertyInstanceInformation *propInstInfo =
-          const_cast<DynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
-
-      if((index == (propIndex+1) && index > containedProps) ||
-         !propInstInfo->nextSibling())
-        {
-        newPropInstInfo->setParent(this);
-
-        propIndex = propInstInfo->index() + 1;
-
-        // insert this prop into the list
-        newPropInstInfo->setNextSibling(propInstInfo->nextSibling());
-        propInstInfo->setNextSibling(newProp);
-        break;
-        }
-      propIndex++;
-      prop = nextDynamicSibling(prop);
+      break;
       }
+
+    propIndex++;
+    xAssert(propIndex == propInstInfo->index());
+    prop = &const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation())->_nextSibling;
     }
-  else
+
+  propIndex++;
+
+  if (prop)
     {
-    newPropInstInfo->setParent(this);
+    DynamicPropertyInstanceInformation *propInstInfo =
+        const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
 
-    if(_dynamicChild)
-      {
-      newPropInstInfo->setNextSibling(_dynamicChild);
-      }
-
-     propIndex = 0;
-
-    _dynamicChild = newProp;
+    // insert this prop into the list
+    newPropInstInfo->setNextSibling(propInstInfo->nextSibling());
+    propInstInfo->setNextSibling(newProp);
     }
 
   DynamicPropertyInstanceInformation *propInstInfo =

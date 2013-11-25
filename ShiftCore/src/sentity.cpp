@@ -87,9 +87,9 @@ Attribute *Entity::addChild(const PropertyInformation *info, const NameArg& name
   return ent;
   }
 
-Attribute *Entity::addProperty(const PropertyInformation *info, const NameArg& name, PropertyInstanceInformationInitialiser *inst)
+Attribute *Entity::addProperty(const PropertyInformation *info, xsize index, const NameArg& name, PropertyInstanceInformationInitialiser *inst)
   {
-  Attribute *p = Container::addAttribute(info, X_SIZE_SENTINEL, name, inst);
+  Attribute *p = Container::addAttribute(info, index, name, inst);
   xAssert(p);
   return p;
   }
