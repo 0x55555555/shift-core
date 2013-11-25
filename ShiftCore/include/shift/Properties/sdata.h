@@ -43,6 +43,8 @@ public:
 
   class DynamicInstanceInformation : public PODParentType::DynamicInstanceInformation { };
 
+  friend class EmbeddedInstanceInformation;
+
   S_PROPERTY(PODPropertyType, PODParentType);
 
 public:

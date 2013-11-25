@@ -313,10 +313,11 @@ void Container::removeAttribute(Attribute *oldProp)
   Block b(db);
 
 #if X_ASSERTS_ENABLED
-  Iterator::ChildTree it(oldProp);
+  Iterator::ChildTree it;
+  it.reset(oldProp);
   xForeach(auto a, it)
     {
-    if(Property *prop = castTo<Property>())
+    if(Property *prop = a->castTo<Property>())
       {
       xAssert(!prop->isUpdating());
       }

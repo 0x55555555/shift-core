@@ -16,6 +16,66 @@ namespace Shift
 S_IMPLEMENT_PROPERTY(Property, Shift)
 
 
+template <typename T,
+          T* (T::*Next)>
+          class IntrusiveLinkedList
+  {
+public:
+  static void append(T **start, T *val)
+    {
+    xAssert(!(val->*Next));
+    T **location = start;
+
+    while(*location)
+      {
+      Property **next = &((*location)->*Next);
+
+      xAssert(*next != val);
+      location = next;
+      }
+
+    if(location)
+      {
+      *location = val;
+      }
+    }
+
+  static void remove(T **start, T *val)
+    {
+    T **location = start;
+    while(*location)
+      {
+      xAssert(*location != (*location)->*Next);
+
+      if((*location) == val)
+        {
+        (*location) = (*location)->*Next;
+        break;
+        }
+
+      location = &((*location)->*Next);
+      }
+
+    (*location)->*Next = nullptr;
+    }
+
+  static bool contains(const T *const *start, const T *val)
+    {
+    const Property *const *op = start;
+    while(*op)
+      {
+      if(*op == val)
+        {
+        return true;
+        }
+      op = &((*op)->*Next);
+      }
+
+    return false;
+    }
+  };
+#define OutputLL IntrusiveLinkedList<Property, &Property::_nextOutput>
+
 void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
                                       const PropertyInformationCreateData &data)
   {
@@ -190,17 +250,7 @@ bool Property::isComputed() const
 
 bool Property::outputsTo(const Property *p) const
   {
-  const Property * const* op = &_output;
-  while(*op)
-    {
-    if(*op == p)
-      {
-      return true;
-      }
-    op = &(*op)->_nextOutput;
-    }
-
-  return false;
+  return OutputLL::contains(&_output, p);
   }
 
 void Property::disconnect() const
@@ -273,6 +323,7 @@ Eks::Vector<Property *> Property::affects()
 
   return ret;
   }
+
 void Property::connectInternal(Property *prop) const
   {
   // prop can't already have an output
@@ -282,21 +333,12 @@ void Property::connectInternal(Property *prop) const
     }
   prop->_input = (Property*)this;
 
-  Property **output = (Property**)&_output;
-  while(*output)
-    {
-    Property **nextOp = &((*output)->_nextOutput);
 
-    xAssert(*nextOp != prop);
-    output = nextOp;
-    }
+  OutputLL::append(const_cast<Property**>(&_output), prop);
 
-  if(output)
-    {
-    *output = prop;
-    }
+#if X_ASSERTS_ENABLED
+  xAssert(outputsTo(prop));
 
-#ifdef X_DEBUG
   const Property *p = this;
   while(p)
     {
@@ -312,23 +354,9 @@ void Property::disconnectInternal(Property *prop) const
 
   prop->_input = 0;
 
-  Property **output = (Property**)&_output;
-  while(*output)
-    {
-    xAssert(*output != (*output)->_nextOutput);
+  OutputLL::remove(const_cast<Property**>(&_output), prop);
 
-    if((*output) == prop)
-      {
-      (*output) = (*output)->_nextOutput;
-      break;
-      }
-
-    output = &((*output)->_nextOutput);
-    }
-
-  prop->_nextOutput = 0;
-
-#ifdef X_DEBUG
+#if X_ASSERTS_ENABLED
   const Property *p = this;
   while(p)
     {

@@ -766,7 +766,11 @@ void detail::UuidPropertyInstanceInformation::initiateAttribute(
     AttributeInitialiserHelper *helper) const
   {
   Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate, helper);
-  propertyToInitiate->uncheckedCastTo<Data<QUuid>>()->computeLock() = QUuid::createUuid();
+
+  NoUpdateBlock b(propertyToInitiate);
+
+  auto obj = propertyToInitiate->uncheckedCastTo<Data<QUuid>>();
+  obj->computeLock() = QUuid::createUuid();
   }
 
 }

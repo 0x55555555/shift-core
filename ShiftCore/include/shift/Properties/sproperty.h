@@ -86,7 +86,7 @@ private:
   enum Flags
     {
     ParentHasInput = 1,
-    ParentHasOutput = 2,
+    ParentHasOutput = 2
     };
   Eks::Flags<Flags, xuint8> _flags;
   xuint8 _dirty;
