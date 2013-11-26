@@ -152,6 +152,8 @@ void ShiftCoreTest::createDestroyTest()
     QCOMPARE(db.children.index(ent), i++);
     }
   }
+  
+  QCOMPARE(db.children.size(), 20);
 
   db.children.remove(db.children.at(4));
   db.children.remove(db.children.at(10));
@@ -164,13 +166,30 @@ void ShiftCoreTest::createDestroyTest()
     QCOMPARE(db.children.index(ent), i++);
     }
   }
+  
+  QCOMPARE(db.children.size(), 17);
 
   Shift::Entity *e1 = db.children.add<TestEntity>(3);
   QCOMPARE(db.children.index(e1), 3);
+  QCOMPARE(db.children.size(), 18);
   Shift::Entity *e2 = db.children.add<TestEntity>(6);
   QCOMPARE(db.children.index(e2), 6);
+  QCOMPARE(db.children.size(), 19);
   Shift::Entity *e3 = db.children.add<TestEntity>(15);
   QCOMPARE(db.children.index(e3), 15);
+  QCOMPARE(db.children.size(), 20);
+  
+  QCOMPARE(db.children.size(), 20);
+
+  {
+  xsize i = 0;
+  xForeach(auto ent, db.children.walker())
+    {
+    (void)ent;
+    ++i;
+    }
+  QCOMPARE(i, 20);
+  }
 
   while(db.children.firstChild())
     {
@@ -202,14 +221,14 @@ void ShiftCoreTest::insertRemoveTest()
 
 
   auto a2 = db.addProperty<TestEntity>(1);
-  QCOMPARE(db.index(a), 1);
+  QCOMPARE(db.index(a2), 1);
 
   auto b2 = db.addProperty<TestEntity>(1);
-  QCOMPARE(db.index(a), 2);
-  QCOMPARE(db.index(b), 1);
+  QCOMPARE(db.index(a2), 2);
+  QCOMPARE(db.index(b2), 1);
 
   auto c2 = db.addProperty<TestEntity>(2);
-  QCOMPARE(db.index(a), 3);
-  QCOMPARE(db.index(b), 1);
-  QCOMPARE(db.index(c), 2);
+  QCOMPARE(db.index(a2), 3);
+  QCOMPARE(db.index(b2), 1);
+  QCOMPARE(db.index(c2), 2);
   }

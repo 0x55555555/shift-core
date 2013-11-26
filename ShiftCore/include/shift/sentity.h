@@ -118,9 +118,9 @@ public:
 
   /// \defgroup addProperty Adding dynamic properties
   /// @{
-  template <typename T>T *addProperty(const NameArg& name="", PropertyInstanceInformationInitialiser *init=0)
+  template <typename T>T *addProperty(xsize index = X_SIZE_SENTINEL, const NameArg& name="", PropertyInstanceInformationInitialiser *init=0)
     {
-    Attribute *p = addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name, init);
+    Attribute *p = addProperty(T::staticTypeInformation(), index, name, init);
     xAssert(p);
 
     return p->uncheckedCastTo<T>();

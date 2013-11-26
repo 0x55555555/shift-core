@@ -340,40 +340,46 @@ void Container::internalInsert(Attribute *newProp, xsize index)
 
   newPropInstInfo->setParent(this);
 
-  const xuint8 containedProps = containedProperties();
-
   xsize propIndex = 0;
 
   Attribute **prop = &_dynamicChild;
   propIndex = containedProperties();
-
-  while(*prop)
+  
+  if(*prop)
     {
-    DynamicPropertyInstanceInformation *propInstInfo =
-        const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
-
-
-    if((index == (propIndex+1) && index > containedProps) ||
-       !propInstInfo->nextSibling())
+    while(*prop && index != propIndex)
       {
-      break;
+#if X_ASSERTS_ENABLED
+      DynamicPropertyInstanceInformation *propInstInfo =
+          const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
+      xAssert(propIndex == propInstInfo->index());
+#endif
+
+      propIndex++;
+      prop = &const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation())->_nextSibling;
       }
 
-    propIndex++;
-    xAssert(propIndex == propInstInfo->index());
-    prop = &const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation())->_nextSibling;
+#if X_ASSERTS_ENABLED
+    if(*prop)
+      {
+      DynamicPropertyInstanceInformation *propInstInfo =
+          const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
+
+      if(index != X_SIZE_SENTINEL &&
+         !propInstInfo->nextSibling())
+        {
+        xAssert(index == propIndex);
+        }
+      }
+#endif
     }
 
-  propIndex++;
-
-  if (prop)
+  if(prop)
     {
-    DynamicPropertyInstanceInformation *propInstInfo =
-        const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
-
+    xAssert(!newPropInstInfo->nextSibling());
     // insert this prop into the list
-    newPropInstInfo->setNextSibling(propInstInfo->nextSibling());
-    propInstInfo->setNextSibling(newProp);
+    newPropInstInfo->setNextSibling(*prop);
+    *prop = newProp;
     }
 
   DynamicPropertyInstanceInformation *propInstInfo =
@@ -383,9 +389,9 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     newPropInstInfo->setIndex(propIndex);
 
     if(!newPropInstInfo->nextSibling())
-    {
+      {
       break;
-    }
+      }
 
     ++propIndex;
     newPropInstInfo =
