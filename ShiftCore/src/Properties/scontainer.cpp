@@ -439,86 +439,31 @@ void Container::internalRemove(Attribute *oldProp)
   {
   xAssert(oldProp);
   xAssert(oldProp->parent() == this);
-  bool removed = false;
 
-  DynamicPropertyInstanceInformation *oldPropInstInfo =
-      const_cast<DynamicPropertyInstanceInformation*>(oldProp->dynamicBaseInstanceInformation());
+  auto oldPropInstInfo = ChildLL::getInstanceInfo(oldProp);
 
-  xsize oldIndex = oldProp->dynamicInstanceInformation()->index();
-  DynamicPropertyInstanceInformation *indexUpdate = 0;
+  xsize oldIndex = oldPropInstInfo->index();
+  Attribute *preRemoved = ChildLL::remove(&_dynamicChild, oldProp);
 
-  if(oldProp == _dynamicChild)
-    {
-    xAssert(containedProperties() == 0);
+  Attribute **indexUpdate = preRemoved ? ChildLL::getNextLocation(preRemoved) : &_dynamicChild;
 
-    _dynamicChild = oldPropInstInfo->nextSibling();
-
-    if(_dynamicChild)
-      {
-      indexUpdate =
-          const_cast<DynamicPropertyInstanceInformation*>(
-            _dynamicChild->dynamicBaseInstanceInformation());
-      }
-
-    removed = true;
-    oldPropInstInfo->setInvalidIndex();
-    }
-  else
-    {
-    xsize propIndex = 0;
-    Attribute *prop = _dynamicChild;
-    while(prop)
-      {
-      DynamicPropertyInstanceInformation *propInstInfo =
-          const_cast<DynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
-
-      if(oldProp == propInstInfo->nextSibling())
-        {
-        xAssert((propIndex+1) >= containedProperties());
-
-        removed = true;
-        oldPropInstInfo->setInvalidIndex();
-
-        auto next = oldPropInstInfo->nextSibling();
-        propInstInfo->setNextSibling(next);
-
-        if(next)
-          {
-          indexUpdate =
-              const_cast<DynamicPropertyInstanceInformation*>(next->dynamicBaseInstanceInformation());
-          }
-
-        break;
-        }
-      propIndex++;
-      prop = nextDynamicSibling(prop);
-      }
-    }
+  xAssert(indexUpdate);
 
   xsize newIndex = oldIndex;
-  while(indexUpdate)
+  while(*indexUpdate)
     {
-    indexUpdate->setIndex(newIndex);
+    ChildLL::getInstanceInfo(*indexUpdate)->setIndex(newIndex++);
 
-    ++newIndex;
-
-    if(!indexUpdate->nextSibling())
-    {
-      break;
-    }
-
-    indexUpdate =
-        const_cast<DynamicPropertyInstanceInformation*>(
-          indexUpdate->nextSibling()->dynamicBaseInstanceInformation());
+    indexUpdate = ChildLL::getNextLocation(*indexUpdate);
     }
 
   internalUnsetup(oldProp);
 
-  xAssert(removed);
   // not dynamic or has a parent
   xAssert(!oldPropInstInfo->isDynamic() || oldPropInstInfo->parent());
-  oldPropInstInfo->setParent(0);
-  oldPropInstInfo->setNextSibling(0);
+  oldPropInstInfo->setParent(nullptr);
+  oldPropInstInfo->setInvalidIndex();
+  xAssert(!oldPropInstInfo->nextSibling());
   }
 
 void Container::internalUnsetup(Attribute *oldProp)
