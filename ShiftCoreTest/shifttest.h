@@ -42,6 +42,7 @@ private Q_SLOTS:
   void initialiseProfileTest100();
   void initialiseProfileTest1000();
   void initialiseProfileTest10000();
+  void serialisationTest();
 
 private:
   Eks::Core core;

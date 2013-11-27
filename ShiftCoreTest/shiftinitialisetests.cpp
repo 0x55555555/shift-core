@@ -165,6 +165,7 @@ void ShiftCoreTest::initialiseProfileTest1000()
 
 void ShiftCoreTest::initialiseProfileTest10000()
   {
-  // disabled temporarily
-  // initTest(10000);
+#ifndef X_DEBUG
+  initTest(10000);
+#endif
   }

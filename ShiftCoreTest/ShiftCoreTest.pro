@@ -21,7 +21,8 @@ SOURCES += \
     shiftcomputetests.cpp \
     shiftbasictests.cpp \
     shifttestcore.cpp \
-    shiftinitialisetests.cpp
+    shiftinitialisetests.cpp \
+    shiftserialisationtests.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 INCLUDEPATH += $$ROOT/shift/GraphicsCore \
