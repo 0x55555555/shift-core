@@ -138,7 +138,12 @@ bool Container::TreeChange::inform(bool back)
   }
 
 Container::Container()
-  : Property(), _dynamicChild(0)
+  : _dynamicChild(nullptr),
+    _lastDynamicChild(nullptr)
+  {
+  }
+
+Container::~Container()
   {
   }
 
@@ -209,10 +214,6 @@ bool Container::contains(const Attribute *child) const
   {
   preGet();
   return child->parent() == this;
-  }
-
-Container::~Container()
-  {
   }
 
 void Container::clear()
@@ -368,7 +369,7 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     newPropInstInfo->setParent(this);
     }
 
-  if (index != X_SIZE_SENTINEL)
+  if(index != X_SIZE_SENTINEL)
     {
     xsize dynamicIndex = index - containedProperties();
     Attribute *justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
@@ -381,8 +382,20 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     }
   else
     {
-    xsize insertedIndex = 0;
-    ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
+    if(_lastDynamicChild)
+      {
+      ChildLL::appendAt(ChildLL::getNextLocation(_lastDynamicChild), newProp);
+      }
+    else
+      {
+      xsize insertedIndex = 0;
+      ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
+      }
+    }
+
+  if(!ChildLL::getNext(newProp))
+    {
+    _lastDynamicChild = newProp;
     }
 
   internalSetup(newProp);
@@ -429,6 +442,18 @@ void Container::internalRemove(Attribute *oldProp)
   xAssert(oldProp->parent() == this);
 
   ChildLL::remove(&_dynamicChild, oldProp);
+
+  if(_lastDynamicChild == oldProp)
+    {
+    _lastDynamicChild = nullptr;
+
+    auto child = _dynamicChild;
+    while(child)
+      {
+      _lastDynamicChild = child;
+      child = ChildLL::getNext(child);
+      }
+    }
 
   internalUnsetup(oldProp);
 
@@ -500,14 +525,19 @@ const Attribute *Container::firstChild() const
 
 Attribute *Container::lastChild()
   {
-  xForeach(auto child, walker())
+  if(_lastDynamicChild)
     {
-    if(!nextDynamicSibling(child))
-      {
-      return child;
-      }
+    return _lastDynamicChild;
     }
-  return 0;
+
+  const PropertyInformation* info = typeInformation();
+  xsize s = info->childCount();
+  if(s == 0)
+    {
+    return nullptr;
+    }
+
+  return info->childFromIndex(s-1)->locate(this);
   }
 
 const Attribute *Container::lastChild() const

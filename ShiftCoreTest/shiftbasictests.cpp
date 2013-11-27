@@ -220,32 +220,109 @@ void ShiftCoreTest::insertRemoveTest()
   auto a = db.children.add<TestEntity>(0);
   QCOMPARE(db.children.index(a), 0);
   QCOMPARE(db.children.size(), 1);
+  QCOMPARE(db.children.firstChild(), a);
+  QCOMPARE(db.children.firstDynamicChild(), a);
+  QCOMPARE(db.children.lastChild(), a);
+  QCOMPARE(db.children.lastDynamicChild(), a);
 
   auto b = db.children.add<TestEntity>(0);
   QCOMPARE(db.children.index(a), 1);
   QCOMPARE(db.children.index(b), 0);
   QCOMPARE(db.children.size(), 2);
+  QCOMPARE(db.children.firstChild(), b);
+  QCOMPARE(db.children.firstDynamicChild(), b);
+  QCOMPARE(db.children.lastChild(), a);
+  QCOMPARE(db.children.lastDynamicChild(), a);
 
   auto c = db.children.add<TestEntity>(1);
   QCOMPARE(db.children.index(a), 2);
   QCOMPARE(db.children.index(b), 0);
   QCOMPARE(db.children.index(c), 1);
   QCOMPARE(db.children.size(), 3);
+  QCOMPARE(db.children.firstChild(), b);
+  QCOMPARE(db.children.firstDynamicChild(), b);
+  QCOMPARE(db.children.lastChild(), a);
+  QCOMPARE(db.children.lastDynamicChild(), a);
+
+  db.children.remove(b);
+  QCOMPARE(db.children.index(a), 1);
+  QCOMPARE(db.children.index(c), 0);
+  QCOMPARE(db.children.size(), 2);
+  QCOMPARE(db.children.firstChild(), c);
+  QCOMPARE(db.children.firstDynamicChild(), c);
+  QCOMPARE(db.children.lastChild(), a);
+  QCOMPARE(db.children.lastDynamicChild(), a);
+
+  db.children.remove(a);
+  QCOMPARE(db.children.index(c), 0);
+  QCOMPARE(db.children.size(), 1);
+  QCOMPARE(db.children.firstChild(), c);
+  QCOMPARE(db.children.firstDynamicChild(), c);
+  QCOMPARE(db.children.lastChild(), c);
+  QCOMPARE(db.children.lastDynamicChild(), c);
+
+  db.children.remove(c);
+  QCOMPARE(db.children.size(), 0);
+  QCOMPARE(db.children.firstChild(), nullptr);
+  QCOMPARE(db.children.firstDynamicChild(), nullptr);
+  QCOMPARE(db.children.lastChild(), nullptr);
+  QCOMPARE(db.children.lastDynamicChild(), nullptr);
   
   QCOMPARE(db.size(), 1);
 
-  auto a2 = db.addProperty<TestEntity>(1);
+  QCOMPARE(db.firstChild(), &db.children);
+  QCOMPARE(db.firstDynamicChild(), nullptr);
+  QCOMPARE(db.lastChild(), &db.children);
+  QCOMPARE(db.lastDynamicChild(), nullptr);
+
+  auto a2 = db.addAttribute<TestEntity>(1);
   QCOMPARE(db.index(a2), 1);
   QCOMPARE(db.size(), 2);
+  QCOMPARE(db.firstChild(), &db.children);
+  QCOMPARE(db.firstDynamicChild(), a2);
+  QCOMPARE(db.lastChild(), a2);
+  QCOMPARE(db.lastDynamicChild(), a2);
 
-  auto b2 = db.addProperty<TestEntity>(1);
+  auto b2 = db.addAttribute<TestEntity>(1);
   QCOMPARE(db.index(a2), 2);
   QCOMPARE(db.index(b2), 1);
   QCOMPARE(db.size(), 3);
+  QCOMPARE(db.firstChild(), &db.children);
+  QCOMPARE(db.firstDynamicChild(), b2);
+  QCOMPARE(db.lastChild(), a2);
+  QCOMPARE(db.lastDynamicChild(), a2);
 
-  auto c2 = db.addProperty<TestEntity>(2);
+  auto c2 = db.addAttribute<TestEntity>(2);
   QCOMPARE(db.index(a2), 3);
   QCOMPARE(db.index(b2), 1);
   QCOMPARE(db.index(c2), 2);
   QCOMPARE(db.size(), 4);
+  QCOMPARE(db.firstChild(), &db.children);
+  QCOMPARE(db.firstDynamicChild(), b2);
+  QCOMPARE(db.lastChild(), a2);
+  QCOMPARE(db.lastDynamicChild(), a2);
+
+  db.removeAttribute(b2);
+  QCOMPARE(db.index(a2), 2);
+  QCOMPARE(db.index(c2), 1);
+  QCOMPARE(db.size(), 3);
+  QCOMPARE(db.firstChild(), &db.children);
+  QCOMPARE(db.firstDynamicChild(), c2);
+  QCOMPARE(db.lastChild(), a2);
+  QCOMPARE(db.lastDynamicChild(), a2);
+
+  db.removeAttribute(a2);
+  QCOMPARE(db.index(c2), 1);
+  QCOMPARE(db.size(), 2);
+  QCOMPARE(db.firstChild(), &db.children);
+  QCOMPARE(db.firstDynamicChild(), c2);
+  QCOMPARE(db.lastChild(), c2);
+  QCOMPARE(db.lastDynamicChild(), c2);
+
+  db.removeAttribute(c2);
+  QCOMPARE(db.size(), 1);
+  QCOMPARE(db.firstChild(), &db.children);
+  QCOMPARE(db.firstDynamicChild(), nullptr);
+  QCOMPARE(db.lastChild(), &db.children);
+  QCOMPARE(db.lastDynamicChild(), nullptr);
   }

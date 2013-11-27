@@ -116,17 +116,17 @@ public:
   Attribute *addChild(const PropertyInformation *info, const NameArg& name=NameArg());
   /// @}
 
-  /// \defgroup addProperty Adding dynamic properties
+  /// \defgroup addAttribute Adding dynamic properties
   /// @{
-  template <typename T>T *addProperty(xsize index = X_SIZE_SENTINEL, const NameArg& name="", PropertyInstanceInformationInitialiser *init=0)
+  template <typename T>T *addAttribute(xsize index = X_SIZE_SENTINEL, const NameArg& name="", PropertyInstanceInformationInitialiser *init=0)
     {
-    Attribute *p = addProperty(T::staticTypeInformation(), index, name, init);
+    Attribute *p = addAttribute(T::staticTypeInformation(), index, name, init);
     xAssert(p);
 
     return p->uncheckedCastTo<T>();
     }
 
-  Attribute *addProperty(const PropertyInformation *info, xsize index = X_SIZE_SENTINEL, const NameArg& name=NameArg(), PropertyInstanceInformationInitialiser *inst=0);
+  Attribute *addAttribute(const PropertyInformation *info, xsize index = X_SIZE_SENTINEL, const NameArg& name=NameArg(), PropertyInstanceInformationInitialiser *inst=0);
   /// @}
 
   /// Remove a dynamic property

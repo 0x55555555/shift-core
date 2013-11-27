@@ -14,7 +14,7 @@ class SHIFT_EXPORT Array : public Container
 public:
   template <typename T> T *add(const NameArg& name)
     {
-    return addProperty(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->template castTo<T>();
+    return addAttribute(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->template castTo<T>();
     }
   template <typename T> T *add(xsize index=X_SIZE_SENTINEL, const NameArg &name=NameArg())
     {

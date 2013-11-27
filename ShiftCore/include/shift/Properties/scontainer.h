@@ -120,6 +120,9 @@ public:
   Attribute *firstDynamicChild() { preGet(); return _dynamicChild; }
   const Attribute *firstDynamicChild() const { preGet(); return _dynamicChild; }
 
+  Attribute *lastDynamicChild() { preGet(); return _lastDynamicChild; }
+  const Attribute *lastDynamicChild() const { preGet(); return _lastDynamicChild; }
+
   template <typename T> const T *nextDynamicSibling(const T *old) const
     {
     return ((Container*)this)->nextDynamicSibling<T>((T*)old);
@@ -216,6 +219,7 @@ private:
   friend void setDependantsDirty(Property* prop, bool force);
 
   Attribute *_dynamicChild;
+  Attribute *_lastDynamicChild;
 
   void makeUniqueName(const Attribute *prop, const NameArg &name, Name &out) const;
   void internalInsert(Attribute *, xsize index);
