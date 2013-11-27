@@ -206,29 +206,38 @@ void ShiftCoreTest::createDestroyTest()
 void ShiftCoreTest::insertRemoveTest()
   {
   TestDatabase db;
+  
+  QCOMPARE(db.children.size(), 0);
 
   auto a = db.children.add<TestEntity>(0);
   QCOMPARE(db.children.index(a), 0);
+  QCOMPARE(db.children.size(), 1);
 
   auto b = db.children.add<TestEntity>(0);
   QCOMPARE(db.children.index(a), 1);
   QCOMPARE(db.children.index(b), 0);
+  QCOMPARE(db.children.size(), 2);
 
   auto c = db.children.add<TestEntity>(1);
   QCOMPARE(db.children.index(a), 2);
   QCOMPARE(db.children.index(b), 0);
   QCOMPARE(db.children.index(c), 1);
-
+  QCOMPARE(db.children.size(), 3);
+  
+  QCOMPARE(db.size(), 1);
 
   auto a2 = db.addProperty<TestEntity>(1);
   QCOMPARE(db.index(a2), 1);
+  QCOMPARE(db.size(), 2);
 
   auto b2 = db.addProperty<TestEntity>(1);
   QCOMPARE(db.index(a2), 2);
   QCOMPARE(db.index(b2), 1);
+  QCOMPARE(db.size(), 3);
 
   auto c2 = db.addProperty<TestEntity>(2);
   QCOMPARE(db.index(a2), 3);
   QCOMPARE(db.index(b2), 1);
   QCOMPARE(db.index(c2), 2);
+  QCOMPARE(db.size(), 4);
   }

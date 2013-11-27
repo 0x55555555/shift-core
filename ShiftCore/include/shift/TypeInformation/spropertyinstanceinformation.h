@@ -176,7 +176,7 @@ public:
   void setInvalidIndex();
 
 private:
-  friend class Container;
+  friend class ChildLL;
   };
 
 inline const EmbeddedPropertyInstanceInformation* PropertyInstanceInformation::embeddedInfo() const

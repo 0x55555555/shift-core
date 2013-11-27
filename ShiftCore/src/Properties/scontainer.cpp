@@ -9,6 +9,7 @@
 #include "shift/Utilities/siterator.h"
 #include "shift/Properties/scontainerinternaliterators.h"
 #include "XStringBuffer"
+#include "XIntrusiveLinkedList"
 
 namespace Shift
 {
@@ -328,75 +329,72 @@ void Container::removeAttribute(Attribute *oldProp)
   PropertyDoChange(TreeChange, this, (Container*)0, oldProp, index(oldProp));
   }
 
+class ChildLL : public Eks::IntrusiveLinkedListBase<Attribute, ChildLL>
+  {
+public:
+  static Attribute **getNextLocation(Attribute *prev)
+    {
+    xAssert(prev);
+    auto instInfo = getInstanceInfo(prev);
+
+    return &instInfo->_nextSibling;
+    }
+  static const Attribute *const *getNextLocation(const Attribute *prev)
+    {
+    const DynamicPropertyInstanceInformation *instInfo = prev->dynamicBaseInstanceInformation();
+
+    return &instInfo->_nextSibling;
+    }
+
+  static DynamicPropertyInstanceInformation *getInstanceInfo(Attribute *prop)
+    {
+    xAssert(prop);
+    DynamicPropertyInstanceInformation *instInfo =
+        const_cast<DynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
+    return instInfo;
+    }
+  };
+
 void Container::internalInsert(Attribute *newProp, xsize index)
   {
   preGet();
 
-  // xAssert(newProp->_entity == 0); may be true because of post init
-  DynamicPropertyInstanceInformation *newPropInstInfo =
-      const_cast<DynamicPropertyInstanceInformation*>(newProp->dynamicBaseInstanceInformation());
-  xAssert(newPropInstInfo->parent() == 0);
-  xAssert(newPropInstInfo->nextSibling() == 0);
-
-  newPropInstInfo->setParent(this);
-
-  xsize propIndex = 0;
-
-  Attribute **prop = &_dynamicChild;
-  propIndex = containedProperties();
-  
-  if(*prop)
+  // setup the new prop's instance info
     {
-    while(*prop && index != propIndex)
-      {
-#if X_ASSERTS_ENABLED
-      DynamicPropertyInstanceInformation *propInstInfo =
-          const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
-      xAssert(propIndex == propInstInfo->index());
-#endif
+    auto newPropInstInfo = ChildLL::getInstanceInfo(newProp);
+    xAssert(newPropInstInfo->parent() == 0);
+    xAssert(newPropInstInfo->nextSibling() == 0);
 
-      propIndex++;
-      prop = &const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation())->_nextSibling;
-      }
-
-#if X_ASSERTS_ENABLED
-    if(*prop)
-      {
-      DynamicPropertyInstanceInformation *propInstInfo =
-          const_cast<DynamicPropertyInstanceInformation*>((*prop)->dynamicBaseInstanceInformation());
-
-      if(index != X_SIZE_SENTINEL &&
-         !propInstInfo->nextSibling())
-        {
-        xAssert(index == propIndex);
-        }
-      }
-#endif
+    newPropInstInfo->setParent(this);
     }
 
-  if(prop)
+  xsize insertedIndex = index;
+  xsize dynamicIndex = index - containedProperties();
+
+
+  Attribute *justBefore = nullptr;
+  if (index != X_SIZE_SENTINEL)
     {
-    xAssert(!newPropInstInfo->nextSibling());
-    // insert this prop into the list
-    newPropInstInfo->setNextSibling(*prop);
-    *prop = newProp;
+    justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
+
+    if (!justBefore && dynamicIndex != 0)
+      {
+      xAssertFail();
+      return;
+      }
+    }
+  else
+    {
+    justBefore = ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
     }
 
-  DynamicPropertyInstanceInformation *propInstInfo =
-      const_cast<DynamicPropertyInstanceInformation*>(newProp->dynamicBaseInstanceInformation());
-  while(propInstInfo)
+  Attribute *after = newProp;
+  while(after)
     {
-    newPropInstInfo->setIndex(propIndex);
+    auto newPropInstInfo = ChildLL::getInstanceInfo(after);
 
-    if(!newPropInstInfo->nextSibling())
-      {
-      break;
-      }
-
-    ++propIndex;
-    newPropInstInfo =
-        const_cast<DynamicPropertyInstanceInformation*>(
-          newPropInstInfo->nextSibling()->dynamicBaseInstanceInformation());
+    newPropInstInfo->setIndex(insertedIndex++);
+    after = ChildLL::getNext(after);
     }
 
   internalSetup(newProp);

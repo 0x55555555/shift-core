@@ -275,8 +275,8 @@ void Property::connectInternal(Property *prop) const
     }
   prop->_input = (Property*)this;
 
-
-  OutputLL::append(const_cast<Property**>(&_output), prop);
+  xsize insertedIndex = 0;
+  OutputLL::append(const_cast<Property**>(&_output), prop, &insertedIndex);
 
 #if X_ASSERTS_ENABLED
   xAssert(outputsTo(prop));
