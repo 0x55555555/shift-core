@@ -368,14 +368,10 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     newPropInstInfo->setParent(this);
     }
 
-  xsize insertedIndex = index;
-  xsize dynamicIndex = index - containedProperties();
-
-
-  Attribute *justBefore = nullptr;
   if (index != X_SIZE_SENTINEL)
     {
-    justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
+    xsize dynamicIndex = index - containedProperties();
+    Attribute *justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
 
     if (!justBefore && dynamicIndex != 0)
       {
@@ -385,16 +381,8 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     }
   else
     {
-    justBefore = ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
-    }
-
-  Attribute *after = newProp;
-  while(after)
-    {
-    auto newPropInstInfo = ChildLL::getInstanceInfo(after);
-
-    newPropInstInfo->setIndex(insertedIndex++);
-    after = ChildLL::getNext(after);
+    xsize insertedIndex = 0;
+    ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
     }
 
   internalSetup(newProp);
@@ -440,29 +428,14 @@ void Container::internalRemove(Attribute *oldProp)
   xAssert(oldProp);
   xAssert(oldProp->parent() == this);
 
-  auto oldPropInstInfo = ChildLL::getInstanceInfo(oldProp);
-
-  xsize oldIndex = oldPropInstInfo->index();
-  Attribute *preRemoved = ChildLL::remove(&_dynamicChild, oldProp);
-
-  Attribute **indexUpdate = preRemoved ? ChildLL::getNextLocation(preRemoved) : &_dynamicChild;
-
-  xAssert(indexUpdate);
-
-  xsize newIndex = oldIndex;
-  while(*indexUpdate)
-    {
-    ChildLL::getInstanceInfo(*indexUpdate)->setIndex(newIndex++);
-
-    indexUpdate = ChildLL::getNextLocation(*indexUpdate);
-    }
+  ChildLL::remove(&_dynamicChild, oldProp);
 
   internalUnsetup(oldProp);
 
   // not dynamic or has a parent
+  auto oldPropInstInfo = ChildLL::getInstanceInfo(oldProp);
   xAssert(!oldPropInstInfo->isDynamic() || oldPropInstInfo->parent());
   oldPropInstInfo->setParent(nullptr);
-  oldPropInstInfo->setInvalidIndex();
   xAssert(!oldPropInstInfo->nextSibling());
   }
 
@@ -482,17 +455,8 @@ const Attribute *Container::at(xsize i) const
 
 Attribute *Container::at(xsize i)
   {
-#if X_ASSERTS_ENABLED
-  xsize idx = 0;
-#endif
-
   xForeach(auto x, walker())
     {
-#if X_ASSERTS_ENABLED
-    xAssert(index(x) == idx);
-    ++idx;
-#endif
-
     if(!i)
       {
       return x;
@@ -551,7 +515,6 @@ const Attribute *Container::lastChild() const
   return ((Container*)this)->lastChild();
   }
 
-
 xsize Container::index(const Attribute* prop) const
   {
   SProfileFunction
@@ -560,7 +523,15 @@ xsize Container::index(const Attribute* prop) const
   const PropertyInstanceInformation* bInfo = prop->baseInstanceInformation();
   if(bInfo->isDynamic())
     {
-    return bInfo->dynamicInfo()->index();
+    xsize idx = containedProperties();
+    auto child = _dynamicChild;
+    while(child && child != prop)
+      {
+      ++idx;
+      child = child->dynamicBaseInstanceInformation()->nextSibling();
+      }
+
+    return idx;
     }
 
   return bInfo->embeddedInfo()->index();

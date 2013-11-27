@@ -141,6 +141,14 @@ void ShiftCoreTest::createDestroyTest()
   for(xsize i = 0; i < 20; ++i)
     {
     TestEntity *ent = db.addChild<TestEntity>();
+    
+    xsize idx = 0;
+    xForeach(auto x, db.children.walker())
+      {
+      QCOMPARE(db.children.index(x), idx);
+      ++idx;
+      }
+
     QCOMPARE(db.children.at(i), ent);
     QCOMPARE(db.children.index(ent), i);
     }

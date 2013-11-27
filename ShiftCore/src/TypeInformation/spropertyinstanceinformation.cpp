@@ -366,14 +366,8 @@ DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation(
     const DynamicPropertyInstanceInformation &o)
     : PropertyInstanceInformation(o),
     _parent(0),
-    _nextSibling(0),
-    _index(o._index)
+    _nextSibling(0)
   {
-  }
-
-void DynamicPropertyInstanceInformation::setInvalidIndex()
-  {
-  setIndex(X_SIZE_SENTINEL);
   }
 
 }

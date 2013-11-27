@@ -165,15 +165,12 @@ public:
 class SHIFT_EXPORT DynamicPropertyInstanceInformation : public PropertyInstanceInformation
   {
   // Dynamic Instance
-  XProperty(xsize, index, setIndex);
   XProperty(Container *, parent, setParent)
   XProperty(Attribute *, nextSibling, setNextSibling)
 
 public:
   DynamicPropertyInstanceInformation();
   DynamicPropertyInstanceInformation(const DynamicPropertyInstanceInformation &);
-
-  void setInvalidIndex();
 
 private:
   friend class ChildLL;
