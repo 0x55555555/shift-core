@@ -326,3 +326,11 @@ void ShiftCoreTest::insertRemoveTest()
   QCOMPARE(db.lastChild(), &db.children);
   QCOMPARE(db.lastDynamicChild(), nullptr);
   }
+
+void ShiftCoreTest::reparentTest()
+  {
+  TestDatabase db;
+
+  auto a = db.addChild<TestEntity>();
+  auto b = db.addChild<TestEntity>();
+  }
