@@ -6,6 +6,7 @@
 #include "shift/Changes/shandler.inl"
 #include "shift/Properties/scontainerinternaliterators.h"
 #include "shift/Changes/spropertychanges.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/Utilities/satomichelper.h"
 #include "XConvertScriptSTL.h"
 #include "XIntrusiveLinkedList"
@@ -333,14 +334,6 @@ void Property::setDirty()
     _dirty = true;
 
     setDependantsDirty();
-
-#ifdef S_CENTRAL_CHANGE_HANDLER
-    Entity *ent = entity();
-    if(ent)
-      {
-      ent->informDirtyObservers(this);
-      }
-#endif
     }
   }
 

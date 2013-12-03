@@ -39,10 +39,8 @@ private Q_SLOTS:
   void simpleDirtyCompute();
   void entityCompute();
   void initialiseTest();
-  void initialiseProfileTest10();
-  void initialiseProfileTest100();
-  void initialiseProfileTest1000();
-  void initialiseProfileTest10000();
+  void initialiseProfileTest();
+  void initialiseProfileTest_data();
   void serialisationTest();
 
 private:

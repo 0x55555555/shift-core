@@ -4,6 +4,7 @@
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Properties/scontaineriterators.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/Serialisation/sjsonio.h"
 #include "xqtwrappers.h"
 #include "XConvertScriptSTL.h"
@@ -223,7 +224,7 @@ Attribute *Database::addDynamicAttribute(
     name.toName(((PropertyInstanceInformation*)prop->_instanceInfo)->name());
     }
 
-  PropertyDoChange(TreeChange, (Container*)0, parent, prop, index);
+  PropertyDoChange(ContainerTreeChange, (Container*)0, parent, prop, index);
 
   AttributeInitialiserHelperImpl helper(this);
 

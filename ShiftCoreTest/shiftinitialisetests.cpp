@@ -1,6 +1,7 @@
 #include "shifttest.h"
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/scontaineriterators.h"
+#include <memory>
 
 // THIS SHOULD FAIL TO COMPILE IF ADDED
 #define TEST_FAILING_TO_EMBED_DYNAMICx
@@ -136,36 +137,81 @@ void ShiftCoreTest::initialiseTest()
   // deep default inputs.
   }
 
-void initTest(xsize s)
+void ShiftCoreTest::initialiseProfileTest_data()
   {
-  TestDatabase db;
+  QTest::addColumn<int>("count");
+  QTest::addColumn<bool>("timeTearDown");
+  QTest::addColumn<bool>("timeDbCtorDtor");
+  QTest::addColumn<bool>("optimiseInsert");
+  
+  QTest::newRow("1    D") << 1     << true  << true  << true ;
+  QTest::newRow("10   D") << 10    << true  << true  << true ;
+  QTest::newRow("100  D") << 100   << true  << true  << true ;
+  QTest::newRow("1000 D") << 1000  << true  << true  << true ;
+#ifndef X_DEBUG
+  QTest::newRow("10000D") << 10000 << true  << true  << true ;
+#endif
+
+  QTest::newRow("1    A") << 1     << false << false << false;
+  QTest::newRow("10   A") << 10    << false << false << false;
+  QTest::newRow("100  A") << 100   << false << false << false;
+  QTest::newRow("1000 A") << 1000  << false << false << false;
+#ifndef X_DEBUG
+  QTest::newRow("10000A") << 10000 << false << false << false;
+#endif
+
+  QTest::newRow("1    B") << 1     << true  << false << false;
+  QTest::newRow("10   B") << 10    << true  << false << false;
+  QTest::newRow("100  B") << 100   << true  << false << false;
+  QTest::newRow("1000 B") << 1000  << true  << false << false;
+#ifndef X_DEBUG
+  QTest::newRow("10000B") << 10000 << true  << false << false;
+#endif
+
+  QTest::newRow("1    C") << 1     << true  << true  << false;
+  QTest::newRow("10   C") << 10    << true  << true  << false;
+  QTest::newRow("100  C") << 100   << true  << true  << false;
+  QTest::newRow("1000 C") << 1000  << true  << true  << false;
+#ifndef X_DEBUG
+  QTest::newRow("10000C") << 10000 << true  << true  << false;
+#endif
+
+  }
+
+void ShiftCoreTest::initialiseProfileTest()
+  {
+  QFETCH(int, count);
+  QFETCH(bool, timeTearDown);
+  QFETCH(bool, timeDbCtorDtor);
+  QFETCH(bool, optimiseInsert);
+
+  auto createDb = [timeDbCtorDtor]() { return std::unique_ptr<TestDatabase>(new TestDatabase()); };
+
+  auto db = timeDbCtorDtor ? nullptr : createDb();
 
   QBENCHMARK {
-    for(xsize i = 0; i < s; ++i)
+    if (timeDbCtorDtor)
       {
-      db.addChild<TestEmbeddingEmbedderEntity>();
+      db = createDb();
+      }
+
+    Eks::TemporaryAllocator alloc(db->children.temporaryAllocator());
+    auto editCache = optimiseInsert ? db->children.createEditCache(&alloc) : nullptr;
+    (void)editCache;
+
+    for(xsize i = 0; i < count; ++i)
+      {
+      db->addChild<TestEmbeddingEmbedderEntity>();
+      }
+
+    if (timeTearDown)
+      {
+      db->children.clear();
+      }
+
+    if (timeDbCtorDtor)
+      {
+      db = nullptr;
       }
     }
-  }
-
-void ShiftCoreTest::initialiseProfileTest10()
-  {
-  initTest(10);
-  }
-
-void ShiftCoreTest::initialiseProfileTest100()
-  {
-  initTest(100);
-  }
-
-void ShiftCoreTest::initialiseProfileTest1000()
-  {
-  initTest(1000);
-  }
-
-void ShiftCoreTest::initialiseProfileTest10000()
-  {
-#ifndef X_DEBUG
-  initTest(10000);
-#endif
   }

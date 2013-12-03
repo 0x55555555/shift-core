@@ -7,6 +7,7 @@
 #include "QtWidgets/QGraphicsSceneMouseEvent"
 #include "shift/sdatabase.h"
 #include "shift/Properties/sproperty.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/sinterfaces.h"

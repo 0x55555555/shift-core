@@ -24,16 +24,14 @@ void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
     {
     auto api = info->apiInterface();
 
-    static XScript::ClassDef<0,0,7> cls = {
+    static XScript::ClassDef<0,0,5> cls = {
       {
       api->method<Attribute* (const PropertyInformation *, const NameArg &), &Entity::addChild>("addChild"),
 
       api->method<void (TreeObserver*), &Entity::addTreeObserver>("addTreeObserver"),
-      api->method<void (DirtyObserver*), &Entity::addDirtyObserver>("addDirtyObserver"),
       api->method<void (ConnectionObserver*), &Entity::addConnectionObserver>("addConnectionObserver"),
 
       api->method<void (TreeObserver*), &Entity::removeTreeObserver>("removeTreeObserver"),
-      api->method<void (DirtyObserver*), &Entity::removeDirtyObserver>("removeDirtyObserver"),
       api->method<void (ConnectionObserver*), &Entity::removeConnectionObserver>("removeConnectionObserver")
       }
     };
@@ -159,17 +157,6 @@ void Entity::setupObservers()
     }
   }
 
-void Entity::addDirtyObserver(DirtyObserver *in)
-  {
-  setupObservers();
-
-  ObserverStruct s;
-  s.mode = ObserverStruct::Dirty;
-  s.observer = in;
-  in->_entities << this;
-  _observers << s;
-  }
-
 void Entity::addTreeObserver(TreeObserver *in)
   {
   setupObservers();
@@ -193,11 +180,6 @@ void Entity::addConnectionObserver(ConnectionObserver *in)
   _observers << s;
   }
 
-void Entity::removeDirtyObserver(DirtyObserver *in)
-  {
-  removeObserver(in);
-  }
-
 void Entity::removeTreeObserver(TreeObserver *in)
   {
   removeObserver(in);
@@ -218,20 +200,6 @@ void Entity::removeObserver(Observer *in)
       xRemoveAll(obs->_entities, this);
       _observers.removeAt(x);
       --x;
-      }
-    }
-  }
-
-void Entity::informDirtyObservers(Property *prop)
-  {
-  SProfileFunction
-  Q_FOREACH(const ObserverStruct &obs, _observers)
-    {
-    if(obs.mode == ObserverStruct::Dirty)
-      {
-      DirtyObserver *observer = ((DirtyObserver*)obs.observer);
-      observer->onPropertyDirtied(prop);
-      handler()->currentBlockObserverList() << observer;
       }
     }
   }

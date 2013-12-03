@@ -1,7 +1,9 @@
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Properties/scontainerinternaliterators.h"
 #include "shift/Properties/sproperty.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/sentity.h"
+#include "shift/sdatabase.h"
 #include "XEventLogger"
 
 namespace Shift
@@ -174,6 +176,91 @@ void Property::ConnectionChange::clearParentHasOutputConnection(Property *prop)
         }
       }
     }
+  }
+ContainerTreeChange::ContainerTreeChange(Container *b, Container *a, Attribute *ent, xsize index)
+  : _before(b), _after(a), _attribute(ent), _index(index), _owner(false)
+  {
+  }
+
+ContainerTreeChange::~ContainerTreeChange()
+  {
+  if(_owner)
+    {
+    if(after(false))
+      {
+      after(false)->database()->deleteDynamicAttribute(_attribute);
+      }
+    else if(before(false))
+      {
+      before(false)->database()->deleteDynamicAttribute(_attribute);
+      }
+    else
+      {
+      xAssertFailMessage("No parents?");
+      }
+    }
+  }
+
+bool ContainerTreeChange::apply()
+  {
+  SProfileFunction
+
+  // its possible the tree is computed, but we are trying to insert into it.
+  // its also possible this node is part of a ParentHasInput chain.
+  // either way, rather than post setting this node, leaving a gaping hole in
+  // the dirty chain, we pre get and post set, ensuring dirty flags are correct.
+
+  if(before(false))
+    {
+    _owner = true;
+    before()->preGet();
+    before()->internalRemove(property());
+    before()->postSet();
+    }
+
+  if(after(false))
+    {
+    _owner = false;
+    after()->preGet();
+    after()->internalInsert(property(), _index);
+    after()->postSet();
+    }
+  return true;
+  }
+
+bool ContainerTreeChange::unApply()
+  {
+  SProfileFunction
+  if(after())
+    {
+    _owner = true;
+    after()->internalRemove(property());
+    after()->postSet();
+    }
+
+  if(before())
+    {
+    _owner = false;
+    before()->internalInsert(property(), _index);
+    before()->postSet();
+    }
+  return true;
+  }
+
+bool ContainerTreeChange::inform(bool back)
+  {
+  SProfileFunction
+  if(after() && (!before() || !before()->isDescendedFrom(after())))
+    {
+    xAssert(property()->entity());
+    property()->entity()->informTreeObservers(this, back);
+    }
+
+  if(before() && (!after() || !after()->isDescendedFrom(before())))
+    {
+    before()->entity()->informTreeObservers(this, back);
+    }
+  return true;
   }
 
 }

@@ -34,14 +34,9 @@ public:
     xAssert(_value);
     _entity = _value->entity();
     xAssert(_entity);
-    _entity->addDirtyObserver(this);
     }
   ~SUIBase()
     {
-    if(_entity)
-      {
-      _entity->removeDirtyObserver(this);
-      }
     }
 
   T *propertyValue() {return _value;}

@@ -333,4 +333,6 @@ void ShiftCoreTest::reparentTest()
 
   auto a = db.addChild<TestEntity>();
   auto b = db.addChild<TestEntity>();
+
+  QVERIFY(a != b);
   }

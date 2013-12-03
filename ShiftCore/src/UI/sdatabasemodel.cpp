@@ -1,5 +1,6 @@
 #include "shift/UI/sdatabasemodel.h"
 #include "shift/Properties/scontaineriterators.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/sentity.h"
@@ -601,7 +602,7 @@ QModelIndex DatabaseModel::parent( const QModelIndex &child ) const
 
 void DatabaseModel::onTreeChange(const Change *c, bool back)
   {
-  const Entity::TreeChange *tC = c->castTo<Entity::TreeChange>();
+  const ContainerTreeChange *tC = c->castTo<ContainerTreeChange>();
   if(tC)
     {
     xAssert(!_currentTreeChange);

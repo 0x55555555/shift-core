@@ -154,16 +154,13 @@ public:
 
   /// \defgroup Observers Add and remove Observers of this Entity.
   /// @{
-  void addDirtyObserver(DirtyObserver *);
   void addTreeObserver(TreeObserver *);
   void addConnectionObserver(ConnectionObserver *);
 
-  void removeDirtyObserver(DirtyObserver *);
   void removeTreeObserver(TreeObserver *);
   void removeConnectionObserver(ConnectionObserver *);
   void removeObserver(Observer *);
 
-  void informDirtyObservers(Property *prop);
   void informTreeObservers(const Change *event, bool backwards);
   void informConnectionObservers(const Change *event, bool backwards);
   /// @}

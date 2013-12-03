@@ -1,5 +1,6 @@
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Properties/sbaseproperties.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/Changes/shandler.inl"

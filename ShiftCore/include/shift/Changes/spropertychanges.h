@@ -7,6 +7,8 @@
 namespace Shift
 {
 
+class Container;
+
 class PropertyDataChange : public Change
   {
   S_CHANGE(PropertyDataChange, Change, Change::BaseDataChange)
@@ -91,6 +93,59 @@ private:
   Property *_driver;
   Property *_driven;
   Mode _mode;
+  bool apply();
+  bool unApply();
+  bool inform(bool back);
+  };
+
+class ContainerTreeChange : public Change
+  {
+  S_CHANGE(ContainerTreeChange, Change, Change::TreeChange)
+public:
+  ContainerTreeChange(Container *b, Container *a, Attribute *ent, xsize index);
+  ~ContainerTreeChange();
+  Container *before(bool back=false)
+    {
+    if(back)
+      {
+      return _after;
+      }
+    return _before;
+    }
+  const Container *before(bool back=false) const
+    {
+    if(back)
+      {
+      return _after;
+      }
+    return _before;
+    }
+  Container *after(bool back=false)
+    {
+    if(back)
+      {
+      return _before;
+      }
+    return _after;
+    }
+  const Container *after(bool back=false) const
+    {
+    if(back)
+      {
+      return _before;
+      }
+    return _after;
+    }
+
+  Attribute *property() const {return _attribute;}
+  xsize index() const { return _index; }
+
+private:
+  Container *_before;
+  Container *_after;
+  Attribute *_attribute;
+  xsize _index;
+  bool _owner;
   bool apply();
   bool unApply();
   bool inform(bool back);

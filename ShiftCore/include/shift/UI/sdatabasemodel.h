@@ -114,7 +114,7 @@ public:
 
 private:
   Options _options;
-  const Container::TreeChange *_currentTreeChange;
+  const ContainerTreeChange *_currentTreeChange;
   };
 
 

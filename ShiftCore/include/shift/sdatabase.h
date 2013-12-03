@@ -102,7 +102,7 @@ private:
 
   friend class Property;
   friend class Container;
-  friend class Container::TreeChange;
+  friend class ContainerTreeChange;
   };
 
 }

@@ -1,4 +1,5 @@
 #include "shift/Properties/scontainer.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/sdatabase.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
@@ -49,92 +50,6 @@ void Container::createTypeInformation(PropertyInformationTyped<Container> *info,
 
     api->buildInterface(cls);
     }
-  }
-
-Container::TreeChange::TreeChange(Container *b, Container *a, Attribute *ent, xsize index)
-  : _before(b), _after(a), _attribute(ent), _index(index), _owner(false)
-  {
-  }
-
-Container::TreeChange::~TreeChange()
-  {
-  if(_owner)
-    {
-    if(after(false))
-      {
-      after(false)->database()->deleteDynamicAttribute(_attribute);
-      }
-    else if(before(false))
-      {
-      before(false)->database()->deleteDynamicAttribute(_attribute);
-      }
-    else
-      {
-      xAssert(0 && "No parents?");
-      }
-    }
-  }
-
-bool Container::TreeChange::apply()
-  {
-  SProfileFunction
-
-  // its possible the tree is computed, but we are trying to insert into it.
-  // its also possible this node is part of a ParentHasInput chain.
-  // either way, rather than post setting this node, leaving a gaping hole in
-  // the dirty chain, we pre get and post set, ensuring dirty flags are correct.
-
-  if(before(false))
-    {
-    _owner = true;
-    before()->preGet();
-    before()->internalRemove(property());
-    before()->postSet();
-    }
-
-  if(after(false))
-    {
-    _owner = false;
-    after()->preGet();
-    after()->internalInsert(property(), _index);
-    after()->postSet();
-    }
-  return true;
-  }
-
-bool Container::TreeChange::unApply()
-  {
-  SProfileFunction
-  if(after())
-    {
-    _owner = true;
-    after()->internalRemove(property());
-    after()->postSet();
-    }
-
-  if(before())
-    {
-    _owner = false;
-    before()->internalInsert(property(), _index);
-    before()->postSet();
-    }
-  return true;
-  }
-
-bool Container::TreeChange::inform(bool back)
-  {
-  SProfileFunction
-  if(after() && (!before() || !before()->isDescendedFrom(after())))
-    {
-    xAssert(property()->entity());
-    property()->entity()->informTreeObservers(this, back);
-    }
-
-  if(before() && (!after() || !after()->isDescendedFrom(before())))
-    {
-    before()->entity()->informTreeObservers(this, back);
-    }
-  return true;
   }
 
 Container::Container()
@@ -294,11 +209,11 @@ void Container::moveAttribute(Container *c, Attribute *p)
     Name newName;
     c->makeUniqueName(p, name, newName);
     p->setName(newName);
-    PropertyDoChange(TreeChange, this, c, p, X_UINT8_SENTINEL);
+    PropertyDoChange(ContainerTreeChange, this, c, p, X_UINT8_SENTINEL);
     }
   else
     {
-    PropertyDoChange(TreeChange, this, c, p, X_UINT8_SENTINEL);
+    PropertyDoChange(ContainerTreeChange, this, c, p, X_UINT8_SENTINEL);
     }
   }
 
@@ -327,150 +242,7 @@ void Container::removeAttribute(Attribute *oldProp)
 #endif
 
   disconnectHelper(oldProp);
-  PropertyDoChange(TreeChange, this, (Container*)0, oldProp, index(oldProp));
-  }
-
-class ChildLL : public Eks::IntrusiveLinkedListBase<Attribute, ChildLL>
-  {
-public:
-  static Attribute **getNextLocation(Attribute *prev)
-    {
-    xAssert(prev);
-    auto instInfo = getInstanceInfo(prev);
-
-    return &instInfo->_nextSibling;
-    }
-  static const Attribute *const *getNextLocation(const Attribute *prev)
-    {
-    const DynamicPropertyInstanceInformation *instInfo = prev->dynamicBaseInstanceInformation();
-
-    return &instInfo->_nextSibling;
-    }
-
-  static DynamicPropertyInstanceInformation *getInstanceInfo(Attribute *prop)
-    {
-    xAssert(prop);
-    DynamicPropertyInstanceInformation *instInfo =
-        const_cast<DynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
-    return instInfo;
-    }
-  };
-
-void Container::internalInsert(Attribute *newProp, xsize index)
-  {
-  preGet();
-
-  // setup the new prop's instance info
-    {
-    auto newPropInstInfo = ChildLL::getInstanceInfo(newProp);
-    xAssert(newPropInstInfo->parent() == 0);
-    xAssert(newPropInstInfo->nextSibling() == 0);
-
-    newPropInstInfo->setParent(this);
-    }
-
-  if(index != X_SIZE_SENTINEL)
-    {
-    xsize dynamicIndex = index - containedProperties();
-    Attribute *justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
-
-    if (!justBefore && dynamicIndex != 0)
-      {
-      xAssertFail();
-      return;
-      }
-    }
-  else
-    {
-    if(_lastDynamicChild)
-      {
-      ChildLL::appendAt(ChildLL::getNextLocation(_lastDynamicChild), newProp);
-      }
-    else
-      {
-      xsize insertedIndex = 0;
-      ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
-      }
-    }
-
-  if(!ChildLL::getNext(newProp))
-    {
-    _lastDynamicChild = newProp;
-    }
-
-  internalSetup(newProp);
-  }
-
-void Container::internalSetup(Attribute *newProp)
-  {
-  // set up state info
-#ifdef S_CENTRAL_CHANGE_HANDLER
-  if (Entity *ent = newProp->castTo<Entity>())
-    {
-    ent->_handler = Handler::findHandler(this, ent);
-    }
-#else
-  Entity *ent = newProp->castTo<Entity>();
-  if(ent)
-    {
-    xAssert(database());
-    ent->_database = database();
-    }
-#endif
-
-  // is any prop in
-  if(Property *prop = newProp->castTo<Property>())
-    {
-    bool parentComputed = isComputed() || _flags.hasFlag(ParentHasInput);
-    if(input() || parentComputed)
-      {
-      prop->_flags.setFlag(ParentHasInput);
-      }
-
-    bool parentAffects = !isDynamic() && embeddedInstanceInformation()->affectsSiblings();
-    if(output() || parentAffects || _flags.hasFlag(ParentHasOutput))
-      {
-      prop->_flags.setFlag(ParentHasOutput);
-      }
-    }
-  xAssert(newProp->parent());
-  }
-
-void Container::internalRemove(Attribute *oldProp)
-  {
-  xAssert(oldProp);
-  xAssert(oldProp->parent() == this);
-
-  ChildLL::remove(&_dynamicChild, oldProp);
-
-  if(_lastDynamicChild == oldProp)
-    {
-    _lastDynamicChild = nullptr;
-
-    auto child = _dynamicChild;
-    while(child)
-      {
-      _lastDynamicChild = child;
-      child = ChildLL::getNext(child);
-      }
-    }
-
-  internalUnsetup(oldProp);
-
-  // not dynamic or has a parent
-  auto oldPropInstInfo = ChildLL::getInstanceInfo(oldProp);
-  xAssert(!oldPropInstInfo->isDynamic() || oldPropInstInfo->parent());
-  oldPropInstInfo->setParent(nullptr);
-  xAssert(!oldPropInstInfo->nextSibling());
-  }
-
-void Container::internalUnsetup(Attribute *oldProp)
-  {
-  if (Property *prop = oldProp->castTo<Property>())
-    {
-    Property::ConnectionChange::clearParentHasInputConnection(prop);
-    Property::ConnectionChange::clearParentHasOutputConnection(prop);
-    }
+  PropertyDoChange(ContainerTreeChange, this, (Container*)0, oldProp, index(oldProp));
   }
 
 const Attribute *Container::at(xsize i) const
@@ -565,6 +337,169 @@ xsize Container::index(const Attribute* prop) const
     }
 
   return bInfo->embeddedInfo()->index();
+  }
+class ChildLL : public Eks::IntrusiveLinkedListBase<Attribute, ChildLL>
+  {
+public:
+  static Attribute **getNextLocation(Attribute *prev)
+    {
+    xAssert(prev);
+    auto instInfo = getInstanceInfo(prev);
+
+    return &instInfo->_nextSibling;
+    }
+  static const Attribute *const *getNextLocation(const Attribute *prev)
+    {
+    const DynamicPropertyInstanceInformation *instInfo = prev->dynamicBaseInstanceInformation();
+
+    return &instInfo->_nextSibling;
+    }
+
+  static DynamicPropertyInstanceInformation *getInstanceInfo(Attribute *prop)
+    {
+    xAssert(prop);
+    DynamicPropertyInstanceInformation *instInfo =
+        const_cast<DynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
+    return instInfo;
+    }
+  };
+
+class Container::EditCache
+  {
+XProperties:
+  XROProperty(const Container *, container)
+  XROProperty(Eks::AllocatorBase *, allocator)
+
+public:
+  EditCache(const Container *c, Eks::AllocatorBase *a)
+      : _container(c), _allocator(a)
+    {
+    }
+  };
+
+Eks::UniquePointer<Container::EditCache> Container::createEditCache(Eks::AllocatorBase *alloc) const
+  {
+  return alloc->createUnique<EditCache>(this, alloc);
+  }
+
+void Container::internalInsert(Attribute *newProp, xsize index)
+  {
+  preGet();
+
+  // setup the new prop's instance info
+    {
+    auto newPropInstInfo = ChildLL::getInstanceInfo(newProp);
+    xAssert(newPropInstInfo->parent() == 0);
+    xAssert(newPropInstInfo->nextSibling() == 0);
+
+    newPropInstInfo->setParent(this);
+    }
+
+  if(index != X_SIZE_SENTINEL)
+    {
+    xsize dynamicIndex = index - containedProperties();
+    Attribute *justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
+
+    if (!justBefore && dynamicIndex != 0)
+      {
+      xAssertFail();
+      return;
+      }
+    }
+  else
+    {
+    if(_lastDynamicChild)
+      {
+      ChildLL::appendAt(ChildLL::getNextLocation(_lastDynamicChild), newProp);
+      }
+    else
+      {
+      xsize insertedIndex = 0;
+      ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
+      }
+    }
+
+  if(!ChildLL::getNext(newProp))
+    {
+    _lastDynamicChild = newProp;
+    }
+
+  internalSetup(newProp);
+  }
+
+void Container::internalSetup(Attribute *newProp)
+  {
+  // set up state info
+#ifdef S_CENTRAL_CHANGE_HANDLER
+  if (Entity *ent = newProp->castTo<Entity>())
+    {
+    ent->_handler = Handler::findHandler(this, ent);
+    }
+#else
+  Entity *ent = newProp->castTo<Entity>();
+  if(ent)
+    {
+    xAssert(database());
+    ent->_database = database();
+    }
+#endif
+
+  // is any prop in
+  if(Property *prop = newProp->castTo<Property>())
+    {
+    bool parentComputed = isComputed() || _flags.hasFlag(ParentHasInput);
+    if(input() || parentComputed)
+      {
+      prop->_flags.setFlag(ParentHasInput);
+      }
+
+    bool parentAffects = !isDynamic() && embeddedInstanceInformation()->affectsSiblings();
+    if(output() || parentAffects || _flags.hasFlag(ParentHasOutput))
+      {
+      prop->_flags.setFlag(ParentHasOutput);
+      }
+    }
+  xAssert(newProp->parent());
+  }
+
+void Container::internalRemove(Attribute *oldProp)
+  {
+  xAssert(oldProp);
+  xAssert(oldProp->parent() == this);
+
+  Attribute* beforeRemoved = ChildLL::remove(&_dynamicChild, oldProp);
+
+  if(_lastDynamicChild == oldProp)
+    {
+    _lastDynamicChild = nullptr;
+
+    if (beforeRemoved)
+      {
+      auto child = beforeRemoved;
+      while(child)
+        {
+        _lastDynamicChild = child;
+        child = ChildLL::getNext(child);
+        }
+      }
+    }
+
+  internalUnsetup(oldProp);
+
+  // not dynamic or has a parent
+  auto oldPropInstInfo = ChildLL::getInstanceInfo(oldProp);
+  xAssert(!oldPropInstInfo->isDynamic() || oldPropInstInfo->parent());
+  oldPropInstInfo->setParent(nullptr);
+  xAssert(!oldPropInstInfo->nextSibling());
+  }
+
+void Container::internalUnsetup(Attribute *oldProp)
+  {
+  if (Property *prop = oldProp->castTo<Property>())
+    {
+    Property::ConnectionChange::clearParentHasInputConnection(prop);
+    Property::ConnectionChange::clearParentHasOutputConnection(prop);
+    }
   }
 
 }

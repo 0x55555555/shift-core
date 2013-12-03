@@ -34,81 +34,14 @@ class SHIFT_EXPORT Container : public Property
 public:
   typedef detail::PropertyContainerTraits Traits;
 
-  class TreeChange : public Change
-    {
-    S_CHANGE(TreeChange, Change, Change::TreeChange)
-  public:
-    TreeChange(Container *b, Container *a, Attribute *ent, xsize index);
-    ~TreeChange();
-    Container *before(bool back=false)
-      {
-      if(back)
-        {
-        return _after;
-        }
-      return _before;
-      }
-    const Container *before(bool back=false) const
-      {
-      if(back)
-        {
-        return _after;
-        }
-      return _before;
-      }
-    Container *after(bool back=false)
-      {
-      if(back)
-        {
-        return _before;
-        }
-      return _after;
-      }
-    const Container *after(bool back=false) const
-      {
-      if(back)
-        {
-        return _before;
-        }
-      return _after;
-      }
-
-    Attribute *property() const {return _attribute;}
-    xsize index() const { return _index; }
-
-  private:
-    Container *_before;
-    Container *_after;
-    Attribute *_attribute;
-    xsize _index;
-    bool _owner;
-    bool apply();
-    bool unApply();
-    bool inform(bool back);
-    };
-
   Container();
   ~Container();
 
-  template <typename T> const T *firstDynamicChild() const
-    {
-    return ((Container*)this)->firstDynamicChild<T>();
-    }
+  class EditCache;
+  Eks::UniquePointer<EditCache> createEditCache(Eks::AllocatorBase *alloc) const;
 
-  template <typename T> T *firstDynamicChild()
-    {
-    Attribute *prop = firstDynamicChild();
-    while(prop)
-      {
-      T *t = prop->castTo<T>();
-      if(t)
-        {
-        return t;
-        }
-      prop = nextDynamicSibling(prop);
-      }
-    return 0;
-    }
+  template <typename T> inline const T *firstDynamicChild() const;
+  template <typename T> inline T *firstDynamicChild();
 
   Attribute *firstChild();
   const Attribute *firstChild() const;
@@ -117,54 +50,21 @@ public:
 
   void disconnectTree();
 
-  Attribute *firstDynamicChild() { preGet(); return _dynamicChild; }
-  const Attribute *firstDynamicChild() const { preGet(); return _dynamicChild; }
+  inline Attribute *firstDynamicChild();
+  inline const Attribute *firstDynamicChild() const;
 
-  Attribute *lastDynamicChild() { preGet(); return _lastDynamicChild; }
-  const Attribute *lastDynamicChild() const { preGet(); return _lastDynamicChild; }
+  inline Attribute *lastDynamicChild();
+  inline const Attribute *lastDynamicChild() const;
 
-  template <typename T> const T *nextDynamicSibling(const T *old) const
-    {
-    return ((Container*)this)->nextDynamicSibling<T>((T*)old);
-    }
-
-  template <typename T> T *nextDynamicSibling(const T *old)
-    {
-    Attribute *prop = nextDynamicSibling((const Attribute*)old);
-    while(prop)
-      {
-      T *t = prop->castTo<T>();
-      if(t)
-        {
-        return t;
-        }
-      prop = nextDynamicSibling((const Attribute*)prop);
-      }
-    return 0;
-    }
+  template <typename T> inline const T *nextDynamicSibling(const T *old) const;
+  template <typename T> inline T *nextDynamicSibling(const T *old);
 
   Attribute *nextDynamicSibling(const Attribute *p);
   const Attribute *nextDynamicSibling(const Attribute *p) const;
 
-  template <typename T> const T *findChild(const NameArg &name) const
-    {
-    const Attribute *prop = findChild(name);
-    if(prop)
-      {
-      return prop->castTo<T>();
-      }
-    return 0;
-    }
 
-  template <typename T> T *findChild(const NameArg &name)
-    {
-    Attribute *prop = findChild(name);
-    if(prop)
-      {
-      return prop->castTo<T>();
-      }
-    return 0;
-    }
+  template <typename T> inline T *findChild(const NameArg &name);
+  template <typename T> inline const T *findChild(const NameArg &name) const;
 
   const Attribute *findChild(const NameArg &name) const;
   Attribute *findChild(const NameArg &name);
@@ -205,7 +105,11 @@ protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
   // you cannot add another contained property once dynamic properties have been added, this bool
   // should really be left alone and not exposed in sub classes
-  Attribute *addAttribute(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const NameArg& name=NameArg(), PropertyInstanceInformationInitialiser *inst=0);
+  Attribute *addAttribute(
+    const PropertyInformation *info,
+    xsize index=X_SIZE_SENTINEL,
+    const NameArg& name=NameArg(),
+    PropertyInstanceInformationInitialiser *inst=0);
   void removeAttribute(Attribute *);
 
   void clear();
@@ -227,7 +131,7 @@ private:
   void internalRemove(Attribute *);
   void internalUnsetup(Attribute *);
 
-  friend class TreeChange;
+  friend class ContainerTreeChange;
   friend class Entity;
   friend class Attribute;
   friend class Database;

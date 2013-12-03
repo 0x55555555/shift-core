@@ -85,16 +85,6 @@ public:
     PODComputeChange<T>::property()->postSet();
     return true;
     }
-
-  bool inform(bool)
-    {
-    Entity *ent = PODComputeChange<T>::property()->entity();
-    if(ent)
-      {
-      ent->informDirtyObservers(PODComputeChange<T>::property());
-      }
-    return true;
-    }
   };
 
 template <typename T> class PODComputeLock
