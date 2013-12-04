@@ -62,7 +62,6 @@ public:
   Attribute *nextDynamicSibling(const Attribute *p);
   const Attribute *nextDynamicSibling(const Attribute *p) const;
 
-
   template <typename T> inline T *findChild(const NameArg &name);
   template <typename T> inline const T *findChild(const NameArg &name) const;
 
@@ -101,6 +100,8 @@ public:
   ConstWalker walker() const;
   Walker walkerFrom(Attribute *prop);
 
+  void assignUniqueName(Attribute *p, const NameArg &hint) const;
+
 protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
   // you cannot add another contained property once dynamic properties have been added, this bool
@@ -125,7 +126,7 @@ private:
   Attribute *_dynamicChild;
   Attribute *_lastDynamicChild;
 
-  void makeUniqueName(const Attribute *prop, const NameArg &name, Name &out) const;
+  bool makeUniqueName(const Attribute *prop, const NameArg &name, Name &out) const;
   void internalInsert(Attribute *, xsize index);
   void internalSetup(Attribute *);
   void internalRemove(Attribute *);

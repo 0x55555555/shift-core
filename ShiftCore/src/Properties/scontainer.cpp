@@ -15,6 +15,20 @@
 namespace Shift
 {
 
+class Container::EditCache
+  {
+XProperties:
+  XROProperty(const Container *, container)
+  XROProperty(Eks::AllocatorBase *, allocator)
+
+public:
+  EditCache(const Container *c, Eks::AllocatorBase *a)
+      : _container(c), _allocator(a)
+    {
+    }
+  };
+
+
 void disconnectHelper(Attribute *a)
   {
   if(Container *c = a->castTo<Container>())
@@ -104,6 +118,12 @@ Attribute *Container::findChild(const NameArg &name)
 
 Attribute *Container::internalFindChild(const NameArg &name)
   {
+  EditCache *cache = database()->findEditCache(this);
+  if (cache)
+    {
+    return cache->_childMap.find(name);
+    }
+
   const EmbeddedPropertyInstanceInformation *inst = typeInformation()->childFromName(name);
   if(inst)
     {
@@ -168,11 +188,18 @@ void Container::internalClear(Database *db)
   _dynamicChild = 0;
   }
 
-void Container::makeUniqueName(
+bool Container::makeUniqueName(
     const Attribute *prop,
     const NameArg &name,
     Name& newName) const
   {
+  bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
+  if(nameUnique)
+    {
+    name.toName(newName);
+    return false;
+    }
+
   const PropertyInformation *info = prop->typeInformation();
   NameArg typeWrap(info->typeName());
   const NameArg *inName = name.isEmpty() ? &typeWrap : &name;
@@ -187,6 +214,7 @@ void Container::makeUniqueName(
 
     ++id;
     }
+  return true;
   }
 
 Attribute *Container::addAttribute(const PropertyInformation *info, xsize index, const NameArg& name, PropertyInstanceInformationInitialiser *init)
@@ -200,21 +228,15 @@ void Container::moveAttribute(Container *c, Attribute *p)
   {
   xAssert(p->parent() == this);
 
-  const NameArg &name = p->name();
-  bool nameUnique = c->internalFindChild(name) == false;
-  if(!nameUnique)
+  Name newName;
+  if(c->makeUniqueName(p, name, newName))
     {
     Block b(database());
 
-    Name newName;
-    c->makeUniqueName(p, name, newName);
     p->setName(newName);
-    PropertyDoChange(ContainerTreeChange, this, c, p, X_UINT8_SENTINEL);
     }
-  else
-    {
-    PropertyDoChange(ContainerTreeChange, this, c, p, X_UINT8_SENTINEL);
-    }
+
+  PropertyDoChange(ContainerTreeChange, this, c, p, X_SIZE_SENTINEL);
   }
 
 void Container::removeAttribute(Attribute *oldProp)
@@ -361,19 +383,6 @@ public:
     DynamicPropertyInstanceInformation *instInfo =
         const_cast<DynamicPropertyInstanceInformation*>(prop->dynamicBaseInstanceInformation());
     return instInfo;
-    }
-  };
-
-class Container::EditCache
-  {
-XProperties:
-  XROProperty(const Container *, container)
-  XROProperty(Eks::AllocatorBase *, allocator)
-
-public:
-  EditCache(const Container *c, Eks::AllocatorBase *a)
-      : _container(c), _allocator(a)
-    {
     }
   };
 

@@ -334,5 +334,48 @@ void ShiftCoreTest::reparentTest()
   auto a = db.addChild<TestEntity>();
   auto b = db.addChild<TestEntity>();
 
+  Shift::Name name1("b");
+  Shift::Name name2("a");
+
   QVERIFY(a != b);
+  auto child1 = a->addChild<TestEntity>();
+  auto child2 = a->addChild<TestEntity>();
+  auto child3 = b->addChild<TestEntity>();
+  auto child4 = b->addChild<TestEntity>();
+  QCOMPARE(child1->entity(), child1);
+  QCOMPARE(child2->entity(), child2);
+  QCOMPARE(child3->entity(), child3);
+  QCOMPARE(child4->entity(), child4);
+  QCOMPARE(child1->parentEntity(), a);
+  QCOMPARE(child2->parentEntity(), a);
+  QCOMPARE(child3->parentEntity(), b);
+  QCOMPARE(child4->parentEntity(), b);
+
+  child1->setName(name1);
+  child2->setName(name2);
+  child3->setName(name1);
+  child4->setName(name2);
+
+  QCOMPARE(child1->name(), name1);
+  QCOMPARE(child2->name(), name2);
+  QCOMPARE(child3->name(), name1);
+  QCOMPARE(child4->name(), name2);
+  QCOMPARE(child1->name(), child3->name());
+  QCOMPARE(child2->name(), child4->name());
+
+  child3->reparent(a);
+  child4->reparent(a);
+  QCOMPARE(child1->entity(), child1);
+  QCOMPARE(child2->entity(), child2);
+  QCOMPARE(child3->entity(), child3);
+  QCOMPARE(child4->entity(), child4);
+  QCOMPARE(child1->parentEntity(), a);
+  QCOMPARE(child2->parentEntity(), a);
+  QCOMPARE(child3->parentEntity(), a);
+  QCOMPARE(child4->parentEntity(), a);
+  QCOMPARE(b->children.size(), 0);
+  QCOMPARE(child1->name(), name1);
+  QCOMPARE(child2->name(), name2);
+  QVERIFY(child1->name() != child3->name());
+  QVERIFY(child2->name() != child4->name());
   }

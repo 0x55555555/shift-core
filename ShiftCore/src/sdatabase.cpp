@@ -214,15 +214,7 @@ Attribute *Database::addDynamicAttribute(
 
   // insert the property into the tree, before running post initiate operations
   // this allows things like connections to be made in initiate attribute.
-  bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
-  if(!nameUnique)
-    {
-    makeUniqueName(prop, name, ((PropertyInstanceInformation*)prop->_instanceInfo)->name());
-    }
-  else
-    {
-    name.toName(((PropertyInstanceInformation*)prop->_instanceInfo)->name());
-    }
+  makeUniqueName(prop, name, ((PropertyInstanceInformation*)prop->_instanceInfo)->name());
 
   PropertyDoChange(ContainerTreeChange, (Container*)0, parent, prop, index);
 
