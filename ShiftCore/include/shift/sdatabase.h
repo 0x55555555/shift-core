@@ -69,6 +69,10 @@ public:
     return TypeRegistry::temporaryAllocator();
     }
 
+  EditCache* findEditCache(Container *c);
+  void addEditCache(Container *c, EditCache *);
+  void removeEditCache(Container *c);
+
 protected:
   /// Call this method from derived Database classes to ensure the hierarchy is set up correctly.
   void initiateInheritedDatabaseType(const PropertyInformation *info);
@@ -99,6 +103,8 @@ private:
 #ifdef S_DEBUGGER
   Eks::UniquePointer<Shift::Debugger> _debugger;
 #endif
+
+  Eks::UnorderedMap<Container*, EditCache*> _editCaches;
 
   friend class Property;
   friend class Container;

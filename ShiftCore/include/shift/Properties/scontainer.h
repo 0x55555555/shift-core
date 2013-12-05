@@ -38,7 +38,7 @@ public:
   ~Container();
 
   class EditCache;
-  Eks::UniquePointer<EditCache> createEditCache(Eks::AllocatorBase *alloc) const;
+  Eks::UniquePointer<EditCache> createEditCache(Eks::AllocatorBase *alloc);
 
   template <typename T> inline const T *firstDynamicChild() const;
   template <typename T> inline T *firstDynamicChild();

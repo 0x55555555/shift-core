@@ -18,14 +18,42 @@ namespace Shift
 class Container::EditCache
   {
 XProperties:
-  XROProperty(const Container *, container)
+  XROProperty(Container *, container)
+  XROProperty(Database *, database)
   XROProperty(Eks::AllocatorBase *, allocator)
 
 public:
-  EditCache(const Container *c, Eks::AllocatorBase *a)
-      : _container(c), _allocator(a)
+  EditCache(Container *c, Eks::AllocatorBase *a)
+      : _container(c),
+        _database(c->database()),
+        _allocator(a),
+        _childMap(a)
     {
+    _database->addEditCache(_container, this);
+    xForeach(auto p, LightWalker(c))
+      {
+      addChild(p);
+      }
     }
+
+  ~EditCache()
+    {
+    _database->removeEditCache(_container);
+    }
+
+  void addChild(Attribute *a)
+    {
+    xAssert(!_childMap.contains(a->name()));
+    _childMap[a->name()] = a;
+    }
+
+  void removeChild(Attribute *a)
+    {
+    xAssert(_childMap.contains(a->name()));
+    _childMap.remove(a->name());
+    }
+
+  Eks::UnorderedMap<Name, Attribute *> _childMap;
   };
 
 
@@ -116,15 +144,17 @@ Attribute *Container::findChild(const NameArg &name)
   return internalFindChild(name);
   }
 
-Attribute *Container::internalFindChild(const NameArg &name)
+Attribute *Container::internalFindChild(const NameArg &nameIn)
   {
   EditCache *cache = database()->findEditCache(this);
   if (cache)
     {
-    return cache->_childMap.find(name);
+    Name n;
+    nameIn.toName(n);
+    return cache->_childMap.value(n);
     }
 
-  const EmbeddedPropertyInstanceInformation *inst = typeInformation()->childFromName(name);
+  const EmbeddedPropertyInstanceInformation *inst = typeInformation()->childFromName(nameIn);
   if(inst)
     {
     return inst->locate(this);
@@ -132,7 +162,7 @@ Attribute *Container::internalFindChild(const NameArg &name)
 
   for(Attribute *child = _dynamicChild; child; child = nextDynamicSibling(child))
     {
-    if(name == child->name())
+    if(nameIn == child->name())
       {
       return child;
       }
@@ -229,7 +259,7 @@ void Container::moveAttribute(Container *c, Attribute *p)
   xAssert(p->parent() == this);
 
   Name newName;
-  if(c->makeUniqueName(p, name, newName))
+  if(c->makeUniqueName(p, p->name(), newName))
     {
     Block b(database());
 
@@ -386,7 +416,7 @@ public:
     }
   };
 
-Eks::UniquePointer<Container::EditCache> Container::createEditCache(Eks::AllocatorBase *alloc) const
+Eks::UniquePointer<Container::EditCache> Container::createEditCache(Eks::AllocatorBase *alloc)
   {
   return alloc->createUnique<EditCache>(this, alloc);
   }
@@ -434,6 +464,12 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     }
 
   internalSetup(newProp);
+
+  EditCache *cache = database()->findEditCache(this);
+  if(cache)
+    {
+    cache->addChild(newProp);
+    }
   }
 
 void Container::internalSetup(Attribute *newProp)
@@ -500,6 +536,12 @@ void Container::internalRemove(Attribute *oldProp)
   xAssert(!oldPropInstInfo->isDynamic() || oldPropInstInfo->parent());
   oldPropInstInfo->setParent(nullptr);
   xAssert(!oldPropInstInfo->nextSibling());
+
+  EditCache *cache = database()->findEditCache(this);
+  if(cache)
+    {
+    cache->removeChild(oldProp);
+    }
   }
 
 void Container::internalUnsetup(Attribute *oldProp)

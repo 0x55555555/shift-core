@@ -211,6 +211,7 @@ void ShiftCoreTest::initialiseProfileTest()
 
     if (timeDbCtorDtor)
       {
+      editCache = nullptr;
       db = nullptr;
       }
     }

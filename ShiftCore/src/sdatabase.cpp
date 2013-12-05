@@ -87,6 +87,7 @@ void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
   }
 
 Database::Database()
+    : _editCaches(TypeRegistry::generalPurposeAllocator())
   {
   _memory = TypeRegistry::persistentBlockAllocator();
   xAssert(_memory);
@@ -214,7 +215,7 @@ Attribute *Database::addDynamicAttribute(
 
   // insert the property into the tree, before running post initiate operations
   // this allows things like connections to be made in initiate attribute.
-  makeUniqueName(prop, name, ((PropertyInstanceInformation*)prop->_instanceInfo)->name());
+  parent->makeUniqueName(prop, name, ((PropertyInstanceInformation*)prop->_instanceInfo)->name());
 
   PropertyDoChange(ContainerTreeChange, (Container*)0, parent, prop, index);
 
@@ -256,6 +257,23 @@ void Database::deleteDynamicAttribute(Attribute *prop)
 
   _memory->free(mem);
   X_HEAP_CHECK
+  }
+
+Database::EditCache* Database::findEditCache(Container *c)
+  {
+  EditCache* cache = _editCaches.value(c, nullptr);
+  return cache;
+  }
+
+void Database::addEditCache(Container *c, EditCache *e)
+  {
+  _editCaches[c] = e;
+  }
+
+void Database::removeEditCache(Container *c)
+  {
+  xAssert(_editCaches.contains(c));
+  _editCaches.remove(c);
   }
 
 void Database::initiateInheritedDatabaseType(const PropertyInformation *info)
