@@ -143,14 +143,6 @@ void ShiftCoreTest::initialiseProfileTest_data()
   QTest::addColumn<bool>("timeTearDown");
   QTest::addColumn<bool>("timeDbCtorDtor");
   QTest::addColumn<bool>("optimiseInsert");
-  
-  QTest::newRow("1    D") << 1     << true  << true  << true ;
-  QTest::newRow("10   D") << 10    << true  << true  << true ;
-  QTest::newRow("100  D") << 100   << true  << true  << true ;
-  QTest::newRow("1000 D") << 1000  << true  << true  << true ;
-#ifndef X_DEBUG
-  QTest::newRow("10000D") << 10000 << true  << true  << true ;
-#endif
 
   QTest::newRow("1    A") << 1     << false << false << false;
   QTest::newRow("10   A") << 10    << false << false << false;
@@ -174,6 +166,14 @@ void ShiftCoreTest::initialiseProfileTest_data()
   QTest::newRow("1000 C") << 1000  << true  << true  << false;
 #ifndef X_DEBUG
   QTest::newRow("10000C") << 10000 << true  << true  << false;
+#endif
+
+  QTest::newRow("1    D") << 1     << true  << true  << true ;
+  QTest::newRow("10   D") << 10    << true  << true  << true ;
+  QTest::newRow("100  D") << 100   << true  << true  << true ;
+  QTest::newRow("1000 D") << 1000  << true  << true  << true ;
+#ifndef X_DEBUG
+  QTest::newRow("10000D") << 10000 << true  << true  << true ;
 #endif
 
   }
