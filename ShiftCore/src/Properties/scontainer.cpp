@@ -425,6 +425,9 @@ void Container::internalInsert(Attribute *newProp, xsize index)
   {
   preGet();
 
+  auto type = typeInformation();
+  xAssert(type->dynamicChildMode() != NoChildren);
+
   // setup the new prop's instance info
     {
     auto newPropInstInfo = ChildLL::getInstanceInfo(newProp);

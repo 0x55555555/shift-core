@@ -119,7 +119,8 @@ template <typename PropType, typename Fn> struct CompteLambdaHelper
 #define S_CHILD_CHECK(Parent, Child, ...) \
   { typedef detail::ChildCheck<Parent, Child, __VA_ARGS__> S_CHECK; \
     xCompileTimeAssert(S_CHECK::ValidAggregate); \
-    xCompileTimeAssert(S_CHECK::ExtraValid); }
+  xCompileTimeAssert(S_CHECK::ExtraValid); \
+  xCompileTimeAssert(S_CHECK::AddingValid); }
 
 template <typename T> struct ChildModesCheck
   {
@@ -161,7 +162,9 @@ template <typename Parent,
 
       // You totally can't add a child as a child of itself...
       //
-      ValidAggregate = std::is_same<Parent, Child>::value == false
+      ValidAggregate = std::is_same<Parent, Child>::value == false,
+
+      AddingValid = ChildModesCheck<Parent>::StaticChildMode != NoChildren
     };
   };
 
@@ -502,6 +505,8 @@ private:
     xCompileTimeAssert(detail::ChildModesCheck<PropType>::ValidStaticMode);
     xCompileTimeAssert(detail::ChildModesCheck<PropType>::ValidDynamicMode);
     xCompileTimeAssert(detail::ChildModesCheck<PropType>::NoIndexedAndStatic);
+
+    info->setDynamicChildMode(detail::ChildModesCheck<PropType>::DynamicChildMode);
 
     info->setChildData(0);
     info->setChildCount(0);

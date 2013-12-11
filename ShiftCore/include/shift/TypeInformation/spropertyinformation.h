@@ -88,6 +88,8 @@ XProperties:
   XProperty(const EmbeddedPropertyInstanceInformation **, childData, setChildData);
   XProperty(xuint8, childCount, setChildCount);
 
+  XProperty(xuint8, dynamicChildMode, setDynamicChildMode);
+
   XByRefProperty(
     Eks::ResourceDescription,
     format,

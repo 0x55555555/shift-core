@@ -50,7 +50,9 @@ private:
 class TestVector : public Shift::Container
   {
   S_ENTITY(TestVector, Container)
+
 public:
+  enum { StaticChildMode = Shift::NamedChildren | Container::StaticChildMode };
 
   Shift::FloatProperty x;
   Shift::FloatProperty y;
