@@ -121,7 +121,6 @@ protected:
 private:
   Attribute *internalFindChild(const NameArg &name);
   const Attribute *internalFindChild(const NameArg &name) const;
-  friend void setDependantsDirty(Property* prop, bool force);
 
   Attribute *_dynamicChild;
   Attribute *_lastDynamicChild;

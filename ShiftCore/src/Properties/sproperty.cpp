@@ -46,13 +46,6 @@ void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
 
 void Property::setDependantsDirty()
   {
-  for(Property *o=output(); o; o = o->nextOutput())
-    {
-    xAssert(o != o->nextOutput());
-
-    o->setDirty();
-    }
-
   if(!isDynamic())
     {
     const PropertyInstanceInformation *childBase = baseInstanceInformation();
@@ -72,6 +65,13 @@ void Property::setDependantsDirty()
         affectsProp->setDirty();
         }
       }
+    }
+
+  for(Property *o=output(); o; o = o->nextOutput())
+    {
+    xAssert(o != o->nextOutput());
+
+    o->setDirty();
     }
 
   // if there is an input, a parent input or this is computed,
