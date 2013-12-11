@@ -104,6 +104,7 @@ private:
   Eks::UniquePointer<Shift::Debugger> _debugger;
 #endif
 
+  std::pair<Container*, EditCache*> _lastEditCache;
   Eks::UnorderedMap<Container*, EditCache*> _editCaches;
 
   friend class Property;

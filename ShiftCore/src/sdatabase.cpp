@@ -261,19 +261,35 @@ void Database::deleteDynamicAttribute(Attribute *prop)
 
 Database::EditCache* Database::findEditCache(Container *c)
   {
+  if(_lastEditCache.first == c)
+    {
+    return _lastEditCache.second;
+    }
+
   EditCache* cache = _editCaches.value(c, nullptr);
+
+  _lastEditCache.first = c;
+  _lastEditCache.second = cache;
   return cache;
   }
 
 void Database::addEditCache(Container *c, EditCache *e)
   {
   _editCaches[c] = e;
+
+  _lastEditCache.first = c;
+  _lastEditCache.second = e;
   }
 
 void Database::removeEditCache(Container *c)
   {
   xAssert(_editCaches.contains(c));
   _editCaches.remove(c);
+
+  if(_lastEditCache.first == c)
+    {
+    _lastEditCache.second = nullptr;
+    }
   }
 
 void Database::initiateInheritedDatabaseType(const PropertyInformation *info)
