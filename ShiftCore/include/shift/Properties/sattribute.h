@@ -43,7 +43,8 @@ public:
 
   enum
     {
-    HasDynamicChildren = false
+    StaticChildMode = NoChildren,
+    DynamicChildMode = NoChildren
     };
 
 public:

@@ -95,6 +95,12 @@ class SHIFT_EXPORT Entity : public Container, public XWeakSharedData
   S_ENTITY(Entity, Container);
 
 public:
+  enum
+    {
+    StaticChildMode = Container::StaticChildMode | Shift::NamedChildren,
+    DynamicChildMode = Container::DynamicChildMode | Shift::NamedChildren
+    };
+
   Entity();
   ~Entity();
 

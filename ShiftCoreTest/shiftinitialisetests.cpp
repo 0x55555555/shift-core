@@ -22,8 +22,7 @@ class TestDataEntity : public TestSized2, public Shift::Entity
   S_ENTITY(TestDataEntity, Entity)
 public:
 
-  // should not compile without this - as we add a dynamic array.
-  enum { HasDynamicChildren = true };
+  enum { StaticChildMode = Entity::StaticChildMode | Shift::AllowExtraChildren };
 
   Shift::Data<QUuid> uuid;
   Shift::Data<float> number;
@@ -35,6 +34,8 @@ class TestEmbeddingEntity : public TestSized, public Shift::Entity
   S_ENTITY(TestEmbeddingEntity, Entity)
 public:
 
+  enum { StaticChildMode = Entity::StaticChildMode | Shift::AllowExtraChildren };
+
 #ifdef TEST_FAILING_TO_EMBED_DYNAMIC
   TestDataEntity ent;
 #endif
@@ -43,6 +44,10 @@ public:
 class TestEmbeddingEmbedderEntity : public TestSized, public Shift::Entity
   {
   S_ENTITY(TestEmbeddingEmbedderEntity, Entity)
+public:
+
+  enum { StaticChildMode = Entity::StaticChildMode | Shift::AllowExtraChildren };
+
   };
 
 S_IMPLEMENT_PROPERTY(TestDataEntity, Test)
@@ -195,18 +200,20 @@ void ShiftCoreTest::initialiseProfileTest()
       db = createDb();
       }
 
-    Eks::TemporaryAllocator alloc(db->children.temporaryAllocator());
-    auto editCache = optimiseInsert ? db->children.createEditCache(&alloc) : nullptr;
+    Shift::Array* arr = &db->children;
+
+    Eks::TemporaryAllocator alloc(arr->temporaryAllocator());
+    auto editCache = optimiseInsert ? arr->createEditCache(&alloc) : nullptr;
     (void)editCache;
 
     for(xsize i = 0; i < count; ++i)
       {
-      db->addChild<TestEmbeddingEmbedderEntity>();
+      arr->add<TestEmbeddingEmbedderEntity>();
       }
 
     if (timeTearDown)
       {
-      db->children.clear();
+      arr->clear();
       }
 
     if (timeDbCtorDtor)

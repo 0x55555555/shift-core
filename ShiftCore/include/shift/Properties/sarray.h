@@ -12,6 +12,11 @@ class SHIFT_EXPORT Array : public Container
   S_PROPERTY_CONTAINER(Array, Container);
 
 public:
+  enum
+    {
+    DynamicChildMode = Container::DynamicChildMode | Shift::NamedChildren
+    };
+
   template <typename T> T *add(const NameArg& name)
     {
     return addAttribute(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->template castTo<T>();

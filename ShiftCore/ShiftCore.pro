@@ -97,7 +97,6 @@ HEADERS += \
     include/shift/Properties/scontainer.inl \
     include/shift/Properties/scontaineriterators.h \
     include/shift/Properties/sarray.h \
-    include/shift/Properties/sdata.h \
     include/shift/Properties/sdata.inl \
     include/shift/Properties/scontainerinternaliterators.h
 

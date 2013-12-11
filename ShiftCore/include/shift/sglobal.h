@@ -66,6 +66,17 @@ enum DataMode
   DataModeCount
   };
 
+enum ChildModes
+  {
+  NoChildren = 0,
+
+  AllowExtraChildren = 1,
+
+  NamedChildren = 2,
+
+  IndexedChildren = 4
+  };
+
 PropertyGroup &propertyGroup();
 }
 

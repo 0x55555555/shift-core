@@ -116,6 +116,55 @@ template <typename PropType, typename Fn> struct CompteLambdaHelper
     }
   };
 
+#define S_CHILD_CHECK(Parent, Child, ...) \
+  { typedef detail::ChildCheck<Parent, Child, __VA_ARGS__> S_CHECK; \
+    xCompileTimeAssert(S_CHECK::ValidAggregate); \
+    xCompileTimeAssert(S_CHECK::ExtraValid); }
+
+template <typename T> struct ChildModesCheck
+  {
+  enum
+    {
+    StaticChildMode = T::StaticChildMode,
+    DynamicChildMode = T::DynamicChildMode,
+
+    ExtraChildrenEnabled = (StaticChildMode&AllowExtraChildren) != 0,
+
+    ValidStaticMode =
+      StaticChildMode == NoChildren ||
+      StaticChildMode == NamedChildren ||
+      StaticChildMode == (NamedChildren|AllowExtraChildren),
+
+    ValidDynamicMode =
+      DynamicChildMode == NoChildren ||
+      DynamicChildMode == NamedChildren ||
+      DynamicChildMode == IndexedChildren,
+
+    NoIndexedAndStatic = StaticChildMode == NoChildren || DynamicChildMode != IndexedChildren
+    };
+  };
+
+template <typename Parent,
+          typename Child,
+          bool AddingAsExtra = false> struct ChildCheck
+  {
+  enum
+    {
+      ExtraValid =
+      // If adding the child as an extra child, the parent must have the extra children enabled flag.
+      //
+        (AddingAsExtra && ChildModesCheck<Parent>::ExtraChildrenEnabled == true) ||
+
+      // if not adding the child as an extra child, the child must not have the flag
+      //
+        (!AddingAsExtra && ChildModesCheck<Child>::ExtraChildrenEnabled == false),
+
+      // You totally can't add a child as a child of itself...
+      //
+      ValidAggregate = std::is_same<Parent, Child>::value == false
+    };
+  };
+
 }
 
 template <typename PropType, typename InstanceType> class PropertyInstanceInformationTyped
@@ -218,11 +267,7 @@ public:
     //typedef std::is_base_of<AncestorPropType, PropType> Inherits;
     //xCompileTimeAssert(Inherits::value == true);
 
-    // If a class has this flag set it has children after its allocation which are not specified
-    // in the class definition. This type of class can only be added to PropertyInformation
-    // without a location
-    //
-    xCompileTimeAssert(U::HasDynamicChildren == false);
+    S_CHILD_CHECK(PropType, U)
 
     xptrdiff location = findLocation(ptr);
 
@@ -244,13 +289,7 @@ public:
     PropertyInstanceInformationTyped<PropType, U> *instArray[SIZE];
     inst = inst ? inst : instArray;
 
-    // If a class has this flag set it has children after its allocation which are not specified
-    // in the class definition. This type of class can only be added to PropertyInformation
-    // without a location
-    //
-    xCompileTimeAssert(U::HasDynamicChildren == false);
-    typedef std::is_same<U, PropType> IsSame;
-    xCompileTimeAssert(IsSame::value == false);
+    S_CHILD_CHECK(PropType, U)
 
     Name str;
     name.toName(str);
@@ -288,8 +327,7 @@ public:
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
 
-    typedef std::is_same<T, PropType> IsSame;
-    xCompileTimeAssert(IsSame::value == false);
+    S_CHILD_CHECK(PropType, T, true)
 
     EmbeddedPropertyInstanceInformation *inst =
         PropertyInformationChildrenCreator::add(newChildType, name);
@@ -304,13 +342,7 @@ public:
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
 
-    // If a class has this flag set it has children after its allocation which are not specified
-    // in the class definition. This type of class can only be added to PropertyInformation
-    // without a location
-    //
-    xCompileTimeAssert(T::HasDynamicChildren == false);
-    typedef std::is_same<T, PropType> IsSame;
-    xCompileTimeAssert(IsSame::value == false);
+    S_CHILD_CHECK(PropType, T)
 
     EmbeddedPropertyInstanceInformation *inst =
       PropertyInformationChildrenCreator::add(newChildType, location, name, false);
@@ -467,6 +499,10 @@ private:
     {
     PropertyTraits::build<PropType>(info->functions());
 
+    xCompileTimeAssert(detail::ChildModesCheck<PropType>::ValidStaticMode);
+    xCompileTimeAssert(detail::ChildModesCheck<PropType>::ValidDynamicMode);
+    xCompileTimeAssert(detail::ChildModesCheck<PropType>::NoIndexedAndStatic);
+
     info->setChildData(0);
     info->setChildCount(0);
 
@@ -554,6 +590,8 @@ inline PropertyAffectsWalker<const Property, const Container> EmbeddedPropertyIn
   return PropertyAffectsWalker<const Property, const Container>(c, _affects);
   }
 }
+
+#undef S_CHILD_CHECK
 
 namespace XScript
 {
