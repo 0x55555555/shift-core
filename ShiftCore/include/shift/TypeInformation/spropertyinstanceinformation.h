@@ -167,6 +167,7 @@ class SHIFT_EXPORT DynamicPropertyInstanceInformation : public PropertyInstanceI
   // Dynamic Instance
   XProperty(Container *, parent, setParent)
   XProperty(Attribute *, nextSibling, setNextSibling)
+  XProperty(xint32, index, setIndex);
 
 public:
   DynamicPropertyInstanceInformation();

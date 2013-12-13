@@ -214,7 +214,7 @@ bool ContainerTreeChange::apply()
     {
     _owner = true;
     before()->preGet();
-    before()->internalRemove(property());
+    before()->internalRemove(property(), false);
     before()->postSet();
     }
 

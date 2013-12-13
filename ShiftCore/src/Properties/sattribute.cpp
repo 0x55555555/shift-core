@@ -107,6 +107,7 @@ void Attribute::setName(const NameArg &in)
   SProfileFunction
   xAssert(isDynamic());
   xAssert(parent());
+  xAssert(parent()->hasNamedChildren());
 
   Name fixedName;
   in.toName(fixedName);
@@ -230,10 +231,28 @@ const Name &Attribute::name() const
   return baseInstanceInformation()->name();
   }
 
-Name Attribute::escapedName() const
+Name Attribute::identifier() const
   {
   SProfileFunction
-  const Name &baseName =  baseInstanceInformation()->name();
+  if (parent()->hasNamedChildren())
+    {
+    return baseInstanceInformation()->name();
+    }
+  else
+    {
+    Name out;
+    Name::Buffer buf(&out);
+
+    buf << index();
+
+    return out;
+    }
+  }
+
+Name Attribute::escapedIdentifier() const
+  {
+  SProfileFunction
+  Name baseName = identifier();
 
   Eks::String::Replacement reps[] =
   {
@@ -344,12 +363,12 @@ Eks::String Attribute::path(const Attribute *from) const
     const Attribute *p = parent();
     while(p && p != from)
       {
-      xAssert(p->name() != "");
+      xAssert(p->identifier() != "");
       ret = p->escapedName() + Database::pathSeparator() + ret;
 
       p = p->parent();
       }
-    return ret + escapedName();
+    return ret + escapedIdentifier();
     }
 
   const Attribute *parent = from->parent();

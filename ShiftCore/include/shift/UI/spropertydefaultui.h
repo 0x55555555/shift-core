@@ -314,7 +314,7 @@ private Q_SLOTS:
   virtual void guiChanged( )
     {
     //QSettings settings;
-    QString file( QFileDialog::getOpenFileName( 0, "Select File for " + propertyValue()->name().toQString() ) );
+    QString file( QFileDialog::getOpenFileName( 0, "Select File for " + propertyValue()->identifier().toQString() ) );
 
     propertyValue()->assign(file);
 

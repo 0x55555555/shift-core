@@ -15,6 +15,20 @@
 namespace Shift
 {
 
+namespace IndexedUtils
+{
+void setIndex(Attribute *attr, xuint32 index)
+  {
+  auto inst = const_cast<DynamicPropertyInstanceInformation*>(attr->dynamicBaseInstanceInformation());
+  inst->setIndex(index);
+  }
+
+xuint32 getIndex(const Attribute* attr)
+  {
+  return attr->dynamicBaseInstanceInformation()->index();
+  }
+}
+
 class Container::EditCache
   {
 XProperties:
@@ -146,6 +160,7 @@ Attribute *Container::findChild(const NameArg &name)
 
 Attribute *Container::internalFindChild(const NameArg &nameIn)
   {
+  xAssert(hasNamedChildren());
   EditCache *cache = database()->findEditCache(this);
   if (cache)
     {
@@ -223,6 +238,7 @@ bool Container::makeUniqueName(
     const NameArg &name,
     Name& newName) const
   {
+  xAssert(hasNamedChildren());
   bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
   if(nameUnique)
     {
@@ -369,6 +385,11 @@ const Attribute *Container::lastChild() const
   return ((Container*)this)->lastChild();
   }
 
+bool Container::hasNamedChildren() const
+  {
+  return !typeInformation()->hasIndexedChildren();
+  }
+
 xsize Container::index(const Attribute* prop) const
   {
   SProfileFunction
@@ -377,15 +398,22 @@ xsize Container::index(const Attribute* prop) const
   const PropertyInstanceInformation* bInfo = prop->baseInstanceInformation();
   if(bInfo->isDynamic())
     {
-    xsize idx = containedProperties();
-    auto child = _dynamicChild;
-    while(child && child != prop)
+    if (!hasNamedChildren())
       {
-      ++idx;
-      child = child->dynamicBaseInstanceInformation()->nextSibling();
+      return IndexedUtils::getIndex(prop);
       }
+    else
+      {
+      xsize idx = containedProperties();
+      auto child = _dynamicChild;
+      while(child && child != prop)
+        {
+        ++idx;
+        child = child->dynamicBaseInstanceInformation()->nextSibling();
+        }
 
-    return idx;
+      return idx;
+      }
     }
 
   return bInfo->embeddedInfo()->index();
@@ -421,6 +449,24 @@ Eks::UniquePointer<Container::EditCache> Container::createEditCache(Eks::Allocat
   return alloc->createUnique<EditCache>(this, alloc);
   }
 
+void Container::fixupIndices(Attribute* justBefore)
+  {
+  Attribute* indexFixup = _dynamicChild;
+  xuint32 index = 0;
+  if(justBefore)
+    {
+    indexFixup = justBefore;
+    index = IndexedUtils::getIndex(justBefore);
+    }
+
+  while(indexFixup)
+    {
+    IndexedUtils::setIndex(indexFixup, index++);
+
+    indexFixup = ChildLL::getNext(indexFixup);
+    }
+  }
+
 void Container::internalInsert(Attribute *newProp, xsize index)
   {
   preGet();
@@ -437,10 +483,12 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     newPropInstInfo->setParent(this);
     }
 
+  Attribute *justBefore = nullptr;
+
   if(index != X_SIZE_SENTINEL)
     {
     xsize dynamicIndex = index - containedProperties();
-    Attribute *justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
+    justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
 
     if (!justBefore && dynamicIndex != 0)
       {
@@ -452,12 +500,13 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     {
     if(_lastDynamicChild)
       {
+      justBefore = _lastDynamicChild;
       ChildLL::appendAt(ChildLL::getNextLocation(_lastDynamicChild), newProp);
       }
     else
       {
       xsize insertedIndex = 0;
-      ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
+      justBefore = ChildLL::append(&_dynamicChild, newProp, &insertedIndex);
       }
     }
 
@@ -467,6 +516,11 @@ void Container::internalInsert(Attribute *newProp, xsize index)
     }
 
   internalSetup(newProp);
+
+  if(!hasNamedChildren())
+    {
+    fixupIndices(this, justBefore);
+    }
 
   EditCache *cache = database()->findEditCache(this);
   if(cache)
@@ -530,6 +584,12 @@ void Container::internalRemove(Attribute *oldProp)
         child = ChildLL::getNext(child);
         }
       }
+    }
+
+  if (!hasNamedChildren())
+    {
+    setIndex(oldProp, X_UINT32_SENTINEL);
+    fixupIndices(this, justBefore);
     }
 
   internalUnsetup(oldProp);

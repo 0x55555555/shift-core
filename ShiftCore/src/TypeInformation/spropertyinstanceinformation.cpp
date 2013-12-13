@@ -359,7 +359,8 @@ Container *EmbeddedPropertyInstanceInformation::locateParent(Attribute *prop) co
 DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation()
     : PropertyInstanceInformation(true),
       _parent(0),
-      _nextSibling(0)
+      _nextSibling(0),
+      _index(X_UINT32_SENTINEL)
   {
   }
 DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation(

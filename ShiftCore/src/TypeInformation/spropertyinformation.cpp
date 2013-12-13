@@ -49,6 +49,11 @@ void PropertyInformation::initiate(PropertyInformation *info, const PropertyInfo
   info->_typeName = from->typeName();
   }
 
+bool PropertyInformation::hasIndexedChildren() const
+  {
+  return (dynamicChildMode() & IndexedChildren) != 0;
+  }
+
 PropertyInformation *PropertyInformation::derive(
     const PropertyInformation *from,
     Eks::AllocatorBase *allocator,

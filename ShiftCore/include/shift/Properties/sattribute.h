@@ -105,8 +105,10 @@ public:
   // set only works for dynamic properties
   void setName(const NameArg &);
   const Name &name() const;
+  // unique identifier for parent, possibly name, possibly a stringified index
+  Name identifier() const;
   // name valid for entry into paths.
-  Name escapedName() const;
+  Name escapedIdentifier() const;
 
   template <typename T>T *uncheckedCastTo()
     {

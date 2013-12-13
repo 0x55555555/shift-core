@@ -121,6 +121,9 @@ public:
     return inheritsFromType(T::staticTypeInformation());
     }
 
+  // are the children of this object indexed, not uniquely named?
+  bool hasIndexedChildren() const;
+
   bool inheritsFromType(const PropertyInformation *type) const;
 
   // access the properties from offset of member

@@ -81,6 +81,7 @@ public:
 
   bool contains(const Attribute *) const;
 
+  bool hasNamedChildren() const;
   xsize index(const Attribute* prop) const;
 
   // iterator members, can be used like for (auto prop : container->walker())
@@ -100,7 +101,6 @@ public:
   ConstWalker walker() const;
   Walker walkerFrom(Attribute *prop);
 
-  void assignUniqueName(Attribute *p, const NameArg &hint) const;
 
 protected:
   // contained implies the property is aggregated by the inheriting class and should not be deleted.
@@ -119,6 +119,8 @@ protected:
   void internalClear(Database *db);
 
 private:
+  void fixupIndices(Attribute* justBefore);
+
   Attribute *internalFindChild(const NameArg &name);
   const Attribute *internalFindChild(const NameArg &name) const;
 
@@ -128,7 +130,7 @@ private:
   bool makeUniqueName(const Attribute *prop, const NameArg &name, Name &out) const;
   void internalInsert(Attribute *, xsize index);
   void internalSetup(Attribute *);
-  void internalRemove(Attribute *);
+  void internalRemove(Attribute *, bool clearing);
   void internalUnsetup(Attribute *);
 
   friend class ContainerTreeChange;
