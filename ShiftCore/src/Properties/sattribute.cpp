@@ -242,8 +242,9 @@ Name Attribute::identifier() const
     {
     Name out;
     Name::Buffer buf(&out);
+    Eks::String::OStream stream(&buf);
 
-    buf << index();
+    stream << parent()->index(this);
 
     return out;
     }
@@ -345,7 +346,7 @@ Eks::String Attribute::path() const
     {
     return Eks::String();
     }
-  return par->path() + Database::pathSeparator() + escapedName();
+  return par->path() + Database::pathSeparator() + escapedIdentifier();
   }
 
 Eks::String Attribute::path(const Attribute *from) const
@@ -364,7 +365,7 @@ Eks::String Attribute::path(const Attribute *from) const
     while(p && p != from)
       {
       xAssert(p->identifier() != "");
-      ret = p->escapedName() + Database::pathSeparator() + ret;
+      ret = p->escapedIdentifier() + Database::pathSeparator() + ret;
 
       p = p->parent();
       }

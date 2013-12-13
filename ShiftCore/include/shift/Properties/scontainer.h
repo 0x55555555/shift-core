@@ -130,7 +130,7 @@ private:
   bool makeUniqueName(const Attribute *prop, const NameArg &name, Name &out) const;
   void internalInsert(Attribute *, xsize index);
   void internalSetup(Attribute *);
-  void internalRemove(Attribute *, bool clearing);
+  void internalRemove(Attribute *);
   void internalUnsetup(Attribute *);
 
   friend class ContainerTreeChange;

@@ -3,6 +3,7 @@
 
 #include "shift/sdatabase.h"
 #include "shift/Properties/sproperty.h"
+#include "shift/Properties/sarray.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Properties/scontaineriterators.h"
 

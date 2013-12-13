@@ -151,7 +151,7 @@ QVariant CommonModel::data( const QModelIndex &index, int role ) const
       }
     else
       {
-      QString name = prop->name().toQString();
+      QString name = prop->identifier().toQString();
       xAssert(!name.isEmpty());
       return name;
       }

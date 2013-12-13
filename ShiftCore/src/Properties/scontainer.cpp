@@ -446,6 +446,9 @@ public:
 
 Eks::UniquePointer<Container::EditCache> Container::createEditCache(Eks::AllocatorBase *alloc)
   {
+  // currently this only improves searching through names, it will be no use for indexed contsiners
+  xAssert(hasNamedChildren());
+
   return alloc->createUnique<EditCache>(this, alloc);
   }
 
@@ -519,11 +522,9 @@ void Container::internalInsert(Attribute *newProp, xsize index)
 
   if(!hasNamedChildren())
     {
-    fixupIndices(this, justBefore);
+    fixupIndices(justBefore);
     }
-
-  EditCache *cache = database()->findEditCache(this);
-  if(cache)
+  else if(EditCache *cache = database()->findEditCache(this))
     {
     cache->addChild(newProp);
     }
@@ -586,12 +587,6 @@ void Container::internalRemove(Attribute *oldProp)
       }
     }
 
-  if (!hasNamedChildren())
-    {
-    setIndex(oldProp, X_UINT32_SENTINEL);
-    fixupIndices(this, justBefore);
-    }
-
   internalUnsetup(oldProp);
 
   // not dynamic or has a parent
@@ -600,8 +595,13 @@ void Container::internalRemove(Attribute *oldProp)
   oldPropInstInfo->setParent(nullptr);
   xAssert(!oldPropInstInfo->nextSibling());
 
-  EditCache *cache = database()->findEditCache(this);
-  if(cache)
+
+  if (!hasNamedChildren())
+    {
+    IndexedUtils::setIndex(oldProp, X_UINT32_SENTINEL);
+    fixupIndices(beforeRemoved);
+    }
+  else if(EditCache *cache = database()->findEditCache(this))
     {
     cache->removeChild(oldProp);
     }

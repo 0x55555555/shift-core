@@ -6,6 +6,7 @@
 #include "Memory/XGlobalAllocator.h"
 #include "shifttestcommon.h"
 #include "shift/sentity.h"
+#include "shift/Properties/sarray.h"
 #include "shift/Properties/sbaseproperties.h"
 
 // future tests
@@ -35,6 +36,7 @@ private Q_SLOTS:
   void createDestroyTest();
   void insertRemoveTest();
   void reparentTest();
+  void indexedChildTest();
   void simpleOperationTest();
   void simpleDirtyCompute();
   void entityCompute();
@@ -93,6 +95,14 @@ public:
   TestVector reciprocal;
 
   xsize evaluationCount;
+  };
+
+class TestIndexedEntity : public Shift::Entity
+  {
+  S_ENTITY(TestIndexedEntity, Entity)
+
+public:
+  Shift::Array testArray;
   };
 
 

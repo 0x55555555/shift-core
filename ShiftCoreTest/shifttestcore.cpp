@@ -56,5 +56,19 @@ void TestEntity::createTypeInformation(
     }
   }
 
+S_IMPLEMENT_PROPERTY(TestIndexedEntity, Test)
+
+void TestIndexedEntity::createTypeInformation(
+    Shift::PropertyInformationTyped<TestIndexedEntity> *info,
+    const Shift::PropertyInformationCreateData &data)
+  {
+  if(data.registerAttributes)
+    {
+    auto childBlock = info->createChildrenBlock(data);
+
+    childBlock.add(&TestIndexedEntity::testArray, "testArray");
+    }
+  }
+
 S_IMPLEMENT_TEST
 QTEST_APPLESS_MAIN(ShiftCoreTest)

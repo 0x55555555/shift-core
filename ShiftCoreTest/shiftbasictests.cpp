@@ -379,3 +379,32 @@ void ShiftCoreTest::reparentTest()
   QVERIFY(child1->name() != child3->name());
   QVERIFY(child2->name() != child4->name());
   }
+
+void ShiftCoreTest::indexedChildTest()
+  {
+  TestDatabase db;
+
+  auto named = db.addChild<TestEntity>();
+  QVERIFY(named != nullptr);
+
+  auto indexed = db.addChild<TestIndexedEntity>();
+  QVERIFY(indexed != nullptr);
+
+  QCOMPARE(named->children.size(), 0);
+  QCOMPARE(indexed->testArray.size(), 0);
+
+  QCOMPARE(named->children.hasNamedChildren(), true);
+  QCOMPARE(indexed->testArray.hasNamedChildren(), false);
+
+  auto namedFirst = named->children.add<TestEntity>("Test");
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(named->children.index(namedFirst), 0);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->name(), "Test");
+  QCOMPARE(namedFirst->identifier(), "Test");
+
+  auto indexedFirst = indexed->testArray.add<TestEntity>();
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), 0);
+  QCOMPARE(indexed->testArray.index(indexedFirst), 0);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->name(), "");
+  QCOMPARE(indexedFirst->identifier(), "0");
+  }

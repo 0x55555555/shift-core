@@ -57,7 +57,7 @@ QWidget *EntityUI::createControlWidget(Entity *ent, QWidget *parent, bool *added
       QWidget *widget = createControlWidget(child);
       if(widget)
         {
-        layout->addRow(child->name().toQString(), widget);
+        layout->addRow(child->identifier().toQString(), widget);
         if(added)
           {
           *added = true;

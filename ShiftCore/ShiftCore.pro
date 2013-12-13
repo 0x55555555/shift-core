@@ -51,7 +51,8 @@ SOURCES += \
     src/Changes/spropertychanges.cpp \
     src/Properties/scontainer.cpp \
     src/Changes/schange.cpp \
-    src/Properties/sset.cpp
+    src/Properties/sset.cpp \
+    src/Properties/sarray.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -98,7 +99,8 @@ HEADERS += \
     include/shift/Properties/scontaineriterators.h \
     include/shift/Properties/sdata.inl \
     include/shift/Properties/scontainerinternaliterators.h \
-    include/shift/Properties/sset.h
+    include/shift/Properties/sset.h \
+    include/shift/Properties/sarray.h
 
 
 

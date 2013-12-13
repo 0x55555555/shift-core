@@ -100,7 +100,7 @@ void Debugger::connectProperties(const Eks::UnorderedMap<Attribute *, DebugPrope
 
 DebugPropertyItem *Debugger::createItemForProperty(Attribute *prop, Eks::UnorderedMap<Attribute *, DebugPropertyItem *> *itemsOut)
   {
-  QString text = "name: " + prop->name().toQString() + "<br>type: " + prop->typeInformation()->typeName().toQString();
+  QString text = "identifier: " + prop->identifier().toQString() + "<br>type: " + prop->typeInformation()->typeName().toQString();
   PropertyVariantInterface *ifc = prop->findInterface<PropertyVariantInterface>();
   if(ifc)
     {
