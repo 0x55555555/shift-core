@@ -107,7 +107,7 @@ void ShiftCoreTest::dataTest()
     successful += attr->castTo<Shift::Data<xint32>>() ? 1 : 0;
 
     successful += a->castTo<TestEntity>() ? 1 : 0;
-    successful += a->castTo<Shift::Array>() ? 1 : 0;
+    successful += a->castTo<Shift::Set>() ? 1 : 0;
     successful += a->castTo<Shift::Container>() ? 1 : 0;
   }
 

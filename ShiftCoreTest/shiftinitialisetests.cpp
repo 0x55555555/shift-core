@@ -62,7 +62,7 @@ void TestDataEntity::createTypeInformation(
 
     childBlock.add(&TestDataEntity::uuid, "uuid");
 
-    childBlock.add<Shift::Array>("dynamicArray");
+    childBlock.add<Shift::Set>("dynamicArray");
 
     auto num = childBlock.add(&TestDataEntity::number, "number");
     num->setDefaultValue(300);
@@ -200,7 +200,7 @@ void ShiftCoreTest::initialiseProfileTest()
       db = createDb();
       }
 
-    Shift::Array* arr = &db->children;
+    Shift::Set* arr = &db->children;
 
     Eks::TemporaryAllocator alloc(arr->temporaryAllocator());
     auto editCache = optimiseInsert ? arr->createEditCache(&alloc) : nullptr;

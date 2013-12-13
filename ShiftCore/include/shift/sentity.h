@@ -3,7 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "shift/Properties/scontainer.h"
-#include "shift/Properties/sarray.h"
+#include "shift/Properties/sset.h"
 #include "shift/Changes/sobserver.h"
 #include "Memory/XWeakShared.h"
 
@@ -105,7 +105,7 @@ public:
   ~Entity();
 
   /// Used to hold dynamic child entities, allowing dynamic tree structures to be built.
-  Array children;
+  Set children;
 
   /// Move this Entity under another Entity (will actually move from one children member to another children member)
   void reparent(Entity *);

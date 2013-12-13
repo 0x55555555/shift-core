@@ -49,9 +49,9 @@ SOURCES += \
     src/UI/sdebugger.cpp \
     src/Utilities/satomichelper.cpp \
     src/Changes/spropertychanges.cpp \
-    src/Properties/sarray.cpp \
     src/Properties/scontainer.cpp \
-    src/Changes/schange.cpp
+    src/Changes/schange.cpp \
+    src/Properties/sset.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -96,9 +96,9 @@ HEADERS += \
     include/shift/Properties/scontainer.h \
     include/shift/Properties/scontainer.inl \
     include/shift/Properties/scontaineriterators.h \
-    include/shift/Properties/sarray.h \
     include/shift/Properties/sdata.inl \
-    include/shift/Properties/scontainerinternaliterators.h
+    include/shift/Properties/scontainerinternaliterators.h \
+    include/shift/Properties/sset.h
 
 
 
