@@ -2,8 +2,8 @@
 #define COMPUTETEST_H
 
 #include <QtTest>
-#include "XCore"
-#include "XGlobalAllocator"
+#include "XCore.h"
+#include "Memory/XGlobalAllocator.h"
 #include "shifttestcommon.h"
 #include "shift/sentity.h"
 #include "shift/Properties/sbaseproperties.h"

@@ -2,7 +2,7 @@
 #define SDATA_INL
 
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
-#include "XTemporaryAllocator"
+#include "Memory/XTemporaryAllocator.h"
 #include "shift/Changes/schange.h"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Changes/shandler.inl"

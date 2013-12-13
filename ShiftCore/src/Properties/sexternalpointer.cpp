@@ -3,7 +3,7 @@
 #include "shift/Serialisation/sloader.h"
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbaseproperties.inl"
-#include "XOptional"
+#include "Utilities/XOptional.h"
 
 namespace Shift
 {

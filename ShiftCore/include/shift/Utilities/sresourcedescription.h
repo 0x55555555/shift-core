@@ -1,8 +1,8 @@
 #ifndef SRESOURCEDESCRIPTION_H
 #define SRESOURCEDESCRIPTION_H
 
-#include "XGlobal"
-#include "XResourceDescription"
+#include "XGlobal.h"
+#include "Memory/XResourceDescription.h"
 
 namespace Shift
 {

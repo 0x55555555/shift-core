@@ -16,7 +16,7 @@
 #include "XVector2DWidget.h"
 #include "XVector3DWidget.h"
 #include "XColourWidget.h"
-#include "XProperty"
+#include "Utilities/XProperty.h"
 
 namespace Shift
 {

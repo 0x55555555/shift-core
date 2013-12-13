@@ -9,7 +9,7 @@ namespace Shift
 namespace AtomicHelper
 {
 
-#ifdef Q_CC_MSVC
+#ifdef X_MSVC
 typedef volatile short Type;
 #else
 typedef xuint16 Type;

@@ -2,8 +2,8 @@
 #define SENTITYUI_H
 
 #include "shift/sglobal.h"
-#include "XProperty"
-#include "XUnorderedMap"
+#include "Utilities/XProperty.h"
+#include "Containers/XUnorderedMap.h"
 
 class QWidget;
 

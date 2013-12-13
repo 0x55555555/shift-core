@@ -1,6 +1,6 @@
 #include "shift/TypeInformation/spropertygroup.h"
 #include "shift/TypeInformation/styperegistry.h"
-#include "XEventLogger"
+#include "Utilities/XEventLogger.h"
 
 namespace Shift
 {

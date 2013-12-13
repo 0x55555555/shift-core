@@ -14,9 +14,6 @@ Q_DECLARE_METATYPE(QModelIndex)
 namespace Shift
 {
 
-#define SDataModelProfileFunction XProfileFunctionBase(ShiftDataModelProfileScope)
-#define SDataModelProfileScopedBlock(mess) XProfileScopedBlockBase(ShiftDataModelProfileScope, mess)
-
 DatabaseDelegate::DatabaseDelegate(QObject *parent) : QStyledItemDelegate(parent), _currentWidget(0)
   {
   }

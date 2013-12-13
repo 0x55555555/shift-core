@@ -2,7 +2,7 @@
 #define SPROPERTYINFORMATIONAPIUTILITIES_H
 
 #include "XInterface.h"
-#include "XTemporaryAllocator"
+#include "Memory/XTemporaryAllocator.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertygroup.h"

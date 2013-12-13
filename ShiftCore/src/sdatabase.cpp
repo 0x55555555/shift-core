@@ -13,7 +13,7 @@
 #include "QDebug"
 
 #ifdef X_DEBUG
-# include "XLoggingAllocator"
+# include "Memory/XLoggingAllocator.h"
 #endif
 
 Q_DECLARE_METATYPE(Eks::Vector<Shift::Attribute *>)

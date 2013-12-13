@@ -11,7 +11,7 @@
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/TypeInformation/sinterfaces.h"
-#include "XTemporaryAllocator"
+#include "Memory/XTemporaryAllocator.h"
 
 namespace Shift
 {

@@ -1,8 +1,9 @@
 #include "shift/Utilities/satomichelper.h"
-#include "XResourceDescription"
-#include "XAssert"
+#include "Memory/XResourceDescription.h"
+#include "Utilities/XAssert.h"
+#include "QtGlobal"
 
-#if defined(Q_CC_MSVC)
+#if defined(X_MSVC)
 # include "Windows.h"
 #endif
 
@@ -16,7 +17,7 @@ bool trySet(Type *p, Type newVal, Type oldVal)
   {
   bool success = false;
 
-#if defined(Q_CC_MSVC)
+#if defined(X_MSVC)
   xAssertIsSpecificAligned(p, 8);
   // try to lock the updating flag, if we cant, someone else is working.
   success = InterlockedCompareExchange16(p, newVal, oldVal) == oldVal;

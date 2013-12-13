@@ -4,7 +4,7 @@
 #include "shift/Properties/sproperty.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertyinformation.h"
-#include "XEventLogger"
+#include "Utilities/XEventLogger.h"
 
 namespace Shift
 {

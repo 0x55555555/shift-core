@@ -8,7 +8,7 @@
 #include "shift/sdatabase.h"
 #include "shift/Changes/shandler.h"
 #include "shift/Changes/shandler.inl"
-#include "XStringBuffer"
+#include "Containers/XStringBuffer.h"
 
 namespace Shift
 {

@@ -4,7 +4,7 @@
 #include "shift/Properties/scontainer.inl"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
-#include "XEventLogger"
+#include "Utilities/XEventLogger.h"
 
 namespace Shift
 {

@@ -1,7 +1,7 @@
 #ifndef SGLOBAL_H
 #define SGLOBAL_H
 
-#include "XGlobal"
+#include "XGlobal.h"
 
 /** \mainpage Shift
 
@@ -20,9 +20,9 @@
  */
 
 #if defined(SHIFTCORE_BUILD)
-#  define SHIFT_EXPORT Q_DECL_EXPORT
+#  define SHIFT_EXPORT X_DECL_EXPORT
 #else
-#  define SHIFT_EXPORT Q_DECL_IMPORT
+#  define SHIFT_EXPORT X_DECL_IMPORT
 #endif
 
 # define ShiftCoreProfileScope 1043

@@ -1,7 +1,7 @@
 #ifndef SPROPERTYGROUP_H
 #define SPROPERTYGROUP_H
 
-#include "XProperty"
+#include "Utilities/XProperty.h"
 #include "shift/sglobal.h"
 
 namespace Eks

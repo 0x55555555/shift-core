@@ -4,7 +4,7 @@
 #include "shift/sglobal.h"
 #include "shift/Properties/sattribute.h"
 #include "shift/Utilities/satomichelper.h"
-#include "XFlags"
+#include "Utilities/XFlags.h"
 
 namespace Shift
 {

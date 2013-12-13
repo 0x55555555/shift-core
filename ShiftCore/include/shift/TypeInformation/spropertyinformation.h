@@ -3,8 +3,8 @@
 
 #include "shift/sglobal.h"
 #include "shift/TypeInformation/sinterface.h"
-#include "XProperty"
-#include "XUnorderedMap"
+#include "Utilities/XProperty.h"
+#include "Containers/XUnorderedMap.h"
 
 namespace XScript
 {

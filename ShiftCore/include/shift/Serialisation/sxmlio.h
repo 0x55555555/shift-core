@@ -5,7 +5,7 @@
 #include "sloader.h"
 #include "QXmlStreamWriter"
 #include "QXmlStreamReader"
-#include "XUnorderedMap"
+#include "Containers/XUnorderedMap.h"
 
 namespace Shift
 {

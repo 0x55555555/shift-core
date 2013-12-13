@@ -3,8 +3,8 @@
 
 #include "shift/sglobal.h"
 #include "shift/Utilities/spropertyname.h"
-#include "XProperty"
-#include "XStringSimple"
+#include "Utilities/XProperty.h"
+#include "Containers/XStringSimple.h"
 #include "QtCore/QTextStream"
 #include "QtCore/QDataStream"
 

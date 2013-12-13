@@ -7,7 +7,7 @@
 #include "shift/Changes/sobserver.h"
 #include "QtCore/QAbstractItemModel"
 #include "QtWidgets/QStyledItemDelegate"
-#include "XFlags"
+#include "Utilities/XFlags.h"
 
 namespace Shift
 {

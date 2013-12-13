@@ -5,7 +5,7 @@
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/sarray.h"
 #include "shift/Changes/sobserver.h"
-#include "XWeakShared"
+#include "Memory/XWeakShared.h"
 
 namespace Shift
 {

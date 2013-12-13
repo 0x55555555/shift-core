@@ -1,9 +1,9 @@
 #ifndef SINTERFACES_H
 #define SINTERFACES_H
 
-#include "XMathVector"
+#include "Math/XMathVector.h"
 #include "sinterface.h"
-#include "XColour"
+#include "Math/XColour.h"
 
 namespace Shift
 {

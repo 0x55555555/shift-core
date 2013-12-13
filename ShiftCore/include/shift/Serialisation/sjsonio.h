@@ -5,7 +5,7 @@
 #include "sloader.h"
 #include "QXmlStreamWriter"
 #include "QXmlStreamReader"
-#include "XUnorderedMap"
+#include "Containers/XUnorderedMap.h"
 
 struct JSON_value_struct;
 struct JSON_parser_struct;

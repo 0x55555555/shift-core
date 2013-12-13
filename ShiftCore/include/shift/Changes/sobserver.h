@@ -1,7 +1,7 @@
 #ifndef SOBSERVER_H
 #define SOBSERVER_H
 
-#include "XVector"
+#include "Containers/XVector.h"
 #include "shift/sglobal.h"
 #include "shift/Properties/sproperty.h"
 

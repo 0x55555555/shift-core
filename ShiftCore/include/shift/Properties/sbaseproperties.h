@@ -4,10 +4,10 @@
 #include "shift/sglobal.h"
 #include "shift/Properties/sdata.h"
 
-#include "XStringBuffer"
-#include "XMathVector"
-#include "XColour"
-#include "XQuaternion"
+#include "Containers/XStringBuffer.h"
+#include "Math/XMathVector.h"
+#include "Math/XColour.h"
+#include "Math/XQuaternion.h"
 #include "QtCore/QByteArray"
 #include "QtCore/QUuid"
 

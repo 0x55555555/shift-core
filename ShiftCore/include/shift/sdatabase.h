@@ -1,13 +1,13 @@
 #ifndef SDATABASE_H
 #define SDATABASE_H
 
-#include "XBucketAllocator"
+#include "Memory/XBucketAllocator.h"
 #include "shift/sglobal.h"
 #include "shift/sentity.h"
 #include "shift/Serialisation/sloader.h"
 #include "shift/Changes/shandler.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
-#include "XUniquePointer"
+#include "Memory/XUniquePointer.h"
 
 namespace Eks
 {

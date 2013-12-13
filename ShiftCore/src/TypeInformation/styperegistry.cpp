@@ -1,12 +1,12 @@
-#include "XBucketAllocator"
+#include "Memory/XBucketAllocator.h"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertygroup.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/Changes/sobserver.h"
 #include "shift/TypeInformation/sinterfaces.h"
-#include "XTemporaryAllocator"
-#include "XUnorderedMap"
+#include "Memory/XTemporaryAllocator.h"
+#include "Containers/XUnorderedMap.h"
 
 namespace Shift
 {

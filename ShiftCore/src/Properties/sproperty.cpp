@@ -9,7 +9,7 @@
 #include "shift/Properties/scontainer.inl"
 #include "shift/Utilities/satomichelper.h"
 #include "XConvertScriptSTL.h"
-#include "XIntrusiveLinkedList"
+#include "Containers/XIntrusiveLinkedList.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 namespace Shift

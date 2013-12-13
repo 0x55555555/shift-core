@@ -2,7 +2,7 @@
 #define SPROPERTYNAME_H
 
 #include "shift/sglobal.h"
-#include "XStringSimple"
+#include "Containers/XStringSimple.h"
 
 namespace Shift
 {

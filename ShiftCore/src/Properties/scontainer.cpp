@@ -9,8 +9,8 @@
 #include "shift/sdatabase.h"
 #include "shift/Utilities/siterator.h"
 #include "shift/Properties/scontainerinternaliterators.h"
-#include "XStringBuffer"
-#include "XIntrusiveLinkedList"
+#include "Containers/XStringBuffer.h"
+#include "Containers/XIntrusiveLinkedList.h"
 
 namespace Shift
 {

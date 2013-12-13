@@ -1,7 +1,7 @@
 #ifndef SENTITYWEAKPOINTER_H
 #define SENTITYWEAKPOINTER_H
 
-#include "XWeakShared"
+#include "Memory/XWeakShared.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 
