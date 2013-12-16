@@ -1,6 +1,6 @@
 #include "shift/Properties/sexternalpointer.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
-#include "shift/Serialisation/sloader.h"
+#include "shift/Serialisation/sattributeio.h"
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbaseproperties.inl"
 #include "Utilities/XOptional.h"
@@ -54,22 +54,35 @@ const Property *ExternalPointer::resolve(ResolveResult *resultOpt) const
   return prop;
   }
 
+TypedSerialisationValue<QUuid>::TypedSerialisationValue(const QUuid &t) : _val(t)
+  {
+
+  }
+
+Eks::String TypedSerialisationValue<QUuid>::asUtf8(Eks::AllocatorBase *a) const
+  {
+  Eks::String ret(a);
+
+  ret = _val.toByteArray().constData();
+  return ret;
+  }
+
+Eks::Vector<xuint8> TypedSerialisationValue<QUuid>::asBinary(Eks::AllocatorBase*) const
+  {
+  xAssertFail();
+  return Eks::Vector<xuint8>();
+  }
+
 class ExternalUuidPointer::Traits : public detail::PropertyBaseTraits
   {
 public:
-  static void save(const Attribute *p, Saver &s )
+  static void save(const Attribute *p, AttributeSaver &s)
     {
     detail::PropertyBaseTraits::save(p, s, false);
 
     const ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
-    if(s.streamMode() == Saver::Text)
-      {
-      s.textStream() << uuidProp->_id.toString();
-      }
-    else
-      {
-      s.binaryStream() << uuidProp->_id;
-      }
+
+    s.write(s.valueSymbol(), uuidProp->_id);
     }
 
   static Attribute *load(Container *parent, Loader &l)
@@ -77,7 +90,7 @@ public:
     Attribute *p = detail::PropertyBaseTraits::load(parent, l);
 
     ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
-    if(l.streamMode() == Saver::Text)
+    if(l.streamMode() == Loader::Text)
       {
       QString str;
       l.textStream() >> str;

@@ -69,6 +69,7 @@ void Loader::read(Container *read)
     }
   }
 
+/*
 void Saver::saveChildren(const Container *c)
   {
   bool shouldSaveAnyChildren = false;
@@ -94,7 +95,7 @@ void Saver::saveChildren(const Container *c)
       if(info->functions().shouldSave(child))
         {
         beginNextChild();
-        //if(info->shouldSaveValue())
+        if(info->functions().shouldSaveValue(child))
           {
           write(child);
           }
@@ -130,5 +131,5 @@ void Saver::write(const Attribute *prop)
 
   info->functions().save(prop, *this);
   }
-
+*/
 }

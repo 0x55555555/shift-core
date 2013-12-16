@@ -5,7 +5,7 @@
 
 namespace Shift
 {
-
+/*
 SXMLSaver::SXMLSaver() : _writer(), _root(0)
   {
   _buffer.open(QIODevice::WriteOnly);
@@ -85,7 +85,7 @@ void SXMLSaver::endAttribute(const char *attrName)
 
   _inAttribute.clear();
   }
-
+*/
 SXMLLoader::SXMLLoader()
   {
   _buffer.open(QIODevice::ReadOnly);

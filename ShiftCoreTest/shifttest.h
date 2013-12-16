@@ -40,10 +40,10 @@ private Q_SLOTS:
   void simpleOperationTest();
   void simpleDirtyCompute();
   void entityCompute();
+  void serialisationJsonTest();
   void initialiseTest();
   void initialiseProfileTest();
   void initialiseProfileTest_data();
-  void serialisationTest();
 
 private:
   Eks::Core core;

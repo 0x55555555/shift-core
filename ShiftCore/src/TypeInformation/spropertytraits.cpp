@@ -4,7 +4,9 @@
 #include "shift/Properties/scontainer.inl"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Serialisation/sloader.h"
+#include "shift/Serialisation/sattributeio.h"
 #include "Utilities/XEventLogger.h"
+#include "Memory/XTemporaryAllocator.h"
 
 namespace Shift
 {
@@ -16,14 +18,16 @@ void PropertyBaseTraits::assign(const Attribute *, Attribute *)
   {
   }
 
-void PropertyBaseTraits::save(const Attribute *p, Saver &l)
+void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l)
   {
   save(p, l, true);
   }
 
-void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
+void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l, bool writeInput)
   {
   SProfileFunction
+
+  Eks::TemporaryAllocator alloc(p->temporaryAllocator());
 
   bool dyn(p->isDynamic());
   if(dyn)
@@ -35,9 +39,7 @@ void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
       {
       const Eks::String &mode = instInfo->modeString();
 
-      l.beginAttribute("mode");
-      writeValue(l, mode);
-      l.endAttribute("mode");
+      l.write(l.modeSymbol(), mode);
       }
     }
 
@@ -45,9 +47,7 @@ void PropertyBaseTraits::save(const Attribute *p, Saver &l, bool writeInput)
     {
     if(writeInput && prop->input())
       {
-      l.beginAttribute("input");
-      writeValue(l, prop->input()->path(p));
-      l.endAttribute("input");
+      l.write(l.inputSymbol(), prop->input()->path(p, &alloc));
       }
     }
   }
@@ -197,32 +197,6 @@ void PropertyContainerTraits::assign(const Attribute *f, Attribute *t)
       ++index;
       }
     }
-  }
-
-void PropertyContainerTraits::save(const Attribute *p, Saver &l)
-  {
-  SProfileFunction
-  const Container *c = p->uncheckedCastTo<Container>();
-  xAssert(c);
-
-  detail::PropertyBaseTraits::save(p, l);
-
-  l.saveChildren(c);
-  }
-
-Attribute *PropertyContainerTraits::load(Container *parent, Loader &l)
-  {
-  SProfileFunction
-  xAssert(parent);
-
-  Attribute *prop = detail::PropertyBaseTraits::load(parent, l);
-  xAssert(prop);
-
-  Container* container = prop->uncheckedCastTo<Container>();
-
-  l.loadChildren(container);
-
-  return prop;
   }
 
 bool PropertyContainerTraits::shouldSaveValue(const Attribute *p)

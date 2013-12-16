@@ -80,12 +80,11 @@ public:
 #if X_QT_INTEROP
   virtual Eks::String asString(const Attribute *p) const
     {
-    QString d;
-      {
-      QTextStream s(&d);
-      s << p->uncheckedCastTo<PROP>()->value();
-      }
-    return Eks::String(d);
+    Eks::String d;
+    Eks::String::Buffer buf(&d);
+    Eks::String::OStream str(&buf);
+    str << p->uncheckedCastTo<PROP>()->value();
+    return d;
     }
   virtual QVariant asVariant(const Attribute *p) const
     {

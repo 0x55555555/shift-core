@@ -52,7 +52,9 @@ SOURCES += \
     src/Properties/scontainer.cpp \
     src/Changes/schange.cpp \
     src/Properties/sset.cpp \
-    src/Properties/sarray.cpp
+    src/Properties/sarray.cpp \
+    src/Serialisation/ssaver.cpp \
+    src/Serialisation/sattributeio.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -100,7 +102,9 @@ HEADERS += \
     include/shift/Properties/sdata.inl \
     include/shift/Properties/scontainerinternaliterators.h \
     include/shift/Properties/sset.h \
-    include/shift/Properties/sarray.h
+    include/shift/Properties/sarray.h \
+    include/shift/Serialisation/ssaver.h \
+    include/shift/Serialisation/sattributeio.h
 
 
 

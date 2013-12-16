@@ -72,55 +72,6 @@ private:
   CurrentData _data;
   };
 
-class Saver
-  {
-public:
-  enum Mode
-    {
-    Text,
-    Binary
-    };
-
-XProperties:
-  XROProperty(Mode, streamMode);
-
-public:
-  virtual ~Saver() { }
-
-  void setStreamDevice(Mode m, QIODevice *d) { _streamMode = m; _ts.setDevice(d); _ds.setDevice(d); }
-
-  void saveChildren(const Container *c);
-
-  virtual void beginChildren() = 0;
-  virtual void endChildren() = 0;
-  virtual void beginNextChild() = 0;
-  virtual void endNextChild() = 0;
-
-  void write(const Attribute *);
-
-  virtual void beginAttribute(const char *) = 0;
-  virtual void endAttribute(const char *) = 0;
-
-  QTextStream &textStream() { return _ts; }
-  QDataStream &binaryStream() { return _ds; }
-
-private:
-  QTextStream _ts;
-  QDataStream _ds;
-  };
-
-template <typename T> void writeValue(Saver &s, const T &t)
-  {
-  if(s.streamMode() == Saver::Text)
-    {
-    s.textStream() << t;
-    }
-  else
-    {
-    s.binaryStream() << t;
-    }
-  }
-
 template <typename T> void readValue(Loader &l, T &t)
   {
   if(l.streamMode() == Loader::Text)
@@ -130,18 +81,6 @@ template <typename T> void readValue(Loader &l, T &t)
   else
     {
     l.binaryStream() >> t;
-    }
-  }
-
-inline void writeValue(Saver &s, const QByteArray &t)
-  {
-  if(s.streamMode() == Saver::Text)
-    {
-    s.textStream() << t.toHex();
-    }
-  else
-    {
-    s.binaryStream() << t;
     }
   }
 
@@ -156,19 +95,6 @@ inline void readValue(Loader &l, QByteArray &t)
   else
     {
     l.binaryStream() >> t;
-    }
-  }
-
-template <xsize Size, typename Alloc>
-inline void writeValue(Saver &s, const Eks::StringBase<Eks::Char, Size, Alloc> &t)
-  {
-  if(s.streamMode() == Saver::Text)
-    {
-    s.textStream() << t.toQString();
-    }
-  else
-    {
-    s.binaryStream() << t.toQString();
     }
   }
 

@@ -7,23 +7,110 @@
 #include "../Serialisation/JsonParser/JSON_parser.h"
 #include "Utilities/XEventLogger.h"
 
-namespace Shift
+namespace Eks
 {
 
-QByteArray escape(const QByteArray &s)
+class JSONWriter
   {
-  QByteArray r = s;
-  r.replace("\\", "\\\\");
+XProperties:
+  XROByRefProperty(String, string);
+  XProperty(xsize, indent, setIndent);
+  XProperty(bool, niceFormatting, setNiceFormatting);
 
-  r.replace('\"', "\\\"");
-  r.replace('/', "\\/");
-  r.replace('\b', "\\b");
-  r.replace('\f', "\\f");
-  r.replace('\n', "\\n");
-  r.replace('\r', "\\r");
-  r.replace('\t', "\\t");
-  return r;
-  }
+public:
+  JSONWriter(Eks::AllocatorBase *alloc)
+      : _string(alloc),
+        _indent(0),
+        _niceFormatting(false),
+        _indentString(alloc),
+        _vector(&_string)
+    {
+    }
+
+  void addKeyValue(const char* key, const char* value)
+    {
+    WriteBlock b(this);
+
+    beginNewline();
+
+    appendQuotedEscaped(key);
+
+    _vector->append(": ", 2);
+
+    appendQuotedEscaped(value);
+    }
+
+private:
+  void beginNewline()
+    {
+    xAssert(_activeBlock);
+
+    if (_vector->length())
+      {
+      _vector->pushBack('\n');
+      _vector->append(_indentString.data(), _indentString.size());
+      }
+    }
+
+  void appendQuotedEscaped(const char* data)
+    {
+    xAssert(_activeBlock);
+
+    _vector->pushBack('"');
+
+    const char* p = data;
+    while(*p)
+      {
+      if(*p == '"')
+        {
+        _vector->pushBack('\\');
+        }
+
+      _vector->pushBack(*p);
+      }
+
+    _vector->pushBack('"');
+    }
+
+  class WriteBlock
+    {
+  public:
+    WriteBlock(JSONWriter *writer) : _writer(writer)
+      {
+      _oldBlock = _writer->_activeBlock;
+      _writer->_activeBlock = this;
+
+      if (!_oldBlock)
+        {
+        _writer->_vector->popBack();
+        }
+      }
+
+    ~WriteBlock()
+      {
+      _writer->_activeBlock = _oldBlock;
+
+      if (!_writer->_activeBlock)
+        {
+        _writer->_vector->pushBack('\0');
+        }
+      }
+
+  private:
+    JSONWriter *_writer;
+    WriteBlock *_oldBlock;
+    };
+
+  WriteBlock *_activeBlock;
+
+  Eks::String::BaseType::String *_vector;
+  Eks::String _indentString;
+  };
+
+}
+
+namespace Shift
+{
 
 #define PUSH_COMMA_STACK _commaStack << false;
 #define POP_COMMA_STACK _commaStack.pop_back();
@@ -52,112 +139,133 @@ QByteArray escape(const QByteArray &s)
 #define VALUE_KEY "val"
 #define NO_ROOT_KEY "noroot"
 
-JSONSaver::JSONSaver() : _autoWhitespace(false), _device(0), _root(0)
+class JSONSaver::Impl : public Saver::SaveDataImpl
   {
-  if(_autoWhitespace)
+public:
+  Impl(Attribute *root, SaveVisitor::Visitor *visitor)
+    : SaveDataImpl(root, visitor),
+      _mode("mode"),
+      _input("input"),
+      _value("value")
     {
-    _commaStack.reserve(8);
-    }
-  _buffer.open(QIODevice::WriteOnly);
-  setStreamDevice(Text, &_buffer);
-  }
-
-void JSONSaver::writeToDevice(QIODevice *device, const Container *ent, bool includeRoot)
-  {
-  SProfileFunction
-  _root = ent;
-
-  _device = device;
-
-
-  if(!includeRoot)
-    {
-    START_OBJECT
-    OBJECT_VALUE_CHAR_CHAR(NO_ROOT_KEY, "true");
-
-    saveChildren(_root);
-
-    END_OBJECT
-    }
-  else
-    {
-    START_OBJECT
-    write(_root);
-    END_OBJECT
     }
 
-
-  if(_autoWhitespace)
+  class StringSymbol : public SerialisationSymbol
     {
-    _device->write("\n");
+  public:
+    StringSymbol(const char* data) : str(data)
+      {
+      }
+
+    const char* str;
+    };
+
+  StringSymbol _mode, _input, _value;
+  };
+
+JSONSaver::JSONSaver() : _autoWhitespace(false)
+  {
+  }
+
+Eks::UniquePointer<JSONSaver::SaveData> JSONSaver::beginVisit(Attribute *root)
+  {
+  return saveAllocator()->createUnique<Impl>(root, this);
+  }
+
+void JSONSaver::beginNamedChildren(Attribute *a)
+  {
+  Saver::beginNamedChildren(a);
+  }
+
+void JSONSaver::endNamedChildren(Attribute *a)
+  {
+  Saver::endNamedChildren(a);
+  }
+
+void JSONSaver::beginIndexedChildren(Attribute *a)
+  {
+  Saver::beginIndexedChildren(a);
+  }
+
+void JSONSaver::endIndexedChildren(Attribute *a)
+  {
+  Saver::endIndexedChildren(a);
+  }
+
+class JSONSaver::JSONAttributeSaver : public Saver::AttributeDataImpl
+  {
+public:
+  JSONAttributeSaver(SaveData *data, Attribute *attr)
+    : AttributeDataImpl(data, attr),
+      _attrCount(0),
+      _hasValueSymbolBeenWritten(false),
+      _valueOnly(allocator()),
+      writer(allocator())
+    {
     }
 
-  _root = 0;
-  }
-
-void JSONSaver::beginChildren()
-  {
-  SProfileFunction
-  xAssert(_inAttribute.isEmpty());
-  START_ARRAY_IN_OBJECT_CHAR(CHILDREN_KEY);
-  }
-
-void JSONSaver::endChildren()
-  {
-  SProfileFunction
-  xAssert(_inAttribute.isEmpty());
-  END_ARRAY
-  }
-
-void JSONSaver::beginNextChild()
-  {
-  SProfileFunction
-  xAssert(_buffer.data().isEmpty());
-  START_OBJECT
-  }
-
-void JSONSaver::endNextChild()
-  {
-  SProfileFunction
-  textStream().flush();
-  if(!_buffer.buffer().isEmpty())
+  void initAsChild(JSONAttributeSaver* parent)
     {
-    OBJECT_VALUE_CHAR_BYTEARRAY(VALUE_KEY, _buffer.buffer());
-    _buffer.buffer().clear();
-    textStream().seek(0);
-    }
-  END_OBJECT
-  }
-
-void JSONSaver::beginAttribute(const char *attrName)
-  {
-  SProfileFunction
-  xAssert(_inAttribute.isEmpty());
-  _inAttribute = attrName;
-  xAssert(!_inAttribute.isEmpty());
-
-  textStream().flush();
-  xAssert(_buffer.buffer().isEmpty());
-  }
-
-void JSONSaver::endAttribute(const char *attrName)
-  {
-  SProfileFunction
-  (void)attrName;
-  xAssert(!_inAttribute.isEmpty());
-  xAssert(_inAttribute == attrName);
-
-  textStream().flush();
-  if(!_buffer.buffer().isEmpty())
-    {
-    OBJECT_VALUE_BYTEARRAY_BYTEARRAY(_inAttribute.toUtf8(), _buffer.buffer());
-    _buffer.buffer().clear();
-    textStream().seek(0);
+    writer.setIndent(parent->writer.indent());
+    writer.setNiceFormatting(parent->writer.niceFormatting());
     }
 
-  _inAttribute.clear();
+  void writeValue(const Symbol &id, const SerialisationValue& value) X_OVERRIDE
+    {
+    ++_attrCount;
+
+    Eks::String valueStr = value.asUtf8(allocator());
+
+    if (&id == &valueSymbol())
+      {
+      xAssert(!_hasValueSymbolBeenWritten);
+      _hasValueSymbolBeenWritten = true;
+
+      _valueOnly = valueStr;
+      }
+
+    writer.addKeyValue(static_cast<const JSONSaver::Impl::StringSymbol &>(id).str, valueStr.data());
+    }
+
+  bool hasValues() { return _attrCount > 0; }
+  bool hasOnlyWrittenValueSymbol() { return _attrCount == 1 && _hasValueSymbolBeenWritten; }
+
+  Eks::JSONWriter writer;
+
+private:
+  xsize _attrCount;
+  bool _hasValueSymbolBeenWritten;
+
+  Eks::String _valueOnly;
+  };
+
+Eks::UniquePointer<JSONSaver::AttributeData> JSONSaver::beginAttribute(Attribute *a)
+  {
+### _impl->_alloc->createUnique<Impl::JSONAttributeSaver>(a, _impl.value())
+
+  auto &newAttr = _impl->_attributes.back();
+  if(_impl->_attributes.size() >= 2)
+    {
+    auto &oldTopAttr = _impl->_attributes[_impl->_attributes.size() - 2];
+
+    newAttr->initAsChild(oldTopAttr.value());
+    }
+
+  return newAttr.value();
   }
 
+void JSONSaver::endAttribute(Attribute* a)
+  {
+  auto &endedAttr = _impl->_attributes.back();
+  bool onlyHasValue = endedAttr->hasOnlyWrittenValueSymbol();
+  if (onlyHasValue)
+    {
+
+    }
+
+
+  Saver::endAttribute(a);
+  }
 
 JSONLoader::JSONLoader() : _current(Start)
   {

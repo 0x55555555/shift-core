@@ -71,19 +71,6 @@ void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
     {
     auto childBlock = info->createChildrenBlock(data);
     }
-  if(data.registerInterfaces)
-    {
-    auto *api = info->apiInterface();
-
-    static XScript::ClassDef<0,0,2> cls = {
-      {
-      api->method<Eks::Vector<Attribute *> (const QString &, QIODevice *, Container *), &Database::load>("load"),
-      api->method<void (const QString &, QIODevice *, Entity *, bool, bool), &Database::save>("save"),
-      }
-    };
-
-    api->buildInterface(cls);
-    }
   }
 
 Database::Database()
@@ -129,42 +116,6 @@ Database::~Database()
   TypeRegistry::generalPurposeAllocator()->destroy(_memory);
   _memory = 0;
 #endif
-  }
-
-Eks::Vector<Attribute *> Database::load(const QString &type, QIODevice *device, Container *loadRoot)
-  {
-  xAssert(type == "json");
-  (void)type;
-
-  JSONLoader s;
-
-  Attribute *p = loadRoot->lastChild();
-
-  s.readFromDevice(device, loadRoot);
-
-  if(!p)
-    {
-    p = loadRoot->firstChild();
-    }
-
-  Eks::Vector<Attribute *> ret;
-  xForeach(auto c, loadRoot->walkerFrom(p))
-    {
-    ret << c;
-    }
-
-  return ret;
-  }
-
-void Database::save(const QString &type, QIODevice *device, Entity *saveRoot, bool readable, bool includeRoot)
-  {
-  xAssert(type == "json");
-  (void)type;
-
-  JSONSaver s;
-  s.setAutoWhitespace(readable);
-
-  s.writeToDevice(device, saveRoot, includeRoot);
   }
 
 Attribute *Database::addDynamicAttribute(

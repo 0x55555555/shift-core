@@ -45,13 +45,6 @@ public:
   Database();
   ~Database();
 
-  /// Simple interface to load data into the database
-  /// \sa Loader
-  Eks::Vector<Attribute *> load(const QString &type, QIODevice *device, Container *loadRoot);
-  /// Simple interface to save data into the database
-  /// \sa Saver
-  void save(const QString &type, QIODevice *device, Entity *saveRoot, bool readable, bool includeRoot);
-
   /// The path separator used when forming string paths to properties.
   static const Eks::Char *pathSeparator();
   /// The path separator used when forming string paths to properties. Escaped for convenience.

@@ -4,6 +4,7 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/sdatabase.h"
+#include "shift/Serialisation/sattributeio.h"
 
 namespace Shift
 {
@@ -77,60 +78,6 @@ SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v)
   return s << v.toString();
   }
 
-QTextStream &operator>>(QTextStream &s, Shift::StringVector &v)
-  {
-  v.clear();
-  QString temp;
-
-  s.skipWhiteSpace();
-
-  QChar tempCheck;
-  s >> tempCheck;
-  if(tempCheck == '[')
-    {
-    tempCheck = ',';
-    while(tempCheck != ']')
-      {
-      if(tempCheck != ',')
-        {
-        xAssertFail();
-        break;
-        }
-
-      s.skipWhiteSpace();
-      s >> tempCheck;
-      if(tempCheck == ']' || tempCheck != '"')
-        {
-        break;
-        }
-
-      Shift::detail::readEscapedQuotedString(s, temp);
-      v << Eks::String(temp);
-      s.skipWhiteSpace();
-
-      s >> tempCheck;
-      }
-    }
-
-  return s;
-  }
-
-QTextStream &operator<<(QTextStream &s, const Shift::StringVector &v)
-  {
-  s << "[ ";
-  for(xsize i=0, count=v.size(); i<count; ++i)
-    {
-    Shift::detail::writeEscapedQuotedString(s, v[i]);
-    if(i<(count-1))
-      {
-      s << ", ";
-      }
-    }
-  s << " ]";
-  return s;
-  }
-
-
 namespace Shift
 {
 
@@ -200,9 +147,7 @@ IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector4D, FullData, 4d)
 IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Quaternion, FullData, quat)
 IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::String, FullData, str)
 IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Colour, FullData, col)
-IMPLEMENT_POD_SHIFT_PROPERTY(QByteArray, FullData)
 IMPLEMENT_POD_SHIFT_PROPERTY(QUuid, FullData)
-IMPLEMENT_POD_SHIFT_PROPERTY(StringVector, FullData);
 
 namespace detail
 {

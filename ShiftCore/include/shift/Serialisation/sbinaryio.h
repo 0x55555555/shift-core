@@ -9,6 +9,7 @@
 namespace Shift
 {
 
+/*
 class SHIFT_EXPORT SBinarySaver : private Saver
   {
 public:
@@ -32,7 +33,7 @@ private:
 
   QByteArray _inAttribute;
   QBuffer _buffer;
-  };
+  };*/
 
 class SHIFT_EXPORT SBinaryLoader : private Loader
   {

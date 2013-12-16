@@ -3,8 +3,10 @@
 
 #include "QBuffer"
 #include "sloader.h"
+#include "shift/Serialisation/ssaver.h"
 #include "QXmlStreamWriter"
 #include "QXmlStreamReader"
+#include "Memory/XUniquePointer.h"
 #include "Containers/XUnorderedMap.h"
 
 struct JSON_value_struct;
@@ -13,7 +15,7 @@ struct JSON_parser_struct;
 namespace Shift
 {
 
-class SHIFT_EXPORT JSONSaver : private Saver
+class SHIFT_EXPORT JSONSaver : public Saver
   {
 XProperties:
   XProperty(bool, autoWhitespace, setAutoWhitespace);
@@ -21,24 +23,21 @@ XProperties:
 public:
   JSONSaver();
 
-  void writeToDevice(QIODevice *device, const Container *ent, bool includeRoot);
+protected:
+  Eks::UniquePointer<SaveData> beginVisit(Attribute *root) X_OVERRIDE;
+
+  void beginNamedChildren(Attribute *a) X_OVERRIDE;
+  void endNamedChildren(Attribute *a) X_OVERRIDE;
+
+  void beginIndexedChildren(Attribute *a) X_OVERRIDE;
+  void endIndexedChildren(Attribute *a) X_OVERRIDE;
+
+  Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a) X_OVERRIDE;
 
 private:
-  void beginChildren();
-  void endChildren();
-  void beginNextChild();
-  void endNextChild();
-
-  void beginAttribute(const char *);
-  void endAttribute(const char *);
-
-  QIODevice *_device;
-  const Container *_root;
-
-  QVector <bool> _commaStack;
-
-  QString _inAttribute;
-  QBuffer _buffer;
+  class JSONAttributeSaver;
+  class Impl;
+  Eks::UniquePointer<Impl> _impl;
   };
 
 class SHIFT_EXPORT JSONLoader : private Loader

@@ -9,7 +9,7 @@
 
 namespace Shift
 {
-
+/*
 class SHIFT_EXPORT SXMLSaver : private Saver
   {
 public:
@@ -31,7 +31,7 @@ private:
 
   QString _inAttribute;
   QBuffer _buffer;
-  };
+  };*/
 
 class SHIFT_EXPORT SXMLLoader : private Loader
   {

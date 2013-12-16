@@ -16,8 +16,6 @@ namespace Shift
 
 #define DEFINE_POD_PROPERTY(name, type) typedef Shift::Data<type> name;
 
-typedef Eks::Vector<Eks::String> StringVector;
-
 DEFINE_POD_PROPERTY(BoolProperty, xuint8);
 DEFINE_POD_PROPERTY(IntProperty, xint32);
 DEFINE_POD_PROPERTY(LongIntProperty, xint64);
@@ -30,9 +28,7 @@ DEFINE_POD_PROPERTY(Vector3DProperty, Eks::Vector3D);
 DEFINE_POD_PROPERTY(Vector4DProperty, Eks::Vector4D);
 DEFINE_POD_PROPERTY(QuaternionProperty, Eks::Quaternion);
 DEFINE_POD_PROPERTY(ColourProperty, Eks::Colour);
-DEFINE_POD_PROPERTY(ByteArrayProperty, QByteArray);
 DEFINE_POD_PROPERTY(StringProperty, Eks::String);
-DEFINE_POD_PROPERTY(StringArrayProperty, StringVector);
 
 template <typename T> class FlagsProperty : public IntProperty
   {
@@ -83,15 +79,10 @@ SHIFT_EXPORT void assignTo(const Attribute *f, BoolProperty *to);
 SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, xuint8 v);
 SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, xuint8 &v);
 
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, Shift::StringVector &);
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const Shift::StringVector &v);
-
 SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &);
 SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
 
-Q_DECLARE_METATYPE(Shift::StringVector)
 Q_DECLARE_METATYPE(QUuid)
-
 Q_DECLARE_METATYPE(xuint8);
 
 #endif

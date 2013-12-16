@@ -11,6 +11,7 @@
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/sattribute.inl"
 #include "shift/Utilities/sresourcedescription.h"
+#include "shift/Serialisation/sattributeio.h"
 
 namespace Shift
 {
@@ -28,8 +29,7 @@ template <typename T> class PropertyInformationTyped;
   { Shift::detail::checkType<myType>(); Shift::PropertyInformationTyped<myType>::bootstrapTypeInformation(&_##myIdentifier##StaticTypeInformation.information, \
   #myIdentifier, myType::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
 
-#define S_DEFAULT_INTRO
-#define S_IMPLEMENT_PROPERTY(myType, grp) S_IMPLEMENT_PROPERTY_EXPLICIT(S_DEFAULT_INTRO, myType, myType, grp)
+#define S_IMPLEMENT_PROPERTY(myType, grp) S_IMPLEMENT_PROPERTY_EXPLICIT( , myType, myType, grp)
 
 #define S_DEFAULT_TYPE_INFORMATION(name) \
 void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \

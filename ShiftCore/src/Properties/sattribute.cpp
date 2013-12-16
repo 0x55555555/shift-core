@@ -30,8 +30,9 @@ const PropertyInformation *Attribute::bootstrapStaticTypeInformation(Eks::Alloca
   return staticTypeInformation();
   }
 
-void Attribute::createTypeInformation(PropertyInformationTyped<Attribute> *info,
-                                      const PropertyInformationCreateData &data)
+void Attribute::createTypeInformation(
+    PropertyInformationTyped<Attribute> *info,
+    const PropertyInformationCreateData &data)
   {
   if(data.registerInterfaces)
     {
@@ -40,7 +41,7 @@ void Attribute::createTypeInformation(PropertyInformationTyped<Attribute> *info,
     typedef XScript::XMethodToGetter<Attribute, Container * (), &Property::parent> ParentGetter;
     typedef XScript::XMethodToSetter<Attribute, Container *, &Property::setParent> ParentSetter;
 
-    static XScript::ClassDef<0,6,4> cls = {
+    static XScript::ClassDef<0,6,3> cls = {
       {
         api->property<const PropertyInformation *, &Property::typeInformation>("typeInformation"),
 
@@ -55,8 +56,6 @@ void Attribute::createTypeInformation(PropertyInformationTyped<Attribute> *info,
 
       },
       {
-        api->constMethod<Eks::String (const Attribute *), &Attribute::pathTo>("pathTo"),
-
         api->method<void(), &Attribute::beginBlock>("beginBlock"),
         api->method<void(bool), &Attribute::endBlock>("endBlock"),
 
@@ -251,8 +250,10 @@ Name Attribute::escapedIdentifier() const
   {
     { Database::pathSeparator(), Database::escapedPathSeparator() }
   };
+  
+  Eks::TemporaryAllocator alloc(temporaryAllocator());
 
-  Eks::String n;
+  Eks::String n(&alloc);
   Eks::String::replace(baseName, &n, reps, X_ARRAY_COUNT(reps));
 
   return n;
@@ -325,12 +326,12 @@ const Container *Attribute::embeddedParent() const
   return inst->locateConstParent(this);
   }
 
-Eks::String Attribute::pathTo(const Attribute *that) const
+Eks::String Attribute::pathTo(const Attribute *that, Eks::AllocatorBase* allocator) const
   {
-  return that->path(this);
+  return that->path(this, allocator);
   }
 
-Eks::String Attribute::path() const
+Eks::String Attribute::path(Eks::AllocatorBase* allocator) const
   {
   SProfileFunction
   const Property *par = parent();
@@ -338,26 +339,31 @@ Eks::String Attribute::path() const
     {
     return Eks::String();
     }
-  return par->path() + Database::pathSeparator() + escapedIdentifier();
+  return par->path(allocator) + Database::pathSeparator() + escapedIdentifier();
   }
 
-Eks::String Attribute::path(const Attribute *from) const
+Eks::String Attribute::path(const Attribute *from, Eks::AllocatorBase* allocator) const
   {
   SProfileFunction
 
   if(from == this)
     {
-    return "";
+    return Eks::String("", allocator);
     }
 
   if(isDescendedFrom(from))
     {
-    Eks::String ret;
+    Eks::String ret(allocator);
     const Attribute *p = parent();
     while(p && p != from)
       {
       xAssert(p->identifier() != "");
-      ret = p->escapedIdentifier() + Database::pathSeparator() + ret;
+
+      Eks::String tmp(allocator);
+      tmp += p->escapedIdentifier();
+      tmp += Database::pathSeparator();
+
+      ret = tmp + ret;
 
       p = p->parent();
       }
@@ -367,12 +373,14 @@ Eks::String Attribute::path(const Attribute *from) const
   const Attribute *parent = from->parent();
   if(parent)
     {
-    Eks::String s("..");
-    return s + Database::pathSeparator() + path(parent);
+    Eks::String s("..", allocator);
+    s += Database::pathSeparator();
+    s += path(parent, allocator);
+    return s;
     }
 
   xAssert(0);
-  return "";
+  return Eks::String("", allocator);
   }
 
 const Eks::String &Attribute::mode() const

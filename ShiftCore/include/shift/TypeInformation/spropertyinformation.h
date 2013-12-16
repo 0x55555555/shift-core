@@ -17,7 +17,7 @@ namespace Shift
 
 class Property;
 class Loader;
-class Saver;
+class AttributeSaver;
 class ContainerPropertyInformation;
 class PropertyGroup;
 
@@ -43,7 +43,7 @@ struct PropertyInformationFunctions
   typedef Eks::MemoryResource (*DestroyFunction)(Attribute *data);
   typedef void (*PostCreateFunction)(Attribute *data);
   typedef void (*PostSetFunction)(Attribute *data);
-  typedef void (*SaveFunction)( const Attribute *, Saver & );
+  typedef void (*SaveFunction)( const Attribute *, AttributeSaver & );
   typedef Attribute *(*LoadFunction)( Container *, Loader & );
   typedef void (*AssignFunction)( const Attribute *, Attribute * );
   typedef bool (*SaveQueryFunction)( const Attribute * );

@@ -301,11 +301,11 @@ template <typename T, int IsAttribute> class PODPropertyTraits<T, IsAttribute, t
   : public PropertyBaseTraits
   {
 public:
-  static void save(const Attribute *p, Saver &l)
+  static void save(const Attribute *p, AttributeSaver &l)
     {
     PropertyBaseTraits::save(p, l);
     const T *ptr = p->uncheckedCastTo<T>();
-    writeValue(l, ptr->_value);
+    l.write(l.valueSymbol(), ptr->_value);
     }
 
   static Attribute *load(Container *parent, Loader &l)

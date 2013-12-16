@@ -88,9 +88,9 @@ public:
   inline const DynamicInstanceInformation *dynamicBaseInstanceInformation() const;
 
   // find a path from this to that
-  Eks::String pathTo(const Attribute *that) const;
-  Eks::String path() const;
-  Eks::String path(const Attribute *from) const;
+  Eks::String pathTo(const Attribute *that, Eks::AllocatorBase* allocator) const;
+  Eks::String path(Eks::AllocatorBase* allocator) const;
+  Eks::String path(const Attribute *from, Eks::AllocatorBase* allocator) const;
 
   bool isDescendedFrom(const Attribute *ent) const;
   Attribute *resolvePath(const Eks::String &path);

@@ -129,7 +129,7 @@ class SHIFT_EXPORT PropertyBaseTraits
   {
 public:
   static void assign(const Attribute *, Attribute *);
-  static void save(const Attribute *, Saver & );
+  static void save(const Attribute *, AttributeSaver & );
   static Attribute *load(Container *, Loader &);
 
   // should this properties value be saved, for example not when the value
@@ -141,7 +141,7 @@ public:
   static bool shouldSave(const Attribute *);
 
   // helper for custom saving, allows not saving input specifically.
-  static void save(const Attribute *, Saver &, bool writeInput);
+  static void save(const Attribute *, AttributeSaver &, bool writeInput);
 
   // traits customised for each derived type
   template <typename T> struct TypeTraits
@@ -154,8 +154,6 @@ class SHIFT_EXPORT PropertyContainerTraits : public PropertyBaseTraits
   {
 public:
   static void assign(const Attribute *, Attribute *);
-  static void save(const Attribute *, Saver & );
-  static Attribute *load(Container *, Loader &);
   static bool shouldSaveValue(const Attribute *);
   };
 
