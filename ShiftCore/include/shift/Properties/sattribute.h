@@ -183,6 +183,9 @@ public:
 private:
   X_DISABLE_COPY(Attribute);
 
+  // set only works for dynamic properties
+  void forceSetName(const Name &);
+
   void internalSetName(const NameArg &name);
 
   const BaseInstanceInformation *_instanceInfo;

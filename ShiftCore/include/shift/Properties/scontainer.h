@@ -77,7 +77,7 @@ public:
   const Attribute *at(xsize i) const;
 
   // move a property from this to newParent
-  void moveAttribute(Container *newParent, Attribute *property);
+  void moveAttribute(Container *newParent, Attribute *property, xsize index = X_SIZE_SENTINEL);
 
   bool contains(const Attribute *) const;
 

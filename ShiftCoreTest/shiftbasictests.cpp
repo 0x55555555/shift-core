@@ -407,4 +407,55 @@ void ShiftCoreTest::indexedChildTest()
   QCOMPARE(indexed->testArray.index(indexedFirst), 0);
   QCOMPARE(indexedFirst->dynamicInstanceInformation()->name(), "");
   QCOMPARE(indexedFirst->identifier(), "0");
+
+  // move the named attribue into the indexed array
+  named->children.moveAttribute(&indexed->testArray, namedFirst);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), 0);
+  QCOMPARE(indexed->testArray.index(indexedFirst), 0);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->name(), "");
+  QCOMPARE(indexedFirst->identifier(), "0");
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), 1);
+  QCOMPARE(indexed->testArray.index(namedFirst), 1);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->name(), "");
+  QCOMPARE(namedFirst->identifier(), "1");
+
+  indexed->testArray.moveAttribute(&named->children, indexedFirst);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(named->children.index(indexedFirst), 0);
+  QVERIFY(indexedFirst->dynamicInstanceInformation()->name() != "");
+  QVERIFY(indexedFirst->identifier().length() > 5);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), 0);
+  QCOMPARE(indexed->testArray.index(namedFirst), 0);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->name(), "");
+  QCOMPARE(namedFirst->identifier(), "0");
+
+  indexed->testArray.moveAttribute(&named->children, namedFirst);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(named->children.index(indexedFirst), 0);
+  QVERIFY(indexedFirst->dynamicInstanceInformation()->name() != "");
+  QVERIFY(indexedFirst->identifier().length() > 5);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(named->children.index(namedFirst), 1);
+  QVERIFY(namedFirst->dynamicInstanceInformation()->name() != "");
+  QVERIFY(namedFirst->identifier().length() > 5);
+
+  named->children.moveAttribute(&indexed->testArray, namedFirst, 0);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(named->children.index(indexedFirst), 0);
+  QVERIFY(indexedFirst->dynamicInstanceInformation()->name() != "");
+  QVERIFY(indexedFirst->identifier().length() > 5);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), 0);
+  QCOMPARE(indexed->testArray.index(namedFirst), 0);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->name(), "");
+  QCOMPARE(namedFirst->identifier(), "0");
+
+  named->children.moveAttribute(&indexed->testArray, indexedFirst, 0);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), 0);
+  QCOMPARE(indexed->testArray.index(indexedFirst), 0);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->name(), "");
+  QCOMPARE(indexedFirst->identifier(), "0");
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), 1);
+  QCOMPARE(indexed->testArray.index(namedFirst), 1);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->name(), "");
+  QCOMPARE(namedFirst->identifier(), "1");
   }

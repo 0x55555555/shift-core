@@ -148,39 +148,65 @@ void ShiftCoreTest::initialiseProfileTest_data()
   QTest::addColumn<bool>("timeTearDown");
   QTest::addColumn<bool>("timeDbCtorDtor");
   QTest::addColumn<bool>("optimiseInsert");
+  QTest::addColumn<bool>("indexedInsert");
 
-  QTest::newRow("1    A") << 1     << false << false << false;
-  QTest::newRow("10   A") << 10    << false << false << false;
-  QTest::newRow("100  A") << 100   << false << false << false;
-  QTest::newRow("1000 A") << 1000  << false << false << false;
+  QTest::newRow("1    A") << 1     << false << false << false << false;
+  QTest::newRow("10   A") << 10    << false << false << false << false;
+  QTest::newRow("100  A") << 100   << false << false << false << false;
+  QTest::newRow("1000 A") << 1000  << false << false << false << false;
 #ifndef X_DEBUG
-  QTest::newRow("10000A") << 10000 << false << false << false;
+  QTest::newRow("10000A") << 10000 << false << false << false << false;
 #endif
 
-  QTest::newRow("1    B") << 1     << true  << false << false;
-  QTest::newRow("10   B") << 10    << true  << false << false;
-  QTest::newRow("100  B") << 100   << true  << false << false;
-  QTest::newRow("1000 B") << 1000  << true  << false << false;
+  QTest::newRow("1    B") << 1     << true  << false << false << false;
+  QTest::newRow("10   B") << 10    << true  << false << false << false;
+  QTest::newRow("100  B") << 100   << true  << false << false << false;
+  QTest::newRow("1000 B") << 1000  << true  << false << false << false;
 #ifndef X_DEBUG
-  QTest::newRow("10000B") << 10000 << true  << false << false;
+  QTest::newRow("10000B") << 10000 << true  << false << false << false;
 #endif
 
-  QTest::newRow("1    C") << 1     << true  << true  << false;
-  QTest::newRow("10   C") << 10    << true  << true  << false;
-  QTest::newRow("100  C") << 100   << true  << true  << false;
-  QTest::newRow("1000 C") << 1000  << true  << true  << false;
+  QTest::newRow("1    C") << 1     << true  << true  << false << false;
+  QTest::newRow("10   C") << 10    << true  << true  << false << false;
+  QTest::newRow("100  C") << 100   << true  << true  << false << false;
+  QTest::newRow("1000 C") << 1000  << true  << true  << false << false;
 #ifndef X_DEBUG
-  QTest::newRow("10000C") << 10000 << true  << true  << false;
+  QTest::newRow("10000C") << 10000 << true  << true  << false << false;
 #endif
 
-  QTest::newRow("1    D") << 1     << true  << true  << true ;
-  QTest::newRow("10   D") << 10    << true  << true  << true ;
-  QTest::newRow("100  D") << 100   << true  << true  << true ;
-  QTest::newRow("1000 D") << 1000  << true  << true  << true ;
+  QTest::newRow("1    D") << 1     << true  << true  << true  << false;
+  QTest::newRow("10   D") << 10    << true  << true  << true  << false;
+  QTest::newRow("100  D") << 100   << true  << true  << true  << false;
+  QTest::newRow("1000 D") << 1000  << true  << true  << true  << false;
 #ifndef X_DEBUG
-  QTest::newRow("10000D") << 10000 << true  << true  << true ;
+  QTest::newRow("10000D") << 10000 << true  << true  << true  << false;
 #endif
 
+  QTest::newRow("1    E") << 1     << true  << true  << false << true ;
+  QTest::newRow("10   E") << 10    << true  << true  << false << true ;
+  QTest::newRow("100  E") << 100   << true  << true  << false << true ;
+  QTest::newRow("1000 E") << 1000  << true  << true  << false << true ;
+#ifndef X_DEBUG
+  QTest::newRow("10000E") << 10000 << true  << true  << false << true ;
+#endif
+
+  }
+
+template <typename T> void doTest(T* arr, int count, bool timeTearDown, bool optimiseInsert)
+  {
+  Eks::TemporaryAllocator alloc(arr->temporaryAllocator());
+  auto editCache = optimiseInsert ? arr->createEditCache(&alloc) : nullptr;
+  (void)editCache;
+
+  for(xsize i = 0; i < count; ++i)
+    {
+    arr->add<TestEmbeddingEmbedderEntity>();
+    }
+
+  if (timeTearDown)
+    {
+    arr->clear();
+    }
   }
 
 void ShiftCoreTest::initialiseProfileTest()
@@ -189,6 +215,7 @@ void ShiftCoreTest::initialiseProfileTest()
   QFETCH(bool, timeTearDown);
   QFETCH(bool, timeDbCtorDtor);
   QFETCH(bool, optimiseInsert);
+  QFETCH(bool, indexedInsert);
 
   auto createDb = [timeDbCtorDtor]() { return std::unique_ptr<TestDatabase>(new TestDatabase()); };
 
@@ -200,25 +227,19 @@ void ShiftCoreTest::initialiseProfileTest()
       db = createDb();
       }
 
-    Shift::Set* arr = &db->children;
+    auto holder = db->addChild<TestIndexedEntity>();
 
-    Eks::TemporaryAllocator alloc(arr->temporaryAllocator());
-    auto editCache = optimiseInsert ? arr->createEditCache(&alloc) : nullptr;
-    (void)editCache;
-
-    for(xsize i = 0; i < count; ++i)
+    if(indexedInsert)
       {
-      arr->add<TestEmbeddingEmbedderEntity>();
+      doTest<Shift::Array>(&holder->testArray, count, timeTearDown, optimiseInsert);
       }
-
-    if (timeTearDown)
+    else
       {
-      arr->clear();
+      doTest<Shift::Set>(&holder->children, count, timeTearDown, optimiseInsert);
       }
 
     if (timeDbCtorDtor)
       {
-      editCache = nullptr;
       db = nullptr;
       }
     }

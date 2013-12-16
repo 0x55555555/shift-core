@@ -110,27 +110,19 @@ void Attribute::setName(const NameArg &in)
   xAssert(parent()->hasNamedChildren());
 
   Name fixedName;
-  in.toName(fixedName);
-  if(fixedName == "")
-    {
-    fixedName = typeInformation()->typeName();
-    }
+  parent()->makeUniqueName(this, in, fixedName);
 
   if(name() == fixedName)
     {
     return;
     }
 
-  // ensure the name is unique
-  xsize num = 1;
-  Name realName = fixedName;
-  while(parent()->findChild(realName))
-    {
-    realName = fixedName;
-    realName.appendType(num++);
-    }
+  forceSetName(fixedName);
+  }
 
-  PropertyDoChange(NameChange, name(), realName, this);
+void Attribute::forceSetName(const Name &in)
+  {
+  PropertyDoChange(NameChange, name(), in, this);
   }
 
 Handler *Attribute::handler()

@@ -238,7 +238,11 @@ bool Container::makeUniqueName(
     const NameArg &name,
     Name& newName) const
   {
-  xAssert(hasNamedChildren());
+  if(!hasNamedChildren())
+    {
+    return false;
+    }
+
   bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
   if(nameUnique)
     {
@@ -270,19 +274,28 @@ Attribute *Container::addAttribute(const PropertyInformation *info, xsize index,
   return newProp;
   }
 
-void Container::moveAttribute(Container *c, Attribute *p)
+void Container::moveAttribute(Container *c, Attribute *p, xsize index)
   {
   xAssert(p->parent() == this);
 
-  Name newName;
-  if(c->makeUniqueName(p, p->name(), newName))
-    {
-    Block b(database());
+  Block b(database());
 
-    p->setName(newName);
+  Name newName;
+  bool hasNewName = c->makeUniqueName(p, p->name(), newName);
+  xAssert(!hasNewName || c->hasNamedChildren());
+
+  if(!c->hasNamedChildren())
+    {
+    Name blankName;
+    p->forceSetName(blankName);
     }
 
-  PropertyDoChange(ContainerTreeChange, this, c, p, X_SIZE_SENTINEL);
+  PropertyDoChange(ContainerTreeChange, this, c, p, index);
+
+  if(hasNewName && c->hasNamedChildren())
+    {
+    p->setName(newName);
+    }
   }
 
 void Container::removeAttribute(Attribute *oldProp)
@@ -474,8 +487,7 @@ void Container::internalInsert(Attribute *newProp, xsize index)
   {
   preGet();
 
-  auto type = typeInformation();
-  xAssert(type->dynamicChildMode() != NoChildren);
+  xAssert(typeInformation()->dynamicChildMode() != NoChildren);
 
   // setup the new prop's instance info
     {
