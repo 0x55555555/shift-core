@@ -32,7 +32,7 @@ protected:
   void beginIndexedChildren(Attribute *a) X_OVERRIDE;
   void endIndexedChildren(Attribute *a) X_OVERRIDE;
 
-  Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a) X_OVERRIDE;
+  Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a, AttributeData *previous) X_OVERRIDE;
 
 private:
   class JSONAttributeSaver;

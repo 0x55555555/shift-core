@@ -11,9 +11,11 @@ class QIODevice;
 namespace Shift
 {
 
-class SHIFT_EXPORT Saver : public SaveVisitor::Visitor
+class SHIFT_EXPORT Saver
   {
 public:
+  typedef SerialisationSymbol Symbol;
+
   class WriteBlock
     {
   XProperties:
@@ -32,22 +34,25 @@ public:
     friend class Saver;
     };
 
-  class SaveDataImpl : public SaveData
+  class SaveData
     {
   public:
-    SaveDataImpl(Attribute *root, SaveVisitor::Visitor *visitor);
-    ~SaveDataImpl();
+    SaveData(Attribute *root, Saver *visitor);
+    ~SaveData();
 
+    Saver* saver() { return _saver; }
     Attribute *currentRoot() const { return _root; }
 
   private:
     Attribute *_root;
+    Saver *_saver;
     };
 
-  class AttributeDataImpl : public AttributeData
+  class AttributeData : public AttributeSaver
     {
   public:
-    AttributeDataImpl(SaveData *data, Attribute *attr);
+    AttributeData(SaveData *data, Attribute *attr);
+    ~AttributeData();
 
     Attribute *attribute() const { return _attribute; }
     Eks::TemporaryAllocator* allocator() const { return &_attributeAllocator; }
@@ -56,62 +61,36 @@ public:
     const Symbol &inputSymbol() X_OVERRIDE;
     const Symbol &valueSymbol() X_OVERRIDE;
 
-    Saver *saver() { return _saver; }
+    SaveData* saveData() { return _data; }
 
   private:
     mutable Eks::TemporaryAllocator _attributeAllocator;
     Attribute *_attribute;
-    Saver* _saver;
+    SaveData *_data;
+    Saver *_saver;
 
     friend class Saver;
-    };
-  typedef SerialisationSymbol Symbol;
-
-  class Visitor
-    {
-  public:
-    class SaveData
-      {
-    public:
-      SaveData(SaveVisitor::Visitor *visitor);
-
-      SaveVisitor::Visitor* visitor() { return _visitor; }
-
-    private:
-      SaveVisitor::Visitor* _visitor;
-      };
-
-    class AttributeData : public AttributeSaver
-      {
-    public:
-      AttributeData(SaveData *data);
-
-      SaveData* visitor() { return _data; }
-
-    private:
-      SaveData* _data;
-      };
-
-    /// \brief Begin a write of a whole tree to the writer. Called once at beginning.
-    virtual Eks::UniquePointer<SaveData> beginVisit(Attribute *root) = 0;
-
-    /// \brief Begin a series of calls to [beginWriting] or [writeSingleValue], with named attributes.
-    virtual void beginNamedChildren(Attribute *a) = 0;
-    /// \brief End seried of calls to children with named attributes.
-    virtual void endNamedChildren(Attribute *a) = 0;
-
-    /// \brief Begin a series of calls to [beginWriting] or [writeSingleValue], with indexed attributes.
-    virtual void beginIndexedChildren(Attribute *a) = 0;
-    /// \brief End seried of calls to children with indexed attributes.
-    virtual void endIndexedChildren(Attribute *a) = 0;
-
-    /// \brief Begin writing an attribute, which ends when the destructor is called.
-    virtual Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a) = 0;
     };
 
   Saver();
 
   WriteBlock beginWriting(QIODevice *device);
+
+  /// \brief Begin a write of a whole tree to the writer. Called once at beginning.
+  virtual Eks::UniquePointer<SaveData> beginVisit(Attribute *root) = 0;
+
+  /// \brief Begin a series of calls to [beginWriting] or [writeSingleValue], with named attributes.
+  virtual void beginNamedChildren(Attribute *a) = 0;
+  /// \brief End seried of calls to children with named attributes.
+  virtual void endNamedChildren(Attribute *a) = 0;
+
+  /// \brief Begin a series of calls to [beginWriting] or [writeSingleValue], with indexed attributes.
+  virtual void beginIndexedChildren(Attribute *a) = 0;
+  /// \brief End seried of calls to children with indexed attributes.
+  virtual void endIndexedChildren(Attribute *a) = 0;
+
+  /// \brief Begin writing an attribute, which ends when the destructor is called.
+  virtual Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a, AttributeData *previous) = 0;
 
 protected:
   virtual const SerialisationSymbol &modeSymbol() = 0;

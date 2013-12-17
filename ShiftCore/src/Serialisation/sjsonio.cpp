@@ -139,11 +139,11 @@ namespace Shift
 #define VALUE_KEY "val"
 #define NO_ROOT_KEY "noroot"
 
-class JSONSaver::Impl : public Saver::SaveDataImpl
+class JSONSaver::Impl : public Saver::SaveData
   {
 public:
-  Impl(Attribute *root, SaveVisitor::Visitor *visitor)
-    : SaveDataImpl(root, visitor),
+  Impl(Attribute *root, Saver *saver)
+    : SaveData(root, saver),
       _mode("mode"),
       _input("input"),
       _value("value")
@@ -192,16 +192,30 @@ void JSONSaver::endIndexedChildren(Attribute *a)
   Saver::endIndexedChildren(a);
   }
 
-class JSONSaver::JSONAttributeSaver : public Saver::AttributeDataImpl
+class JSONSaver::JSONAttributeSaver : public Saver::AttributeData
   {
 public:
-  JSONAttributeSaver(SaveData *data, Attribute *attr)
-    : AttributeDataImpl(data, attr),
+  JSONAttributeSaver(SaveData *data, JSONAttributeSaver* prev, Attribute *attr)
+    : AttributeData(data, attr),
       _attrCount(0),
       _hasValueSymbolBeenWritten(false),
       _valueOnly(allocator()),
       writer(allocator())
     {
+    if(prev)
+      {
+      initAsChild(prev);
+      }
+    }
+
+  ~JSONAttributeSaver()
+    {
+    bool onlyHasValue = hasOnlyWrittenValueSymbol();
+    if (onlyHasValue)
+      {
+
+      }
+
     }
 
   void initAsChild(JSONAttributeSaver* parent)
@@ -239,35 +253,16 @@ private:
   Eks::String _valueOnly;
   };
 
-Eks::UniquePointer<JSONSaver::AttributeData> JSONSaver::beginAttribute(Attribute *a)
+Eks::UniquePointer<Saver::AttributeData> JSONSaver::beginAttribute(Attribute *a, AttributeData *previous)
   {
-### _impl->_alloc->createUnique<Impl::JSONAttributeSaver>(a, _impl.value())
-
-  auto &newAttr = _impl->_attributes.back();
-  if(_impl->_attributes.size() >= 2)
-    {
-    auto &oldTopAttr = _impl->_attributes[_impl->_attributes.size() - 2];
-
-    newAttr->initAsChild(oldTopAttr.value());
-    }
-
-  return newAttr.value();
+  return previous->allocator()->createUnique<JSONAttributeSaver>(
+             a,
+             static_cast<JSONAttributeSaver*>(previous),
+             _impl.value());
   }
 
-void JSONSaver::endAttribute(Attribute* a)
-  {
-  auto &endedAttr = _impl->_attributes.back();
-  bool onlyHasValue = endedAttr->hasOnlyWrittenValueSymbol();
-  if (onlyHasValue)
-    {
-
-    }
-
-
-  Saver::endAttribute(a);
-  }
-
-JSONLoader::JSONLoader() : _current(Start)
+JSONLoader::JSONLoader()
+    : _current(Start)
   {
   _buffer.open(QIODevice::ReadOnly);
 
