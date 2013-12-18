@@ -8,15 +8,19 @@ namespace Shift
 {
 
 Saver::WriteBlock::WriteBlock(Saver* w, QIODevice *device)
-  : _oldWriteBlock(w->_block),
-    _device(device),
+  : _device(device),
+    _writer(w),
+    _writing(false),
     _written(false)
   {
+  xAssert(!w->_block);
+  w->_block = this;
   }
 
 Saver::WriteBlock::~WriteBlock()
   {
-  _writer->_block = _oldWriteBlock;
+  _writer->_block = nullptr;
+  _writer->_saveAllocator.reset();
   }
 
 Saver::SaveData::SaveData(Attribute *root, Saver *v)
@@ -40,36 +44,40 @@ Saver::SaveData::~SaveData()
   _saver->_block->_written = true;
   }
 
+Saver::ValueData::ValueData(AttributeData *data) : _data(data)
+  {
+  }
+
+const SerialisationSymbol &Saver::ValueData::modeSymbol()
+  {
+  return _data->saveData()->modeSymbol();
+  }
+
+const SerialisationSymbol &Saver::ValueData::inputSymbol()
+  {
+  return _data->saveData()->inputSymbol();
+  }
+
+const SerialisationSymbol &Saver::ValueData::valueSymbol()
+  {
+  return _data->saveData()->valueSymbol();
+  }
+
+const SerialisationSymbol &Saver::ValueData::typeSymbol()
+  {
+  return _data->saveData()->typeSymbol();
+  }
+
 Saver::AttributeData::AttributeData(SaveData *data, Attribute *attr)
     : _data(data),
       _attribute(attr)
   {
+  _attributeAllocator.init(attr->temporaryAllocator());
   }
 
 Saver::AttributeData::~AttributeData()
   {
   }
-
-const SerialisationSymbol &Saver::AttributeData::modeSymbol()
-  {
-  return _data->modeSymbol();
-  }
-
-const SerialisationSymbol &Saver::AttributeData::inputSymbol()
-  {
-  return _data->inputSymbol();
-  }
-
-const SerialisationSymbol &Saver::AttributeData::valueSymbol()
-  {
-  return _data->valueSymbol();
-  }
-
-const SerialisationSymbol &Saver::AttributeData::typeSymbol()
-  {
-  return _data->typeSymbol();
-  }
-
 Saver::Saver()
     : _block(nullptr)
   {
@@ -91,6 +99,13 @@ void SaveVisitor::visit(Attribute *attr, bool includeRoot, Saver *receiver)
 
 void SaveVisitor::visitAttribute(Saver::AttributeData *data)
   {
+  visitValues(data);
+
+  visitChildren(data);
+  }
+
+void SaveVisitor::visitValues(Saver::AttributeData *data)
+  {
   auto attr = data->attribute();
   xAssert(attr);
 
@@ -99,15 +114,14 @@ void SaveVisitor::visitAttribute(Saver::AttributeData *data)
 
   data->saveData()->addSavedType(info);
 
+  auto dataAttrs = data->beginValues();
   bool dyn = attr->isDynamic();
   if(dyn)
     {
-    data->write(data->typeSymbol(), info->typeName());
+    dataAttrs->write(dataAttrs->typeSymbol(), info->typeName());
     }
 
-  info->functions().save(attr, *data);
-
-  visitChildren(data);
+  info->functions().save(attr, *dataAttrs.value());
   }
 
 void SaveVisitor::visitChildren(Saver::AttributeData *attr)

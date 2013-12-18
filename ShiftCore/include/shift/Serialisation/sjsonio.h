@@ -27,6 +27,7 @@ protected:
   Eks::UniquePointer<SaveData> beginVisit(Attribute *root) X_OVERRIDE;
 
 private:
+  class JSONValueSaver;
   class JSONChildSaver;
   class JSONAttributeSaver;
   class Impl;

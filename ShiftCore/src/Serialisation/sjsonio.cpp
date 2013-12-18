@@ -14,20 +14,170 @@ class JSONWriter
   {
 XProperties:
   XROByRefProperty(String, string);
-  XProperty(xsize, indent, setIndent);
   XProperty(bool, niceFormatting, setNiceFormatting);
 
 public:
-  JSONWriter(Eks::AllocatorBase *alloc)
+  JSONWriter(Eks::AllocatorBase *alloc, const JSONWriter *parent = nullptr)
       : _string(alloc),
-        _indent(0),
         _niceFormatting(false),
         _indentString(alloc),
-        _vector(&_string)
+        _vector(&_string),
+        _stack(alloc),
+        _activeBlock(nullptr)
     {
+    if(parent)
+      {
+      _indentString = parent->_indentString;
+      _niceFormatting = parent->niceFormatting();
+      }
     }
 
-  void addKeyValue(const char* key, const char* value)
+  ~JSONWriter()
+    {
+    xAssert(_stack.size() == 0);
+    }
+
+  void tabIn()
+    {
+    _indentString.append("  ");
+    }
+
+  void tabOut()
+    {
+    _indentString.resize(_indentString.size() - 2, ' ');
+    }
+
+  void addBlock(const char *data, bool addedElementsToScope)
+    {
+    xAssert(data);
+    WriteBlock b(this);
+    beginNewline();
+
+    _vector->append(data, strlen(data));
+
+    if (addedElementsToScope)
+      {
+      xAssert(_stack.size());
+      auto &obj = _stack.back();
+
+      obj.hasElements = addedElementsToScope;
+      }
+    }
+
+  struct Scope
+    {
+    bool hasElements;
+    bool hasOpenElement;
+
+    enum Type
+      {
+      Object,
+      Array
+      } type;
+    };
+
+  void beginArray()
+    {
+    beginScope(Scope::Array);
+    }
+
+  void beginObject()
+    {
+    beginScope(Scope::Object);
+    }
+
+  void beginScope(Scope::Type type)
+    {
+    WriteBlock b(this);
+
+    if(type == Scope::Object)
+      {
+      _vector->pushBack('{');
+      }
+    else
+      {
+      _vector->pushBack('[');
+      }
+
+    tabIn();
+
+    auto &obj = _stack.createBack();
+    obj.hasElements = false;
+    obj.hasOpenElement = false;
+    obj.type = type;
+    }
+
+  void end()
+    {
+    WriteBlock b(this);
+
+    xAssert(_stack.size());
+    auto &obj = _stack.back();
+
+    xAssert(!obj.hasOpenElement);
+    tabOut();
+
+    if(obj.hasElements)
+      {
+      beginNewline();
+      }
+
+    if(_stack.back().type == Scope::Object)
+      {
+      _vector->pushBack('}');
+      }
+    else
+      {
+      _vector->pushBack(']');
+      }
+
+    _stack.popBack();
+    }
+
+  void beginObjectElement(const char *key)
+    {
+    WriteBlock b(this);
+
+    xAssert(_stack.size());
+    xAssert(_stack.back().type == Scope::Object);
+    xAssert(_stack.back().hasOpenElement == false);
+
+    if(_stack.back().hasElements)
+      {
+      _vector->pushBack(',');
+      }
+
+    addKey(key);
+    _stack.back().hasOpenElement = true;
+    }
+
+  void beginArrayElement()
+    {
+    xAssert(_stack.size())
+    xAssert(_stack.back().type == Scope::Array);
+    xAssert(_stack.back().hasOpenElement == false);
+    
+    WriteBlock b(this);
+
+    if(_stack.back().hasElements)
+      {
+      _vector->pushBack(',');
+      }
+
+    beginNewline();
+    _stack.back().hasOpenElement = true;
+    }
+
+  void endElement()
+    {
+    xAssert(_stack.size());
+
+    xAssert(_stack.back().hasOpenElement == true);
+    _stack.back().hasElements = true;
+    _stack.back().hasOpenElement = false;
+    }
+
+  void addKey(const char *key)
     {
     WriteBlock b(this);
 
@@ -35,7 +185,34 @@ public:
 
     appendQuotedEscaped(key);
 
-    _vector->append(": ", 2);
+    if(_niceFormatting)
+      {
+      _vector->append(": ", 2);
+      }
+    else
+      {
+      _vector->pushBack(':');
+      }
+    }
+
+  void addValueForKey(const char *data)
+    {
+    xAssert(data);
+    WriteBlock b(this);
+
+    appendQuotedEscaped(data);
+    }
+
+  void addKeyValueStandalone(const char *key, const char *value, bool commaFirst)
+    {
+    WriteBlock b(this);
+
+    if(commaFirst)
+      {
+      _vector->pushBack(',');
+      }
+
+    addKey(key);
 
     appendQuotedEscaped(value);
     }
@@ -45,7 +222,7 @@ private:
     {
     xAssert(_activeBlock);
 
-    if (_vector->length())
+    if (_niceFormatting && _vector->length())
       {
       _vector->pushBack('\n');
       _vector->append(_indentString.data(), _indentString.size());
@@ -58,8 +235,8 @@ private:
 
     _vector->pushBack('"');
 
-    const char* p = data;
-    while(*p)
+
+    for(const char* p = data; *p; ++p)
       {
       if(*p == '"')
         {
@@ -80,7 +257,7 @@ private:
       _oldBlock = _writer->_activeBlock;
       _writer->_activeBlock = this;
 
-      if (!_oldBlock)
+      if (!_oldBlock && _writer->_vector->size())
         {
         _writer->_vector->popBack();
         }
@@ -102,6 +279,8 @@ private:
     };
 
   WriteBlock *_activeBlock;
+
+  Eks::Vector<Scope> _stack;
 
   Eks::String::BaseType::String *_vector;
   Eks::String _indentString;
@@ -139,6 +318,9 @@ namespace Shift
 #define VALUE_KEY "val"
 #define NO_ROOT_KEY "noroot"
 
+//----------------------------------------------------------------------------------------------------------------------
+// String Symbol Def
+//----------------------------------------------------------------------------------------------------------------------
 class StringSymbol : public SerialisationSymbol
   {
 public:
@@ -149,14 +331,19 @@ public:
   const char* str;
   };
 
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver::JSONChildSaver Def
+//----------------------------------------------------------------------------------------------------------------------
 class JSONSaver::JSONChildSaver : public Saver::ChildData
   {
 public:
-  JSONChildSaver(JSONSaver::JSONAttributeSaver *saver, Saver::AttributeData::ChildrenType type)
-      : _owner(saver),
-        _childType(type)
-    {
-    }
+  JSONChildSaver(JSONSaver::JSONAttributeSaver *saver, Saver::AttributeData::ChildrenType type);
+  ~JSONChildSaver();
+
+  void addChild(JSONSaver::JSONAttributeSaver *child);
+  void childComplete();
+
+  bool isNamed() const { return _childType == Saver::AttributeData::Named; }
 
   Eks::UniquePointer<Saver::AttributeData> beginAttribute(Attribute *a);
 
@@ -165,40 +352,24 @@ public:
 private:
   Saver::AttributeData::ChildrenType _childType;
   JSONSaver::JSONAttributeSaver *_owner;
+
+  xsize _childCount;
+  JSONSaver::JSONAttributeSaver *_activeChild;
   };
 
-class JSONSaver::JSONAttributeSaver : public Saver::AttributeData
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver::JSONValueSaver Def
+//----------------------------------------------------------------------------------------------------------------------
+class JSONSaver::JSONValueSaver : public Saver::ValueData
   {
 public:
-  JSONAttributeSaver(SaveData *data, JSONSaver::JSONChildSaver *prev, Attribute *attr)
-    : AttributeData(data, attr),
-      _attrCount(0),
-      _hasValueSymbolBeenWritten(false),
-      _valueOnly(allocator()),
-      _parent(prev)
-    {
-    }
-
-  ~JSONAttributeSaver()
-    {
-    bool onlyHasValue = hasOnlyWrittenValueSymbol();
-    if (onlyHasValue)
-      {
-
-      }
-    }
-
-  Eks::UniquePointer<Saver::ChildData> beginChildren(ChildrenType type) X_OVERRIDE
-    {
-    return allocator()->createUnique<JSONSaver::JSONChildSaver>(
-               this, type);
-    }
+  JSONValueSaver(JSONSaver::JSONAttributeSaver *saver);
+  ~JSONValueSaver();
 
   void writeValue(const Symbol &id, const SerialisationValue& value) X_OVERRIDE
     {
-    ++_attrCount;
 
-    Eks::String valueStr = value.asUtf8(allocator());
+    Eks::String valueStr = value.asUtf8(owner()->allocator());
 
     if (&id == &valueSymbol())
       {
@@ -208,23 +379,126 @@ public:
       _valueOnly = valueStr;
       }
 
-    writer().addKeyValue(static_cast<const StringSymbol &>(id).str, valueStr.data());
+    _allValuesWriter.addKeyValueStandalone(static_cast<const StringSymbol &>(id).str, valueStr.data(), _attrCount != 0);
+
+    ++_attrCount;
     }
 
   bool hasValues() { return _attrCount > 0; }
   bool hasOnlyWrittenValueSymbol() { return _attrCount == 1 && _hasValueSymbolBeenWritten; }
 
+
+  const Eks::String& valueSymbolDataOnly() { return _valueOnly; }
+  const Eks::String& allValues() { return _allValuesWriter.string(); }
+
 private:
-  Eks::JSONWriter& writer();
+  Eks::JSONWriter _allValuesWriter;
 
   xsize _attrCount;
   bool _hasValueSymbolBeenWritten;
 
   Eks::String _valueOnly;
+  };
+
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver::JSONAttributeSaver Def
+//----------------------------------------------------------------------------------------------------------------------
+class JSONSaver::JSONAttributeSaver : public Saver::AttributeData
+  {
+public:
+  JSONAttributeSaver(SaveData *data, JSONSaver::JSONChildSaver *prev, Attribute *attr)
+    : AttributeData(data, attr),
+      _parent(prev),
+      _values(nullptr),
+      _hasValues(false),
+      _children(nullptr),
+      _hasChildren(false),
+      _hasBegunObject(false)
+    {
+    if(_parent)
+      {
+      _parent->addChild(this);
+      }
+    }
+
+  ~JSONAttributeSaver()
+    {
+    if(_hasBegunObject)
+      {
+      writer()->end();
+      }
+
+    if(_parent)
+      {
+      _parent->childComplete();
+      }
+    }
+
+  Eks::UniquePointer<Saver::ChildData> beginChildren(ChildrenType type) X_OVERRIDE
+    {
+    xAssert(!_hasChildren);
+    xAssert(!_children);
+    xAssert(attribute()->castTo<Container>());
+
+    return allocator()->createUnique<JSONSaver::JSONChildSaver>(this, type);
+    }
+
+  Eks::UniquePointer<Saver::ValueData> beginValues() X_OVERRIDE
+    {
+    xAssert(!_hasValues);
+    xAssert(!_values);
+    return allocator()->createUnique<JSONSaver::JSONValueSaver>(this);
+    }
+
+  void setValues(JSONSaver::JSONValueSaver *vals)
+    {
+    xAssert(!_values);
+    _values = vals;
+    }
+
+  void valuesComplete()
+    {
+    xAssert(_values);
+    
+    if(_values->hasOnlyWrittenValueSymbol() && !attribute()->castTo<Container>())
+      {
+      writer()->addValueForKey(_values->valueSymbolDataOnly().data());
+      }
+    else
+      {
+      writer()->beginObject();
+      _hasBegunObject = true;
+
+      if(_values->hasValues())
+        {
+        writer()->addBlock(_values->allValues().data(), true);
+        }
+      }
+
+    _hasValues = true;
+    _values = nullptr;
+    }
+
+  void setChildren(JSONSaver::JSONChildSaver *vals);
+  void childrenComplete();
+
+  Eks::JSONWriter* writer();
+
+private:
+  JSONSaver::JSONValueSaver *_values;
+  JSONSaver::JSONChildSaver *_children;
+
+  bool _hasValues;
+  bool _hasChildren;
+
+  bool _hasBegunObject;
 
   JSONSaver::JSONChildSaver *_parent;
   };
 
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver::Impl Def
+//----------------------------------------------------------------------------------------------------------------------
 class JSONSaver::Impl : public Saver::SaveData
   {
 public:
@@ -234,11 +508,18 @@ public:
       _input("input"),
       _value("value"),
       _type("type"),
+      _children("contents"),
       _root(this, nullptr, root),
       _includeRoot(true),
       _writer(_root.allocator()),
       _typeMap(_root.allocator())
     {
+    _writer.setNiceFormatting(static_cast<JSONSaver*>(saver)->autoWhitespace());
+    }
+
+  ~Impl()
+    {
+    xAssertFail();
     }
 
   void addSavedType(const PropertyInformation *info) X_OVERRIDE
@@ -276,12 +557,59 @@ public:
     return _type;
     }
 
-  StringSymbol _mode, _input, _value, _type;
-  JSONSaver::JSONAttributeSaver _root;
+  const SerialisationSymbol &childrenSymbol()
+    {
+    return _children;
+    }
+
+  StringSymbol _mode, _input, _value, _type, _children;
   Eks::JSONWriter _writer;
+  JSONSaver::JSONAttributeSaver _root;
   Eks::UnorderedMap<const PropertyInformation *, xsize> _typeMap;
   bool _includeRoot;
   };
+
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver::JSONChildSaver Impl
+//----------------------------------------------------------------------------------------------------------------------
+JSONSaver::JSONChildSaver::JSONChildSaver(JSONSaver::JSONAttributeSaver *saver, Saver::AttributeData::ChildrenType type)
+    : _owner(saver),
+      _childType(type),
+      _childCount(0),
+      _activeChild(nullptr)
+  {
+  _owner->setChildren(this);
+  }
+
+JSONSaver::JSONChildSaver::~JSONChildSaver()
+  {
+  _owner->childrenComplete();
+  }
+
+void JSONSaver::JSONChildSaver::addChild(JSONSaver::JSONAttributeSaver *child)
+  {
+  xAssert(!_activeChild);
+
+  if(isNamed())
+    {
+    _owner->writer()->beginObjectElement(child->attribute()->name().data());
+    }
+  else
+    {
+    _owner->writer()->beginArrayElement();
+    }
+
+  _activeChild = child;
+  }
+
+void JSONSaver::JSONChildSaver::childComplete()
+  {
+  xAssert(_activeChild);
+
+  _owner->writer()->endElement();
+
+  _activeChild = nullptr;
+  }
 
 Eks::UniquePointer<Saver::AttributeData> JSONSaver::JSONChildSaver::beginAttribute(Attribute *a)
   {
@@ -291,21 +619,87 @@ Eks::UniquePointer<Saver::AttributeData> JSONSaver::JSONChildSaver::beginAttribu
              a);
   }
 
-Eks::JSONWriter& JSONSaver::JSONAttributeSaver::writer()
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver::JSONValueSaver Impl
+//----------------------------------------------------------------------------------------------------------------------
+JSONSaver::JSONValueSaver::JSONValueSaver(JSONSaver::JSONAttributeSaver *saver)
+    : ValueData(saver),
+      _attrCount(0),
+      _hasValueSymbolBeenWritten(false),
+      _valueOnly(saver->allocator()),
+      _allValuesWriter(saver->allocator(), saver->writer())
   {
-  return static_cast<JSONSaver::Impl*>(saveData())->_writer;
+  _allValuesWriter.tabIn();
+  saver->setValues(this);
   }
 
+JSONSaver::JSONValueSaver::~JSONValueSaver()
+  {
+  static_cast<JSONSaver::JSONAttributeSaver *>(owner())->valuesComplete();
+  }
+
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver::JSONAttributeSaver Impl
+//----------------------------------------------------------------------------------------------------------------------
+void JSONSaver::JSONAttributeSaver::setChildren(JSONSaver::JSONChildSaver *vals)
+  {
+  xAssert(!_children);
+  xAssert(_hasValues);
+
+  const Symbol& sym = static_cast<JSONSaver::Impl*>(saveData())->childrenSymbol();
+  writer()->beginObjectElement(static_cast<const StringSymbol&>(sym).str);
+
+  _children = vals;
+  if(_children->isNamed())
+    {
+    writer()->beginObject();
+    }
+  else
+    {
+    writer()->beginArray();
+    }
+  }
+
+void JSONSaver::JSONAttributeSaver::childrenComplete()
+  {
+  xAssert(_children);
+
+  if(_children->isNamed())
+    {
+    writer()->end();
+    }
+  else
+    {
+    writer()->end();
+    }
+
+  writer()->endElement();
+
+  _hasChildren = true;
+  _children = nullptr;
+  }
+
+Eks::JSONWriter* JSONSaver::JSONAttributeSaver::writer()
+  {
+  return &static_cast<JSONSaver::Impl*>(saveData())->_writer;
+  }
+
+//----------------------------------------------------------------------------------------------------------------------
+// JSONSaver Impl
+//----------------------------------------------------------------------------------------------------------------------
 JSONSaver::JSONSaver() : _autoWhitespace(false)
   {
   }
 
 Eks::UniquePointer<JSONSaver::SaveData> JSONSaver::beginVisit(Attribute *root)
   {
+  saveAllocator()->init(root->temporaryAllocator());
   return saveAllocator()->createUnique<Impl>(root, this);
   }
 
-
+//----------------------------------------------------------------------------------------------------------------------
+// JSONLoader Impl
+//----------------------------------------------------------------------------------------------------------------------
 JSONLoader::JSONLoader()
     : _current(Start)
   {

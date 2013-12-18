@@ -30,7 +30,6 @@ public:
 
   private:
     WriteBlock(Saver *w, QIODevice *device);
-    WriteBlock* _oldWriteBlock;
 
     friend class Saver;
     };
@@ -44,7 +43,27 @@ public:
     virtual Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a) = 0;
     };
 
-  class AttributeData : public AttributeSaver
+  class ValueData : public AttributeSaver
+    {
+  public:
+    ValueData(AttributeData *data);
+
+    /// \brief symbol for attribute mode.
+    const Symbol &modeSymbol() X_OVERRIDE;
+    /// \brief symbol for input mode.
+    const Symbol &inputSymbol() X_OVERRIDE;
+    /// \brief symbol for value mode.
+    const Symbol &valueSymbol() X_OVERRIDE;
+    /// \brief symbol for type mode.
+    const Symbol &typeSymbol();
+
+    AttributeData *owner() { return _data; }
+
+  private:
+    AttributeData *_data;
+    };
+
+  class AttributeData
     {
   public:
     AttributeData(SaveData *data, Attribute *attr);
@@ -57,23 +76,17 @@ public:
     /// \brief Get an allocator valid for the lifetime of the [AttributeData].
     Eks::TemporaryAllocator* allocator() const { return &_attributeAllocator; }
 
-    /// \brief symbol for attribute mode.
-    const Symbol &modeSymbol() X_OVERRIDE;
-    /// \brief symbol for input mode.
-    const Symbol &inputSymbol() X_OVERRIDE;
-    /// \brief symbol for value mode.
-    const Symbol &valueSymbol() X_OVERRIDE;
-    /// \brief symbol for type mode.
-    const Symbol &typeSymbol();
-
     enum ChildrenType
       {
       Indexed,
       Named
       };
 
-    /// \brief Begin a series of calls to [beginWriting] or [writeSingleValue].
+    /// \brief Begin a writing child attributes.
     virtual Eks::UniquePointer<ChildData> beginChildren(ChildrenType type) = 0;
+
+    /// \brief Begin a block of values.
+    virtual Eks::UniquePointer<ValueData> beginValues() = 0;
 
   private:
     mutable Eks::TemporaryAllocator _attributeAllocator;
@@ -140,6 +153,7 @@ public:
 
 private:
   void visitAttribute(Saver::AttributeData *data);
+  void visitValues(Saver::AttributeData *data);
   void visitChildren(Saver::AttributeData *data);
   };
 
