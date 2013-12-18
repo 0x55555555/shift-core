@@ -139,73 +139,44 @@ namespace Shift
 #define VALUE_KEY "val"
 #define NO_ROOT_KEY "noroot"
 
-class JSONSaver::Impl : public Saver::SaveData
+class StringSymbol : public SerialisationSymbol
   {
 public:
-  Impl(Attribute *root, Saver *saver)
-    : SaveData(root, saver),
-      _mode("mode"),
-      _input("input"),
-      _value("value")
+  StringSymbol(const char* data) : str(data)
     {
     }
 
-  class StringSymbol : public SerialisationSymbol
-    {
-  public:
-    StringSymbol(const char* data) : str(data)
-      {
-      }
-
-    const char* str;
-    };
-
-  StringSymbol _mode, _input, _value;
+  const char* str;
   };
 
-JSONSaver::JSONSaver() : _autoWhitespace(false)
+class JSONSaver::JSONChildSaver : public Saver::ChildData
   {
-  }
+public:
+  JSONChildSaver(JSONSaver::JSONAttributeSaver *saver, Saver::AttributeData::ChildrenType type)
+      : _owner(saver),
+        _childType(type)
+    {
+    }
 
-Eks::UniquePointer<JSONSaver::SaveData> JSONSaver::beginVisit(Attribute *root)
-  {
-  return saveAllocator()->createUnique<Impl>(root, this);
-  }
+  Eks::UniquePointer<Saver::AttributeData> beginAttribute(Attribute *a);
 
-void JSONSaver::beginNamedChildren(Attribute *a)
-  {
-  Saver::beginNamedChildren(a);
-  }
+  JSONSaver::JSONAttributeSaver *owner() { return _owner; }
 
-void JSONSaver::endNamedChildren(Attribute *a)
-  {
-  Saver::endNamedChildren(a);
-  }
-
-void JSONSaver::beginIndexedChildren(Attribute *a)
-  {
-  Saver::beginIndexedChildren(a);
-  }
-
-void JSONSaver::endIndexedChildren(Attribute *a)
-  {
-  Saver::endIndexedChildren(a);
-  }
+private:
+  Saver::AttributeData::ChildrenType _childType;
+  JSONSaver::JSONAttributeSaver *_owner;
+  };
 
 class JSONSaver::JSONAttributeSaver : public Saver::AttributeData
   {
 public:
-  JSONAttributeSaver(SaveData *data, JSONAttributeSaver* prev, Attribute *attr)
+  JSONAttributeSaver(SaveData *data, JSONSaver::JSONChildSaver *prev, Attribute *attr)
     : AttributeData(data, attr),
       _attrCount(0),
       _hasValueSymbolBeenWritten(false),
       _valueOnly(allocator()),
-      writer(allocator())
+      _parent(prev)
     {
-    if(prev)
-      {
-      initAsChild(prev);
-      }
     }
 
   ~JSONAttributeSaver()
@@ -215,13 +186,12 @@ public:
       {
 
       }
-
     }
 
-  void initAsChild(JSONAttributeSaver* parent)
+  Eks::UniquePointer<Saver::ChildData> beginChildren(ChildrenType type) X_OVERRIDE
     {
-    writer.setIndent(parent->writer.indent());
-    writer.setNiceFormatting(parent->writer.niceFormatting());
+    return allocator()->createUnique<JSONSaver::JSONChildSaver>(
+               this, type);
     }
 
   void writeValue(const Symbol &id, const SerialisationValue& value) X_OVERRIDE
@@ -238,28 +208,103 @@ public:
       _valueOnly = valueStr;
       }
 
-    writer.addKeyValue(static_cast<const JSONSaver::Impl::StringSymbol &>(id).str, valueStr.data());
+    writer().addKeyValue(static_cast<const StringSymbol &>(id).str, valueStr.data());
     }
 
   bool hasValues() { return _attrCount > 0; }
   bool hasOnlyWrittenValueSymbol() { return _attrCount == 1 && _hasValueSymbolBeenWritten; }
 
-  Eks::JSONWriter writer;
-
 private:
+  Eks::JSONWriter& writer();
+
   xsize _attrCount;
   bool _hasValueSymbolBeenWritten;
 
   Eks::String _valueOnly;
+
+  JSONSaver::JSONChildSaver *_parent;
   };
 
-Eks::UniquePointer<Saver::AttributeData> JSONSaver::beginAttribute(Attribute *a, AttributeData *previous)
+class JSONSaver::Impl : public Saver::SaveData
   {
-  return previous->allocator()->createUnique<JSONAttributeSaver>(
-             a,
-             static_cast<JSONAttributeSaver*>(previous),
-             _impl.value());
+public:
+  Impl(Attribute *root, Saver *saver)
+    : SaveData(root, saver),
+      _mode("mode"),
+      _input("input"),
+      _value("value"),
+      _type("type"),
+      _root(this, nullptr, root),
+      _includeRoot(true),
+      _writer(_root.allocator()),
+      _typeMap(_root.allocator())
+    {
+    }
+
+  void addSavedType(const PropertyInformation *info) X_OVERRIDE
+    {
+    _typeMap[info] = _typeMap.value(info, 0) + 1;
+    }
+
+  void setIncludeRoot(bool include) X_OVERRIDE
+    {
+    _includeRoot = include;
+    }
+
+  AttributeData* rootData() X_OVERRIDE
+    {
+    return &_root;
+    }
+
+  const SerialisationSymbol &modeSymbol() X_OVERRIDE
+    {
+    return _mode;
+    }
+
+  const SerialisationSymbol &inputSymbol() X_OVERRIDE
+    {
+    return _input;
+    }
+
+  const SerialisationSymbol &valueSymbol() X_OVERRIDE
+    {
+    return _value;
+    }
+
+  const SerialisationSymbol &typeSymbol() X_OVERRIDE
+    {
+    return _type;
+    }
+
+  StringSymbol _mode, _input, _value, _type;
+  JSONSaver::JSONAttributeSaver _root;
+  Eks::JSONWriter _writer;
+  Eks::UnorderedMap<const PropertyInformation *, xsize> _typeMap;
+  bool _includeRoot;
+  };
+
+Eks::UniquePointer<Saver::AttributeData> JSONSaver::JSONChildSaver::beginAttribute(Attribute *a)
+  {
+  return _owner->allocator()->createUnique<JSONSaver::JSONAttributeSaver>(
+             _owner->saveData(),
+             this,
+             a);
   }
+
+Eks::JSONWriter& JSONSaver::JSONAttributeSaver::writer()
+  {
+  return static_cast<JSONSaver::Impl*>(saveData())->_writer;
+  }
+
+JSONSaver::JSONSaver() : _autoWhitespace(false)
+  {
+  }
+
+Eks::UniquePointer<JSONSaver::SaveData> JSONSaver::beginVisit(Attribute *root)
+  {
+  return saveAllocator()->createUnique<Impl>(root, this);
+  }
+
 
 JSONLoader::JSONLoader()
     : _current(Start)

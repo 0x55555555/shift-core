@@ -26,15 +26,8 @@ public:
 protected:
   Eks::UniquePointer<SaveData> beginVisit(Attribute *root) X_OVERRIDE;
 
-  void beginNamedChildren(Attribute *a) X_OVERRIDE;
-  void endNamedChildren(Attribute *a) X_OVERRIDE;
-
-  void beginIndexedChildren(Attribute *a) X_OVERRIDE;
-  void endIndexedChildren(Attribute *a) X_OVERRIDE;
-
-  Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a, AttributeData *previous) X_OVERRIDE;
-
 private:
+  class JSONChildSaver;
   class JSONAttributeSaver;
   class Impl;
   Eks::UniquePointer<Impl> _impl;
