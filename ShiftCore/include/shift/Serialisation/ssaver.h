@@ -138,6 +138,8 @@ public:
 
   Eks::TemporaryAllocator* saveAllocator() const { return &_saveAllocator; }
 
+  WriteBlock *activeBlock() { return _block; }
+
 private:
   mutable Eks::TemporaryAllocator _saveAllocator;
   WriteBlock *_block;

@@ -78,6 +78,7 @@ Saver::AttributeData::AttributeData(SaveData *data, Attribute *attr)
 Saver::AttributeData::~AttributeData()
   {
   }
+
 Saver::Saver()
     : _block(nullptr)
   {

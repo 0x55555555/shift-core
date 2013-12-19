@@ -37,21 +37,26 @@ public:
     xAssert(_stack.size() == 0);
     }
 
+  void clear()
+    {
+    _string.clear();
+    }
+
   void tabIn()
     {
-    _indentString.append("  ");
+    _indentString.append("\t");
     }
 
   void tabOut()
     {
-    _indentString.resize(_indentString.size() - 2, ' ');
+    _indentString.resize(_indentString.size() - 1, '\t');
     }
 
   void addBlock(const char *data, bool addedElementsToScope)
     {
     xAssert(data);
     WriteBlock b(this);
-    beginNewline();
+    beginNewlineImpl();
 
     _vector->append(data, strlen(data));
 
@@ -119,7 +124,7 @@ public:
 
     if(obj.hasElements)
       {
-      beginNewline();
+      beginNewlineImpl();
       }
 
     if(_stack.back().type == Scope::Object)
@@ -164,7 +169,7 @@ public:
       _vector->pushBack(',');
       }
 
-    beginNewline();
+    beginNewlineImpl();
     _stack.back().hasOpenElement = true;
     }
 
@@ -177,30 +182,15 @@ public:
     _stack.back().hasOpenElement = false;
     }
 
-  void addKey(const char *key)
-    {
-    WriteBlock b(this);
-
-    beginNewline();
-
-    appendQuotedEscaped(key);
-
-    if(_niceFormatting)
-      {
-      _vector->append(": ", 2);
-      }
-    else
-      {
-      _vector->pushBack(':');
-      }
-    }
-
-  void addValueForKey(const char *data)
+  void addValueForElement(const char *data)
     {
     xAssert(data);
     WriteBlock b(this);
 
     appendQuotedEscaped(data);
+
+    xAssert(_stack.size());
+    _stack.back().hasElements = true;
     }
 
   void addKeyValueStandalone(const char *key, const char *value, bool commaFirst)
@@ -217,8 +207,14 @@ public:
     appendQuotedEscaped(value);
     }
 
-private:
   void beginNewline()
+    {
+    WriteBlock b(this);
+    beginNewlineImpl();
+    }
+
+private:
+  void beginNewlineImpl()
     {
     xAssert(_activeBlock);
 
@@ -226,6 +222,24 @@ private:
       {
       _vector->pushBack('\n');
       _vector->append(_indentString.data(), _indentString.size());
+      }
+    }
+
+  void addKey(const char *key)
+    {
+    WriteBlock b(this);
+
+    beginNewlineImpl();
+
+    appendQuotedEscaped(key);
+
+    if(_niceFormatting)
+      {
+      _vector->append(": ", 2);
+      }
+    else
+      {
+      _vector->pushBack(':');
       }
     }
 
@@ -413,7 +427,8 @@ public:
       _hasValues(false),
       _children(nullptr),
       _hasChildren(false),
-      _hasBegunObject(false)
+      _hasBegunObject(false),
+      _includeRoot(true)
     {
     if(_parent)
       {
@@ -423,15 +438,32 @@ public:
 
   ~JSONAttributeSaver()
     {
-    if(_hasBegunObject)
-      {
-      writer()->end();
-      }
+    complete();
 
     if(_parent)
       {
       _parent->childComplete();
       }
+    }
+
+  void complete()
+    {
+    if(_hasBegunObject)
+      {
+      writer()->end();
+      }
+    }
+
+  bool includesRoot() const
+    {
+    return _includeRoot;
+    }
+
+  void setIncludeRoot(bool include)
+    {
+    xAssert(!_hasBegunObject);
+    xAssert(!_parent);
+    _includeRoot = include;
     }
 
   Eks::UniquePointer<Saver::ChildData> beginChildren(ChildrenType type) X_OVERRIDE
@@ -459,19 +491,21 @@ public:
   void valuesComplete()
     {
     xAssert(_values);
-    
-    if(_values->hasOnlyWrittenValueSymbol() && !attribute()->castTo<Container>())
+    if(_includeRoot)
       {
-      writer()->addValueForKey(_values->valueSymbolDataOnly().data());
-      }
-    else
-      {
-      writer()->beginObject();
-      _hasBegunObject = true;
-
-      if(_values->hasValues())
+      if(_values->hasOnlyWrittenValueSymbol() && !attribute()->castTo<Container>())
         {
-        writer()->addBlock(_values->allValues().data(), true);
+        writer()->addValueForElement(_values->valueSymbolDataOnly().data());
+        }
+      else
+        {
+        writer()->beginObject();
+        _hasBegunObject = true;
+
+        if(_values->hasValues())
+          {
+          writer()->addBlock(_values->allValues().data(), true);
+          }
         }
       }
 
@@ -493,6 +527,8 @@ private:
 
   bool _hasBegunObject;
 
+  bool _includeRoot;
+
   JSONSaver::JSONChildSaver *_parent;
   };
 
@@ -510,16 +546,51 @@ public:
       _type("type"),
       _children("contents"),
       _root(this, nullptr, root),
-      _includeRoot(true),
-      _writer(_root.allocator()),
-      _typeMap(_root.allocator())
+      _alloc(root->temporaryAllocator()),
+      _writer(&_alloc),
+      _typeMap(&_alloc)
     {
     _writer.setNiceFormatting(static_cast<JSONSaver*>(saver)->autoWhitespace());
+    _writer.tabIn();
     }
 
   ~Impl()
     {
-    xAssertFail();
+    _root.complete();
+    emitJson(saver()->activeBlock()->device());
+    }
+
+  void emitJson(QIODevice *dev)
+    {
+    Eks::TemporaryAllocator alloc(_root.attribute()->temporaryAllocator());
+    Eks::JSONWriter writer(&alloc);
+    writer.setNiceFormatting(_writer.niceFormatting());
+
+    writer.beginObject();
+    
+    writer.beginObjectElement("version");
+    writer.addValueForElement("2");
+    writer.endElement();
+
+    writer.beginObjectElement("noRoot");
+    writer.addValueForElement(_root.includesRoot() ? "0" : "1");
+    writer.endElement();
+
+    writer.beginObjectElement("data");
+
+    dev->write(writer.string().data(), writer.string().length());
+    dev->write(_writer.string().data());
+    if(_writer.niceFormatting())
+      {
+      dev->write("\n}\n");
+      }
+    else
+      {
+      dev->write("}");
+      }
+    
+    writer.endElement();
+    writer.end();
     }
 
   void addSavedType(const PropertyInformation *info) X_OVERRIDE
@@ -529,7 +600,7 @@ public:
 
   void setIncludeRoot(bool include) X_OVERRIDE
     {
-    _includeRoot = include;
+    _root.setIncludeRoot(include);
     }
 
   AttributeData* rootData() X_OVERRIDE
@@ -563,10 +634,10 @@ public:
     }
 
   StringSymbol _mode, _input, _value, _type, _children;
+  Eks::TemporaryAllocator _alloc;
   Eks::JSONWriter _writer;
   JSONSaver::JSONAttributeSaver _root;
   Eks::UnorderedMap<const PropertyInformation *, xsize> _typeMap;
-  bool _includeRoot;
   };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -646,8 +717,12 @@ void JSONSaver::JSONAttributeSaver::setChildren(JSONSaver::JSONChildSaver *vals)
   xAssert(!_children);
   xAssert(_hasValues);
 
-  const Symbol& sym = static_cast<JSONSaver::Impl*>(saveData())->childrenSymbol();
-  writer()->beginObjectElement(static_cast<const StringSymbol&>(sym).str);
+
+  if(_includeRoot)
+    {
+    const Symbol& sym = static_cast<JSONSaver::Impl*>(saveData())->childrenSymbol();
+    writer()->beginObjectElement(static_cast<const StringSymbol&>(sym).str);
+    }
 
   _children = vals;
   if(_children->isNamed())
@@ -673,7 +748,10 @@ void JSONSaver::JSONAttributeSaver::childrenComplete()
     writer()->end();
     }
 
-  writer()->endElement();
+  if(_includeRoot)
+    {
+    writer()->endElement();
+    }
 
   _hasChildren = true;
   _children = nullptr;
