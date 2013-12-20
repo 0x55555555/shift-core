@@ -1,8 +1,6 @@
 #ifndef SPROPERTYINFORMATIONAPIUTILITIES_H
 #define SPROPERTYINFORMATIONAPIUTILITIES_H
 
-#include "XInterface.h"
-#include "Memory/XTemporaryAllocator.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertygroup.h"
@@ -12,6 +10,8 @@
 #include "shift/Properties/sattribute.inl"
 #include "shift/Utilities/sresourcedescription.h"
 #include "shift/Serialisation/sattributeio.h"
+#include "XInterface.h"
+#include "Memory/XTemporaryAllocator.h"
 
 namespace Shift
 {
@@ -110,17 +110,21 @@ template <typename PropType, typename Fn> struct CompteLambdaHelper
   {
   static void bind(const PropertyInstanceInformation *, Container* par)
     {
-    Fn method;
+    // This is a bit hacky. but i care very little.
+    typename std::aligned_storage<sizeof(Fn), 4>::type data;
+    Fn &method = reinterpret_cast<Fn&>(data);
 
     method(par->uncheckedCastTo<PropType>());
     }
   };
 
-#define S_CHILD_CHECK(Parent, Child, ...) \
-  { typedef detail::ChildCheck<Parent, Child, __VA_ARGS__> S_CHECK; \
-    xCompileTimeAssert(S_CHECK::ValidAggregate); \
-  xCompileTimeAssert(S_CHECK::ExtraValid); \
-  xCompileTimeAssert(S_CHECK::AddingValid); }
+
+#define S_CHILD_CHECK_EXP(Parent, Child, Extra) \
+  { typedef detail::ChildCheck<Parent, Child, Extra> S_CHECK; \
+    xCompileTimeAssert(S_CHECK::ValidAggregate == true); \
+  xCompileTimeAssert(S_CHECK::ExtraValid == true); \
+  xCompileTimeAssert(S_CHECK::AddingValid == true); }
+#define S_CHILD_CHECK(Parent, Child) S_CHILD_CHECK_EXP(Parent, Child, false)
 
 template <typename T> struct ChildModesCheck
   {
@@ -227,8 +231,9 @@ public:
 
   PropertyInformationChildrenCreator(
           PropertyInformationChildrenCreator&& data) :
-  _temporaryAllocator(TypeRegistry::temporaryAllocator()),
-    _properties(&_temporaryAllocator), _data(data._data)
+    _data(data._data),
+    _temporaryAllocator(TypeRegistry::temporaryAllocator()),
+    _properties(&_temporaryAllocator)
   {
       _properties = data._properties;
 
@@ -264,12 +269,6 @@ public:
           U AncestorPropType::* ptr,
           const NameArg &name)
     {
-    // this isnt always true, but normally is.
-    // when adding extended child properties things get weird.
-    //
-    //typedef std::is_base_of<AncestorPropType, PropType> Inherits;
-    //xCompileTimeAssert(Inherits::value == true);
-
     S_CHILD_CHECK(PropType, U)
 
     xptrdiff location = findLocation(ptr);
@@ -330,7 +329,7 @@ public:
     {
     const PropertyInformation *newChildType = T::bootstrapStaticTypeInformation(_data.allocator);
 
-    S_CHILD_CHECK(PropType, T, true)
+    S_CHILD_CHECK_EXP(PropType, T, true)
 
     EmbeddedPropertyInstanceInformation *inst =
         PropertyInformationChildrenCreator::add(newChildType, name);
@@ -390,10 +389,10 @@ public:
     {
     xsize location = PropertyInformationChildrenCreatorTyped<PropType>::findLocation(ptr);
 
-    xsize offset = 0;
+    Eks::RelativeMemoryResource offset = 0;
     const PropertyInformation* allocatable = _information->findAllocatableBase(offset);
     (void)allocatable;
-    location -= offset;
+    location -= offset.value();
 
     return static_cast<const PropertyInstanceInformationTyped<PropType, U>*>(PropertyInformationChildrenCreator::child(location));
     }

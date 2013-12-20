@@ -22,7 +22,7 @@ bool trySet(Type *p, Type newVal, Type oldVal)
   // try to lock the updating flag, if we cant, someone else is working.
   success = InterlockedCompareExchange16(p, newVal, oldVal) == oldVal;
 
-#elif defined(Q_CC_GCC)
+#else
   success = __sync_val_compare_and_swap(p, oldVal, newVal) == oldVal;
 #endif
 

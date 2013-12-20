@@ -7,25 +7,9 @@ namespace Shift
 
 S_IMPLEMENT_PROPERTY(Set, Shift)
 
-void Set::createTypeInformation(PropertyInformationTyped<Set> *info,
-                                           const PropertyInformationCreateData &data)
+void Set::createTypeInformation(PropertyInformationTyped<Set> *,
+                                           const PropertyInformationCreateData &)
   {
-  if(data.registerInterfaces)
-    {
-    auto* api = info->apiInterface();
-
-    typedef XScript::MethodToInCa<Set,
-        Attribute *(const PropertyInformation *, xsize, const NameArg &),
-        &Set::add> AddType;
-
-    static XScript::ClassDef<0,0,1> cls = {
-      {
-        api->method<AddType>("add")
-      }
-    };
-
-    api->buildInterface(cls);
-    }
   }
 
 void Set::remove(Attribute *prop)

@@ -59,6 +59,7 @@ SHIFT_EXPORT void getDefault(Eks::Quaternion *t);
 
 SHIFT_EXPORT void assignTo(const Attribute *f, Data<Eks::String> *to);
 SHIFT_EXPORT void assignTo(const Attribute *f, Data<QUuid> *to);
+SHIFT_EXPORT void assignTo(const Attribute *f, QuaternionProperty *to);
 SHIFT_EXPORT void assignTo(const Attribute *f, ColourProperty *to);
 SHIFT_EXPORT void assignTo(const Attribute *f, Vector4DProperty *to);
 SHIFT_EXPORT void assignTo(const Attribute *f, Vector3DProperty *to);

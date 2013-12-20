@@ -1,4 +1,5 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
+#include "shift/Utilities/spropertyname.h"
 
 namespace Shift
 {

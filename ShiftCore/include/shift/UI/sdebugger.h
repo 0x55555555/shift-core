@@ -26,7 +26,7 @@ class SHIFT_EXPORT Debugger : public QWidget
 public:
   Debugger(Database *db, QWidget *parent=0);
 
-private slots:
+private Q_SLOTS:
   void snapshot();
 
 
@@ -52,14 +52,14 @@ public:
   enum { Type = UserType + 1 };
   int type() const { return Type; }
 
-signals:
+Q_SIGNALS:
   void showConnected();
 
-public slots:
+public Q_SLOTS:
   void layout();
   void show();
 
-protected slots:
+protected Q_SLOTS:
   void hide();
   void hideChildren();
   void hideSiblings();
@@ -88,7 +88,7 @@ public:
   enum { Type = UserType + 2 };
   int type() const { return Type; }
 
-private slots:
+private Q_SLOTS:
   void updateEndPoints();
 
 private:

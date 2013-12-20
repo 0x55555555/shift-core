@@ -11,6 +11,7 @@
 
 namespace Shift
 {
+class ContainerTreeChange;
 
 class Database;
 

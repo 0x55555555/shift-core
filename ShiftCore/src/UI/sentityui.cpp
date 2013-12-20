@@ -94,7 +94,7 @@ int EntityUI::addWidgetCreator(WidgetCreator fn)
 
 void EntityUI::setUIType(const PropertyInformation *type, int widgetType)
   {
-  if((xsize)widgetType >= 0 && (xsize)widgetType < _types.size())
+  if(widgetType >= 0 && (xsize)widgetType < _types.size())
     {
     _uiTypes[type] = widgetType;
     }

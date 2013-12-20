@@ -1,6 +1,7 @@
 #include "shift/sdatabase.h"
 #include "shift/sentity.h"
 #include "shift/Changes/schange.h"
+#include "shift/Changes/spropertychanges.h"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Properties/scontaineriterators.h"

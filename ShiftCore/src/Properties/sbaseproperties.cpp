@@ -645,6 +645,16 @@ void assignTo(const Attribute *f, Vector4DProperty *to)
     }
   }
 
+void assignTo(const Attribute *f, QuaternionProperty *to)
+  {
+  const QuaternionProperty *qProp = f->castTo<QuaternionProperty>();
+  if(qProp)
+    {
+    to->assign(qProp->value());
+    return;
+    }
+  }
+
 void assignTo(const Attribute *f, ColourProperty *to)
   {
   const Vector2DProperty *aProp = f->castTo<Vector2DProperty>();

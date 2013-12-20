@@ -95,11 +95,11 @@ EmbeddedPropertyInstanceInformation::EmbeddedPropertyInstanceInformation(
     _holdingTypeInformation(o.holdingTypeInformation()),
     _location(o.location()),
     _defaultInput(o.defaultInput()),
+    _index(o._index),
     _compute(o.compute()),
     _affects(o.affects()),
     _affectsOwner(false),
-    _isExtraClassMember(false),
-    _index(o._index)
+    _isExtraClassMember(false)
   {
   xAssert(!o.isExtraClassMember())
   }
@@ -287,7 +287,7 @@ const EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::
   return cur;
   }
 
-void EmbeddedPropertyInstanceInformation::setDefaultValue(const QString &)
+void EmbeddedPropertyInstanceInformation::setDefaultValueFromString(const Eks::String &)
   {
   xAssertFail();
   }

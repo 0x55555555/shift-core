@@ -99,7 +99,7 @@ public:
   class SaveData
     {
   public:
-    SaveData(Attribute *root, Saver *visitor);
+    SaveData(Saver *visitor);
     ~SaveData();
 
     /// \brief Add a type which was saved to the file. Used to storve version data.
@@ -124,7 +124,6 @@ public:
     virtual const SerialisationSymbol &typeSymbol() = 0;
 
   private:
-    Attribute *_root;
     Saver *_saver;
     };
 

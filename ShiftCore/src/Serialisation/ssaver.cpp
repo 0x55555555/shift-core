@@ -8,8 +8,8 @@ namespace Shift
 {
 
 Saver::WriteBlock::WriteBlock(Saver* w, QIODevice *device)
-  : _device(device),
-    _writer(w),
+  : _writer(w),
+    _device(device),
     _writing(false),
     _written(false)
   {
@@ -23,9 +23,8 @@ Saver::WriteBlock::~WriteBlock()
   _writer->_saveAllocator.reset();
   }
 
-Saver::SaveData::SaveData(Attribute *root, Saver *v)
-    : _root(root),
-      _saver(v)
+Saver::SaveData::SaveData(Saver *v)
+    : _saver(v)
   {
   xAssert(_saver->_block);
   xAssert(!_saver->_block->_writing);
@@ -69,8 +68,8 @@ const SerialisationSymbol &Saver::ValueData::typeSymbol()
   }
 
 Saver::AttributeData::AttributeData(SaveData *data, Attribute *attr)
-    : _data(data),
-      _attribute(attr)
+    : _attribute(attr),
+      _data(data)
   {
   _attributeAllocator.init(attr->temporaryAllocator());
   }

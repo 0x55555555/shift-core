@@ -1,4 +1,4 @@
-#include "shift\UI\sdebugger.h"
+#include "shift/UI/sdebugger.h"
 #include "QtWidgets/QToolBar"
 #include "QtWidgets/QVBoxLayout"
 #include "QtWidgets/QGraphicsView"
@@ -313,7 +313,7 @@ void DebugPropertyItem::layout()
     if(childItem)
       {
       childItem->setPos(currentX, childHeight);
-      currentX += boundingRectWithChildProperties().width(); + GapX;
+      currentX += boundingRectWithChildProperties().width() + GapX;
       }
     }
   }
@@ -329,7 +329,11 @@ void DebugPropertyItem::show()
   }
 
 ConnectionItem::ConnectionItem(DebugPropertyItem *from, DebugPropertyItem *owner, bool h, QColor col)
-  : QGraphicsObject(owner), _colour(col), _from(from), _owner(owner), _horizontal(h)
+  : QGraphicsObject(owner),
+    _owner(owner),
+    _from(from),
+    _horizontal(h),
+    _colour(col)
   {
   xAssert(_owner);
   xAssert(_from);

@@ -20,10 +20,10 @@ public:
   JSONWriter(Eks::AllocatorBase *alloc, const JSONWriter *parent = nullptr)
       : _string(alloc),
         _niceFormatting(false),
-        _indentString(alloc),
-        _vector(&_string),
+        _activeBlock(nullptr),
         _stack(alloc),
-        _activeBlock(nullptr)
+        _vector(&_string),
+        _indentString(alloc)
     {
     if(parent)
       {
@@ -353,7 +353,6 @@ private:
   Saver::AttributeData::ChildrenType _childType;
   JSONSaver::JSONAttributeSaver *_owner;
 
-  xsize _childCount;
   JSONSaver::JSONAttributeSaver *_activeChild;
   };
 
@@ -408,12 +407,12 @@ class JSONSaver::JSONAttributeSaver : public Saver::AttributeData
 public:
   JSONAttributeSaver(SaveData *data, JSONSaver::JSONChildSaver *prev, Attribute *attr)
     : AttributeData(data, attr),
-      _parent(prev),
       _values(nullptr),
-      _hasValues(false),
       _children(nullptr),
+      _hasValues(false),
       _hasChildren(false),
-      _hasBegunObject(false)
+      _hasBegunObject(false),
+      _parent(prev)
     {
     if(_parent)
       {
@@ -503,16 +502,16 @@ class JSONSaver::Impl : public Saver::SaveData
   {
 public:
   Impl(Attribute *root, Saver *saver)
-    : SaveData(root, saver),
+    : SaveData(saver),
       _mode("mode"),
       _input("input"),
       _value("value"),
       _type("type"),
       _children("contents"),
-      _root(this, nullptr, root),
-      _includeRoot(true),
       _writer(_root.allocator()),
-      _typeMap(_root.allocator())
+      _root(this, nullptr, root),
+      _typeMap(_root.allocator()),
+      _includeRoot(true)
     {
     _writer.setNiceFormatting(static_cast<JSONSaver*>(saver)->autoWhitespace());
     }
@@ -573,9 +572,8 @@ public:
 // JSONSaver::JSONChildSaver Impl
 //----------------------------------------------------------------------------------------------------------------------
 JSONSaver::JSONChildSaver::JSONChildSaver(JSONSaver::JSONAttributeSaver *saver, Saver::AttributeData::ChildrenType type)
-    : _owner(saver),
-      _childType(type),
-      _childCount(0),
+    : _childType(type),
+      _owner(saver),
       _activeChild(nullptr)
   {
   _owner->setChildren(this);
@@ -624,10 +622,10 @@ Eks::UniquePointer<Saver::AttributeData> JSONSaver::JSONChildSaver::beginAttribu
 //----------------------------------------------------------------------------------------------------------------------
 JSONSaver::JSONValueSaver::JSONValueSaver(JSONSaver::JSONAttributeSaver *saver)
     : ValueData(saver),
+      _allValuesWriter(saver->allocator(), saver->writer()),
       _attrCount(0),
       _hasValueSymbolBeenWritten(false),
-      _valueOnly(saver->allocator()),
-      _allValuesWriter(saver->allocator(), saver->writer())
+      _valueOnly(saver->allocator())
   {
   _allValuesWriter.tabIn();
   saver->setValues(this);
