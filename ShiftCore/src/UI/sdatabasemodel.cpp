@@ -443,8 +443,8 @@ void CommonModel::setDatabase(Database *db, Entity *root)
 
 DatabaseModel::DatabaseModel(Database *db, Entity *ent, Options options)
   : CommonModel(db, ent),
-    _currentTreeChange(0),
-    _options(options)
+    _options(options),
+    _currentTreeChange(0)
   {
   _showValues = (_options & ShowValues) != 0;
 
@@ -821,7 +821,7 @@ QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
 
   Attribute *children = _childAttr->locate(parentAttr->uncheckedCastTo<Container>());
   Container *cont = children->uncheckedCastTo<Container>();
-  if(row >= cont->size())
+  if((xsize)row >= cont->size())
     {
     return QModelIndex();
     }
@@ -830,18 +830,18 @@ QModelIndex InputModel::index(int row, int, const QModelIndex &parent) const
     {
     if(_changingAdding)
       {
-      if(row >= _itemIndexChanging)
+      if((xsize)row >= _itemIndexChanging)
         {
         row += 1;
         }
       }
     else
       {
-      if(row == _itemIndexChanging)
+      if((xsize)row == _itemIndexChanging)
         {
         return CommonModel::index((Container *)_itemChanging);
         }
-      else if(row > _itemIndexChanging)
+      else if((xsize)row > _itemIndexChanging)
         {
         row -= 1;
         }

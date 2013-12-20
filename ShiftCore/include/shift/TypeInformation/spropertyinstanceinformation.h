@@ -128,7 +128,7 @@ public:
 
   const EmbeddedPropertyInstanceInformation *resolvePath(const Eks::String &) const;
 
-  virtual void setDefaultValue(const QString &);
+  virtual void setDefaultValueFromString(const Eks::String &);
   virtual void initiateAttribute(Attribute *propertyToInitiate, AttributeInitialiserHelper *helper) const;
 
   Attribute *locate(Container *parent) const;
@@ -167,7 +167,7 @@ class SHIFT_EXPORT DynamicPropertyInstanceInformation : public PropertyInstanceI
   // Dynamic Instance
   XProperty(Container *, parent, setParent)
   XProperty(Attribute *, nextSibling, setNextSibling)
-  XProperty(xint32, index, setIndex);
+  XProperty(xuint32, index, setIndex);
 
 public:
   DynamicPropertyInstanceInformation();

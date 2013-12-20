@@ -135,9 +135,7 @@ private:
 #define S_IMPLEMENT_TYPED_POINTER_TYPE(name, group) \
   S_IMPLEMENT_PROPERTY(name, group) \
   void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \
-    const Shift::PropertyInformationCreateData &) { } \
-  //if(data.registerInterfaces) { } } \
-  //assignPointerInformation(info, name::PtrType::staticTypeInformation()); } } \
+    const Shift::PropertyInformationCreateData &) { }
 
 template <typename T, typename TYPE> void createTypedPointerArray(PropertyInformationTyped<T> *info,
                                                                   const PropertyInformationCreateData &data)

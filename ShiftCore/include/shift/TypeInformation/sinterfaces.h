@@ -4,6 +4,8 @@
 #include "Math/XMathVector.h"
 #include "sinterface.h"
 #include "Math/XColour.h"
+#include "Math/XQuaternion.h"
+#include "Containers/XStringBuffer.h"
 
 namespace Shift
 {

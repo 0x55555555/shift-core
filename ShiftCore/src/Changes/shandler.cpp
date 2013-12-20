@@ -7,9 +7,9 @@ namespace Shift
 Handler::Handler()
   : _database(0),
     _blockLevel(0),
-    _stateStorageEnabled(false),
     _blockObservers(TypeRegistry::generalPurposeAllocator()),
-    _blockSize(TypeRegistry::generalPurposeAllocator())
+    _blockSize(TypeRegistry::generalPurposeAllocator()),
+    _stateStorageEnabled(false)
   {
   }
 

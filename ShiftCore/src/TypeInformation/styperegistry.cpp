@@ -191,7 +191,7 @@ const Eks::String &TypeRegistry::getModeString(xsize mode)
   return _internalTypes->_modeStrings[mode];
   }
 
-const xsize TypeRegistry::getModeFromString(const Eks::String &mode)
+xsize TypeRegistry::getModeFromString(const Eks::String &mode)
   {
   for(xsize i = 0; i < TypeData::ModeCount; ++i)
     {

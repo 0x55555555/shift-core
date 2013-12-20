@@ -258,7 +258,7 @@ public:
     propertyToInitiate->uncheckedCastTo<T>()->_value = defaultValue();
     }
 
-  virtual void setDefaultValueFromString(const Eks::String &val)
+  virtual void setDefaultValueFromString(const Eks::String &val) X_OVERRIDE
     {
     Eks::String::Buffer s(&val);
     Eks::String::IStream stream(&s);

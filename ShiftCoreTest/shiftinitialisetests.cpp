@@ -8,12 +8,14 @@
 
 class TestSized
   {
+public:
   xuint32 a;
   double b;
   };
 
 class TestSized2
   {
+public:
   xuint32 a;
   };
 
@@ -198,9 +200,9 @@ template <typename T> void doTest(T* arr, int count, bool timeTearDown, bool opt
   auto editCache = optimiseInsert ? arr->createEditCache(&alloc) : nullptr;
   (void)editCache;
 
-  for(xsize i = 0; i < count; ++i)
+  for(int i = 0; i < count; ++i)
     {
-    arr->add<TestEmbeddingEmbedderEntity>();
+    arr->template add<TestEmbeddingEmbedderEntity>();
     }
 
   if (timeTearDown)
