@@ -67,12 +67,6 @@ Eks::String TypedSerialisationValue<QUuid>::asUtf8(Eks::AllocatorBase *a) const
   return ret;
   }
 
-Eks::Vector<xuint8> TypedSerialisationValue<QUuid>::asBinary(Eks::AllocatorBase*) const
-  {
-  xAssertFail();
-  return Eks::Vector<xuint8>();
-  }
-
 class ExternalUuidPointer::Traits : public detail::PropertyBaseTraits
   {
 public:
@@ -85,21 +79,14 @@ public:
     s.write(s.valueSymbol(), uuidProp->_id);
     }
 
-  static Attribute *load(Container *parent, Loader &l)
+  static Attribute *load(Container *parent, AttributeLoader &l)
     {
     Attribute *p = detail::PropertyBaseTraits::load(parent, l);
 
+    Eks::TemporaryAllocator alloc(p->temporaryAllocator());
+
     ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
-    if(l.streamMode() == Loader::Text)
-      {
-      QString str;
-      l.textStream() >> str;
-      uuidProp->_id = str;
-      }
-    else
-      {
-      l.binaryStream() >> uuidProp->_id;
-      }
+    l.read(l.valueSymbol(), uuidProp->_id, &alloc);
 
     return p;
     }

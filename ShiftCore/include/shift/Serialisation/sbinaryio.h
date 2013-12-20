@@ -33,7 +33,7 @@ private:
 
   QByteArray _inAttribute;
   QBuffer _buffer;
-  };*/
+  };
 
 class SHIFT_EXPORT SBinaryLoader : private Loader
   {
@@ -76,7 +76,7 @@ private:
   QBuffer _buffer;
 
   QHash<Property *, QString> _resolveAfterLoad;
-  };
+  };*/
 
 }
 

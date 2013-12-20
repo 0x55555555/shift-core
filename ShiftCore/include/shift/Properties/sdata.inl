@@ -308,11 +308,13 @@ public:
     l.write(l.valueSymbol(), ptr->_value);
     }
 
-  static Attribute *load(Container *parent, Loader &l)
+  static Attribute *load(Container *parent, AttributeLoader &l)
     {
     Attribute *prop = PropertyBaseTraits::load(parent, l);
     T *ptr = prop->uncheckedCastTo<T>();
-    readValue(l, ptr->_value);
+
+    Eks::TemporaryAllocator alloc(parent->temporaryAllocator());
+    l.read(l.valueSymbol(), ptr->_value, &alloc);
     return prop;
     }
 

@@ -16,7 +16,7 @@ namespace Shift
 {
 
 class Property;
-class Loader;
+class AttributeLoader;
 class AttributeSaver;
 class ContainerPropertyInformation;
 class PropertyGroup;
@@ -44,7 +44,7 @@ struct PropertyInformationFunctions
   typedef void (*PostCreateFunction)(Attribute *data);
   typedef void (*PostSetFunction)(Attribute *data);
   typedef void (*SaveFunction)( const Attribute *, AttributeSaver & );
-  typedef Attribute *(*LoadFunction)( Container *, Loader & );
+  typedef Attribute *(*LoadFunction)( Container *, AttributeLoader & );
   typedef void (*AssignFunction)( const Attribute *, Attribute * );
   typedef bool (*SaveQueryFunction)( const Attribute * );
   typedef void (*CreateTypeInformationFunction)(PropertyInformation *, const PropertyInformationCreateData &);

@@ -544,10 +544,10 @@ public:
       _value("value"),
       _type("type"),
       _children("contents"),
+      _alloc(root->temporaryAllocator()),
       _writer(&_alloc),
       _root(this, nullptr, root),
-      _typeMap(&_alloc),
-      _includeRoot(true)
+      _typeMap(&_alloc)
     {
     _writer.setNiceFormatting(static_cast<JSONSaver*>(saver)->autoWhitespace());
     _writer.tabIn();
@@ -776,7 +776,7 @@ Eks::UniquePointer<JSONSaver::SaveData> JSONSaver::beginVisit(Attribute *root)
 //----------------------------------------------------------------------------------------------------------------------
 // JSONLoader Impl
 //----------------------------------------------------------------------------------------------------------------------
-JSONLoader::JSONLoader()
+/*JSONLoader::JSONLoader()
     : _current(Start)
   {
   _buffer.open(QIODevice::ReadOnly);
@@ -1116,6 +1116,6 @@ void JSONLoader::resolveInputAfterLoad(Property *prop, const InputString &path)
   {
   SProfileFunction
   _resolveAfterLoad.insert(prop, path);
-  }
+  }*/
 
 }

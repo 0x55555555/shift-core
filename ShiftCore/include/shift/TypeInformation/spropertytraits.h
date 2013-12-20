@@ -130,7 +130,7 @@ class SHIFT_EXPORT PropertyBaseTraits
 public:
   static void assign(const Attribute *, Attribute *);
   static void save(const Attribute *, AttributeSaver & );
-  static Attribute *load(Container *, Loader &);
+  static Attribute *load(Container *, AttributeLoader &);
 
   // should this properties value be saved, for example not when the value
   // is this property's value the default as it is when created.

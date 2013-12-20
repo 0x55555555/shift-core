@@ -1,5 +1,6 @@
 #include "shifttest.h"
 #include "shift/Properties/sdata.inl"
+#include "shift/Properties/sbaseproperties.inl"
 #include "shift/Properties/scontaineriterators.h"
 #include <memory>
 
@@ -62,7 +63,7 @@ void TestDataEntity::createTypeInformation(
     {
     auto childBlock = info->createChildrenBlock(data);
 
-    childBlock.add(&TestDataEntity::uuid, "uuid");
+    auto inst = childBlock.add(&TestDataEntity::uuid, "uuid");
 
     childBlock.add<Shift::Set>("dynamicArray");
 

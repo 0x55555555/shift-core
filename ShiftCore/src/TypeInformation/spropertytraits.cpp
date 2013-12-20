@@ -52,7 +52,7 @@ void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l, bool writeI
     }
   }
 
-Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
+Attribute *PropertyBaseTraits::load(Container */* parent */, AttributeLoader &)
   {
   class Initialiser : public PropertyInstanceInformationInitialiser
     {
@@ -72,6 +72,8 @@ Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
 
   Initialiser initialiser;
 
+  xAssertFail();
+  /*
   const auto data = l.currentData();
 
   l.beginAttribute("mode");
@@ -107,6 +109,8 @@ Attribute *PropertyBaseTraits::load(Container *parent, Loader &l)
     }
 
   return attr;
+    */
+  return nullptr;
   }
 
 bool PropertyBaseTraits::shouldSaveValue(const Attribute *p)

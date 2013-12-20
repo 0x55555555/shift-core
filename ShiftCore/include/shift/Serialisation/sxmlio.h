@@ -31,7 +31,7 @@ private:
 
   QString _inAttribute;
   QBuffer _buffer;
-  };*/
+  };
 
 class SHIFT_EXPORT SXMLLoader : private Loader
   {
@@ -73,7 +73,7 @@ private:
 
   Eks::UnorderedMap<Property *, InputString> _resolveAfterLoad;
   };
-
+*/
 }
 
 #endif // SXMLIO_H

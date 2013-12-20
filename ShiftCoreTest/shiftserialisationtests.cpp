@@ -49,5 +49,5 @@ void ShiftCoreTest::serialisationJsonTest()
     visitor.visit(&db, false, &writer);
   }
 
-  qDebug() << buffer.buffer();
+  //qDebug() << buffer.buffer();
   }

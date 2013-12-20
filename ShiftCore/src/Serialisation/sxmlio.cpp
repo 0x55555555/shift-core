@@ -85,7 +85,7 @@ void SXMLSaver::endAttribute(const char *attrName)
 
   _inAttribute.clear();
   }
-*/
+
 SXMLLoader::SXMLLoader()
   {
   _buffer.open(QIODevice::ReadOnly);
@@ -270,5 +270,6 @@ void SXMLLoader::findNext(bool allowWhitespace)
 
   xAssert(isValidElement() || (allowWhitespace && _reader.isWhitespace()));
   }
+*/
 
 }

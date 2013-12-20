@@ -8,7 +8,7 @@
 namespace Shift
 {
 
-void Loader::loadChildren(Container *parent)
+/*void Loader::loadChildren(Container *parent)
   {
   if(beginChildren())
     {
@@ -67,7 +67,7 @@ void Loader::read(Container *read)
     // so just load the property, with the Property method, and leave it as default.
     detail::PropertyBaseTraits::load(read, *this);
     }
-  }
+  }*/
 
 /*
 void Saver::saveChildren(const Container *c)

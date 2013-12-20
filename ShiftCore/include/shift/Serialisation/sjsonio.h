@@ -34,6 +34,7 @@ private:
   Eks::UniquePointer<Impl> _impl;
   };
 
+/*
 class SHIFT_EXPORT JSONLoader : private Loader
   {
 public:
@@ -89,7 +90,7 @@ private:
 
   Eks::UnorderedMap<Property *, InputString> _resolveAfterLoad;
   };
-
+*/
 }
 
 #endif // SJSONIO_H

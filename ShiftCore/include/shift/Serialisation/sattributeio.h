@@ -23,16 +23,18 @@ private:
 class SerialisationValue
   {
 public:
-  virtual bool hasUtf8() = 0;
-  virtual bool hasBinary() = 0;
+  virtual bool hasUtf8() const = 0;
+  virtual bool hasBinary() const = 0;
   virtual Eks::String asUtf8(Eks::AllocatorBase* a) const { xAssertFail(); return Eks::String(a); }
-  virtual Eks::Vector<xuint8> asBinary(Eks::AllocatorBase*) const { xAssertFail(); return Eks::Vector<xuint8>(a); }
+  virtual Eks::Vector<xuint8> asBinary(Eks::AllocatorBase* a) const { xAssertFail(); return Eks::Vector<xuint8>(a); }
   };
 
 template <typename T> class TypedSerialisationValue : public SerialisationValue
   {
 public:
   TypedSerialisationValue(const T &t) : _val(t) { }
+  bool hasUtf8() const X_OVERRIDE { return true; }
+  bool hasBinary() const X_OVERRIDE { return false; }
   Eks::String asUtf8(Eks::AllocatorBase*) const X_OVERRIDE;
 
 private:
@@ -69,7 +71,7 @@ public:
   /// \brief read a value for the attribute, with symbol [id].
   virtual const SerialisationValue& readValue(const Symbol &id) = 0;
 
-  template <typename T> void read(const Symbol &id, T& t, Eks::AllocatorBase* a)
+  template <typename T> bool read(const Symbol &id, T&, Eks::AllocatorBase* a)
     {
     const SerialisationValue &val = readValue(id);
 
@@ -79,8 +81,8 @@ public:
       Eks::String::Buffer buf(&ret);
       Eks::String::IStream str(&buf);
 
-### stream out doesnt work on strings.
-      str >> t;
+      xAssertFail(); // fix for strings - they should get all of toUtf8
+      //str >> t;
       return true;
       }
 
@@ -103,6 +105,10 @@ template <> class SHIFT_EXPORT TypedSerialisationValue<QUuid> :  public Serialis
   {
 public:
   TypedSerialisationValue(const QUuid &t);
+
+  bool hasUtf8() const X_OVERRIDE { return true; }
+  bool hasBinary() const X_OVERRIDE { return false; }
+
   Eks::String asUtf8(Eks::AllocatorBase *a) const;
 
 private:
