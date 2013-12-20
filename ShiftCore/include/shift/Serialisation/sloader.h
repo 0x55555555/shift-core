@@ -17,6 +17,8 @@ class Property;
 class Container;
 class PropertyInformation;
 
+
+/*
 class Loader
   {
 public:
@@ -70,49 +72,8 @@ private:
   QDataStream _ds;
 
   CurrentData _data;
-  };
+  };*/
 
-template <typename T> void readValue(Loader &l, T &t)
-  {
-  if(l.streamMode() == Loader::Text)
-    {
-    l.textStream() >> t;
-    }
-  else
-    {
-    l.binaryStream() >> t;
-    }
-  }
-
-inline void readValue(Loader &l, QByteArray &t)
-  {
-  if(l.streamMode() == Loader::Text)
-    {
-    QByteArray temp;
-    l.textStream() >> temp;
-    t = QByteArray::fromHex(temp);
-    }
-  else
-    {
-    l.binaryStream() >> t;
-    }
-  }
-
-template <xsize Size, typename Alloc>
-inline void readValue(Loader &l, Eks::StringBase<Eks::Char, Size, Alloc> &t)
-  {
-  if(l.streamMode() == Loader::Text)
-    {
-    QString arr = l.textStream().readAll();
-    t = arr;
-    }
-  else
-    {
-    QString v;
-    l.binaryStream() >> v;
-    t = v;
-    }
-  }
 
 }
 

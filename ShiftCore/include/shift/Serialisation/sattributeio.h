@@ -23,8 +23,10 @@ private:
 class SerialisationValue
   {
 public:
-  virtual Eks::String asUtf8(Eks::AllocatorBase*) const = 0;
-  virtual Eks::Vector<xuint8> asBinary(Eks::AllocatorBase*) const = 0;
+  virtual bool hasUtf8() = 0;
+  virtual bool hasBinary() = 0;
+  virtual Eks::String asUtf8(Eks::AllocatorBase* a) const { xAssertFail(); return Eks::String(a); }
+  virtual Eks::Vector<xuint8> asBinary(Eks::AllocatorBase*) const { xAssertFail(); return Eks::Vector<xuint8>(a); }
   };
 
 template <typename T> class TypedSerialisationValue : public SerialisationValue
@@ -32,7 +34,6 @@ template <typename T> class TypedSerialisationValue : public SerialisationValue
 public:
   TypedSerialisationValue(const T &t) : _val(t) { }
   Eks::String asUtf8(Eks::AllocatorBase*) const X_OVERRIDE;
-  Eks::Vector<xuint8> asBinary(Eks::AllocatorBase*) const X_OVERRIDE;
 
 private:
   const T &_val;
@@ -62,6 +63,31 @@ public:
     }
   };
 
+class AttributeLoader : public AttributeIO
+  {
+public:
+  /// \brief read a value for the attribute, with symbol [id].
+  virtual const SerialisationValue& readValue(const Symbol &id) = 0;
+
+  template <typename T> void read(const Symbol &id, T& t, Eks::AllocatorBase* a)
+    {
+    const SerialisationValue &val = readValue(id);
+
+    if (val.hasUtf8())
+      {
+      Eks::String ret(a);
+      Eks::String::Buffer buf(&ret);
+      Eks::String::IStream str(&buf);
+
+### stream out doesnt work on strings.
+      str >> t;
+      return true;
+      }
+
+    return false;
+    }
+  };
+
 template <typename T>
 Eks::String TypedSerialisationValue<T>::asUtf8(Eks::AllocatorBase* a) const
   {
@@ -73,20 +99,11 @@ Eks::String TypedSerialisationValue<T>::asUtf8(Eks::AllocatorBase* a) const
   return ret;
   }
 
-template <typename T>
-Eks::Vector<xuint8> TypedSerialisationValue<T>::asBinary(Eks::AllocatorBase*) const
-  {
-  xAssertFail();
-  return Eks::Vector<xuint8>();
-  }
-
-
 template <> class SHIFT_EXPORT TypedSerialisationValue<QUuid> :  public SerialisationValue
   {
 public:
   TypedSerialisationValue(const QUuid &t);
   Eks::String asUtf8(Eks::AllocatorBase *a) const;
-  Eks::Vector<xuint8> asBinary(Eks::AllocatorBase*) const;
 
 private:
   const QUuid &_val;
