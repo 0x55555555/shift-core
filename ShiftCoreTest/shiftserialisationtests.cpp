@@ -31,12 +31,14 @@ void buildTestData(Shift::Database* db)
 
 void ShiftCoreTest::serialisationJsonTest()
   {
+  qWarning() << "TEST";
   TestDatabase db;
 
   buildTestData(&db);
 
+
+
   QBuffer buffer;
-  buffer.open(QIODevice::WriteOnly);
 
   Shift::SaveVisitor visitor;
 
@@ -44,10 +46,19 @@ void ShiftCoreTest::serialisationJsonTest()
   writer.setAutoWhitespace(true);
 
   QBENCHMARK {
+    buffer.setData(QByteArray());
+    buffer.open(QIODevice::ReadWrite);
     auto block = writer.beginWriting(&buffer);
 
     visitor.visit(&db, false, &writer);
+    buffer.close();
   }
 
-  //qDebug() << buffer.buffer();
+  QFile expected(":/Serialisation/SerialisationTest.json");
+  QCOMPARE(true, expected.open(QFile::ReadOnly));
+
+  QString savedOutput(buffer.data());
+  QString expectedOutput(expected.readAll());
+
+  QCOMPARE(savedOutput, expectedOutput);
   }

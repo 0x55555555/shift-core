@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/Serialisation">
+        <file>SerialisationTest.json</file>
+    </qresource>
+</RCC>

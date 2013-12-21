@@ -36,3 +36,9 @@ LIBS += -lShiftCore -lEksCore -lEks3D -lEksScript
 HEADERS += \
     shifttest.h \
     shifttestcommon.h
+
+RESOURCES += \
+    TestResources.qrc
+
+OTHER_FILES += \
+    SerialisationTest.json
