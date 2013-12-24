@@ -41,6 +41,7 @@ private Q_SLOTS:
   void simpleDirtyCompute();
   void entityCompute();
   void serialisationJsonTest();
+  void deserialisationJsonTest();
   void initialiseTest();
   void initialiseProfileTest();
   void initialiseProfileTest_data();

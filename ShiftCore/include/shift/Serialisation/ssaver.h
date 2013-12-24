@@ -34,128 +34,87 @@ public:
     friend class Saver;
     };
 
-  class AttributeData;
-  class SaveData;
-  class ChildData
+  enum ChildrenType
     {
-  public:
-    /// \brief Begin writing an attribute, which ends when the destructor is called.
-    virtual Eks::UniquePointer<AttributeData> beginAttribute(Attribute *a) = 0;
+    Indexed,
+    Named
     };
 
-  class ValueData : public AttributeSaver
+  class BaseData
     {
   public:
-    ValueData(AttributeData *data);
-
-    /// \brief symbol for attribute mode.
-    const Symbol &modeSymbol() X_OVERRIDE;
-    /// \brief symbol for input mode.
-    const Symbol &inputSymbol() X_OVERRIDE;
-    /// \brief symbol for value mode.
-    const Symbol &valueSymbol() X_OVERRIDE;
-    /// \brief symbol for type mode.
-    const Symbol &typeSymbol();
-
-    AttributeData *owner() { return _data; }
-
-  private:
-    AttributeData *_data;
-    };
-
-  class AttributeData
-    {
-  public:
-    AttributeData(SaveData *data, Attribute *attr);
-    ~AttributeData();
-
-    /// \brief get the owning save.
-    SaveData* saveData() { return _data; }
-    /// \brief Get the attribute being saved.
-    Attribute *attribute() const { return _attribute; }
-    /// \brief Get an allocator valid for the lifetime of the [AttributeData].
-    Eks::TemporaryAllocator* allocator() const { return &_attributeAllocator; }
-
-    enum ChildrenType
+    template <typename T>T *as()
       {
-      Indexed,
-      Named
-      };
-
-    /// \brief Begin a writing child attributes.
-    virtual Eks::UniquePointer<ChildData> beginChildren(ChildrenType type) = 0;
-
-    /// \brief Begin a block of values.
-    virtual Eks::UniquePointer<ValueData> beginValues() = 0;
-
-  private:
-    mutable Eks::TemporaryAllocator _attributeAllocator;
-    Attribute *_attribute;
-    SaveData *_data;
-
-    friend class Saver;
+      return static_cast<T *>(this);
+      }
     };
 
-  class SaveData
-    {
-  public:
-    SaveData(Saver *visitor);
-    ~SaveData();
+  class AttributeBlock;
 
-    /// \brief Add a type which was saved to the file. Used to storve version data.
-    virtual void addSavedType(const PropertyInformation *info) = 0;
-
-    /// \brief Set if the root attribute should be saved, or if its children should be the roots.
-    virtual void setIncludeRoot(bool include) = 0;
-
-    /// \brief Get the root attributes data.
-    virtual AttributeData* rootData() = 0;
-
-    /// \brief Get the owning saver.
-    Saver* saver() { return _saver; }
-
-    /// \brief symbol for attribute mode.
-    virtual const SerialisationSymbol &modeSymbol() = 0;
-    /// \brief symbol for input mode.
-    virtual const SerialisationSymbol &inputSymbol() = 0;
-    /// \brief symbol for value mode.
-    virtual const SerialisationSymbol &valueSymbol() = 0;
-    /// \brief symbol for type mode.
-    virtual const SerialisationSymbol &typeSymbol() = 0;
-
-  private:
-    Saver *_saver;
-    };
+  class AttributeData : public BaseData { };
+  class ChildData : public BaseData { };
+  class ValueData : public BaseData { };
 
   Saver();
+
+  virtual void setIncludeRoot(bool include) = 0;
+  virtual void addSavedType(const PropertyInformation *info, bool dynamic) = 0;
+
+  Attribute *rootAttribute() { return _rootAttribute; }
+  AttributeBlock *rootBlock() { return _rootBlock.value(); }
+  AttributeData *rootData();
 
   /// \brief Begin writing to [device].
   WriteBlock beginWriting(QIODevice *device);
 
-  /// \brief Begin a write of a whole tree to the writer. Called once at beginning.
-  virtual Eks::UniquePointer<SaveData> beginVisit(Attribute *root) = 0;
-
-  Eks::TemporaryAllocator* saveAllocator() const { return &_saveAllocator; }
-
+  /// \brief Get the active write block.
   WriteBlock *activeBlock() { return _block; }
 
-private:
-  mutable Eks::TemporaryAllocator _saveAllocator;
-  WriteBlock *_block;
+  /// \brief symbol for attribute mode.
+  virtual const SerialisationSymbol &modeSymbol() = 0;
+  /// \brief symbol for input mode.
+  virtual const SerialisationSymbol &inputSymbol() = 0;
+  /// \brief symbol for value mode.
+  virtual const SerialisationSymbol &valueSymbol() = 0;
+  /// \brief symbol for type mode.
+  virtual const SerialisationSymbol &typeSymbol() = 0;
 
+  void beginSave(Attribute *root, Eks::AllocatorBase *alloc);
+  void endSave();
+
+protected:
+  virtual void onBeginSave(Attribute *root, Eks::AllocatorBase *alloc) = 0;
+  virtual void onEndSave() = 0;
+
+  virtual Eks::UniquePointer<ChildData> onBeginChildren(AttributeData *data, ChildrenType type, Eks::AllocatorBase *alloc) = 0;
+  virtual void onChildrenComplete(AttributeData *data, ChildData *) = 0;
+
+  virtual Eks::UniquePointer<AttributeData> onAddChild(ChildData *data, Attribute *a, Eks::AllocatorBase *alloc) = 0;
+  virtual void onChildComplete(ChildData *, AttributeData *data) = 0;
+
+  virtual Eks::UniquePointer<ValueData> onBeginValues(AttributeData *data, Eks::AllocatorBase *alloc) = 0;
+  virtual void onWriteValue(ValueData *, const Symbol &id, const SerialisationValue& value) = 0;
+  virtual void onValuesComplete(AttributeData *data, ValueData *) = 0;
+
+private:
+  WriteBlock *_block;
+  Attribute *_rootAttribute;
+  Eks::UniquePointer<AttributeBlock> _rootBlock;
+
+  friend class ChildBlock;
+  friend class ValueBlock;
   friend class WriteBlock;
-  friend class SaveDataImpl;
   };
 
-class SHIFT_EXPORT SaveVisitor
+class SHIFT_EXPORT SaveBuilder
   {
 public:
-  void visit(Attribute *attr, bool includeRoot, Saver *receiver);
+  void save(Attribute *attr, bool includeRoot, Saver *receiver);
 
 private:
-  void visitAttribute(Saver::AttributeData *data);
-  void visitValues(Saver::AttributeData *data);
-  void visitChildren(Saver::AttributeData *data);
+  void visitAttribute(Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
+  void visitValues(Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
+  void visitChildren(Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
   };
 
 }

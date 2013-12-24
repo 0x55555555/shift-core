@@ -304,6 +304,7 @@ public:
   static void save(const Attribute *p, AttributeSaver &l)
     {
     PropertyBaseTraits::save(p, l);
+
     const T *ptr = p->uncheckedCastTo<T>();
     l.write(l.valueSymbol(), ptr->_value);
     }

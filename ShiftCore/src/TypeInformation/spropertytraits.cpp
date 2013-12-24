@@ -32,7 +32,6 @@ void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l, bool writeI
   bool dyn(p->isDynamic());
   if(dyn)
     {
-
     const PropertyInstanceInformation *instInfo = p->baseInstanceInformation();
 
     if(!instInfo->isDefaultMode())
@@ -47,7 +46,9 @@ void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l, bool writeI
     {
     if(writeInput && prop->input())
       {
-      l.write(l.inputSymbol(), prop->input()->path(p, &alloc));
+      Eks::String path = prop->input()->path(p, &alloc);
+
+      l.write(l.inputSymbol(), path);
       }
     }
   }

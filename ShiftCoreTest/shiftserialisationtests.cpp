@@ -5,9 +5,9 @@
 #include "shift/Serialisation/sjsonio.h"
 #include "shift/Serialisation/sxmlio.h"
 
-void buildTestData(Shift::Database* db)
+void buildTestData(Shift::Entity* root)
   {
-  auto ent = db->addChild<TestEntity>();
+  auto ent = root->addChild<TestEntity>();
 
   auto indexed = ent->addChild<TestIndexedEntity>();
 
@@ -31,16 +31,14 @@ void buildTestData(Shift::Database* db)
 
 void ShiftCoreTest::serialisationJsonTest()
   {
-  qWarning() << "TEST";
   TestDatabase db;
 
-  buildTestData(&db);
-
-
+  auto rootA = db.addChild<Shift::Entity>();
+  buildTestData(rootA);
 
   QBuffer buffer;
 
-  Shift::SaveVisitor visitor;
+  Shift::SaveBuilder builder;
 
   Shift::JSONSaver writer;
   writer.setAutoWhitespace(true);
@@ -50,15 +48,50 @@ void ShiftCoreTest::serialisationJsonTest()
     buffer.open(QIODevice::ReadWrite);
     auto block = writer.beginWriting(&buffer);
 
-    visitor.visit(&db, false, &writer);
+    builder.save(rootA, false, &writer);
     buffer.close();
   }
 
+#define SAVE_OUTPUT
+#ifdef SAVE_OUTPUT
+    {
+    QFileInfo path("./SerialisationTest.json");
+    qDebug() << path.absoluteFilePath();
+    QFile output(path.absoluteFilePath());
+    QCOMPARE(output.open(QFile::WriteOnly), true);
+
+    output.write(buffer.data());
+    }
+#endif
+
   QFile expected(":/Serialisation/SerialisationTest.json");
-  QCOMPARE(true, expected.open(QFile::ReadOnly));
+  QCOMPARE(expected.open(QFile::ReadOnly), true);
 
   QString savedOutput(buffer.data());
   QString expectedOutput(expected.readAll());
 
   QCOMPARE(savedOutput, expectedOutput);
   }
+
+void ShiftCoreTest::deserialisationJsonTest()
+  {
+  TestDatabase db;
+
+  auto rootA = db.addChild<Shift::Entity>();
+  buildTestData(rootA);
+
+  //auto rootB = db.addChild<Shift::Entity>();
+
+  /*QBENCHMARK {
+    QFile toLoad(":/Serialisation/SerialisationTest.json");
+    QCOMPARE(true, toLoad.open(QFile::ReadOnly));
+
+    Shift::LoadBuilder builder;
+    builder.setRoot(rootB);
+
+    Shift::JSONLoader loader;
+
+    loader.load(&toLoad, &builder);
+  }*/
+  }
+

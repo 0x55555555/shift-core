@@ -8,6 +8,11 @@
 namespace Shift
 {
 
+LoadBuilder::LoadBuilder(Container *root)
+    : _root(root)
+  {
+  }
+
 /*void Loader::loadChildren(Container *parent)
   {
   if(beginChildren())

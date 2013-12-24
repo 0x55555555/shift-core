@@ -1,6 +1,29 @@
 {
 	"version": "2",
-	"noRoot": "1",
+	"types": {
+		"Set": {
+			"dynamicCount": "0"
+		},
+		"TestEntity": {
+			"dynamicCount": "1"
+		},
+		"TestVector": {
+			"dynamicCount": "4"
+		},
+		"Full9": {
+			"dynamicCount": "0"
+		},
+		"Entity": {
+			"dynamicCount": "1"
+		},
+		"TestIndexedEntity": {
+			"dynamicCount": "1"
+		},
+		"Array": {
+			"dynamicCount": "0"
+		}
+	},
+	"noroot": "1",
 	"data": {
 		"children": {
 			"contents": {

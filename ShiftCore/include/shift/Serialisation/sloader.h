@@ -17,6 +17,20 @@ class Property;
 class Container;
 class PropertyInformation;
 
+class LoadInterface
+  {
+public:
+
+  };
+
+class LoadBuilder : public LoadInterface
+  {
+XProperties:
+  XROProperty(Container *, root);
+
+public:
+  LoadBuilder(Container *root);
+  };
 
 /*
 class Loader

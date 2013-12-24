@@ -63,7 +63,7 @@ void TestDataEntity::createTypeInformation(
     {
     auto childBlock = info->createChildrenBlock(data);
 
-    auto inst = childBlock.add(&TestDataEntity::uuid, "uuid");
+    childBlock.add(&TestDataEntity::uuid, "uuid");
 
     childBlock.add<Shift::Set>("dynamicArray");
 
