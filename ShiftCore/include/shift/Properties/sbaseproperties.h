@@ -3,6 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "shift/Properties/sdata.h"
+#include "shift/Utilities/smetatype.h"
 
 #include "Containers/XStringBuffer.h"
 #include "Math/XMathVector.h"
@@ -14,7 +15,7 @@
 namespace Shift
 {
 
-#define DEFINE_POD_PROPERTY(name, type) typedef Shift::Data<type> name;
+#define DEFINE_POD_PROPERTY(name, type) S_DECLARE_METATYPE(Shift::Data<type>, name); typedef Shift::Data<type> name;
 
 DEFINE_POD_PROPERTY(BoolProperty, xuint8);
 DEFINE_POD_PROPERTY(IntProperty, xint32);
@@ -29,6 +30,8 @@ DEFINE_POD_PROPERTY(Vector4DProperty, Eks::Vector4D);
 DEFINE_POD_PROPERTY(QuaternionProperty, Eks::Quaternion);
 DEFINE_POD_PROPERTY(ColourProperty, Eks::Colour);
 DEFINE_POD_PROPERTY(StringProperty, Eks::String);
+
+S_DECLARE_METATYPE(Shift::Data<QUuid>, "Uuid");
 
 template <typename T> class FlagsProperty : public IntProperty
   {

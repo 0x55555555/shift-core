@@ -52,7 +52,7 @@ void ShiftCoreTest::serialisationJsonTest()
     buffer.close();
   }
 
-#define SAVE_OUTPUT
+#define SAVE_OUTPUTx
 #ifdef SAVE_OUTPUT
     {
     QFileInfo path("./SerialisationTest.json");

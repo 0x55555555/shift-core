@@ -222,7 +222,7 @@ template <typename T, DataMode Mode>
     }
 
   name.appendType(modeType);
-  detail::MetaType::appendTypeName<T>(name);
+  detail::MetaTypeHelper<Data<T, Mode>>::getTypeName(name);
 
   Shift::PropertyInformationTyped<PODPropertyType>::bootstrapTypeInformation(
         staticTypeInformationInternal(),

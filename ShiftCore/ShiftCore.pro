@@ -50,11 +50,11 @@ SOURCES += \
     src/Utilities/satomichelper.cpp \
     src/Changes/spropertychanges.cpp \
     src/Properties/scontainer.cpp \
-    src/Changes/schange.cpp \
     src/Properties/sset.cpp \
     src/Properties/sarray.cpp \
     src/Serialisation/ssaver.cpp \
-    src/Serialisation/sattributeio.cpp
+    src/Serialisation/sattributeio.cpp \
+    src/Utilities/smetatype.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -100,11 +100,13 @@ HEADERS += \
     include/shift/Properties/scontainer.inl \
     include/shift/Properties/scontaineriterators.h \
     include/shift/Properties/sdata.inl \
+    include/shift/Properties/sdata.h \
     include/shift/Properties/scontainerinternaliterators.h \
     include/shift/Properties/sset.h \
     include/shift/Properties/sarray.h \
     include/shift/Serialisation/ssaver.h \
-    include/shift/Serialisation/sattributeio.h
+    include/shift/Serialisation/sattributeio.h \
+    include/shift/Utilities/smetatype.h
 
 
 

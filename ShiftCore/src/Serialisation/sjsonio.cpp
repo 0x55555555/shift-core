@@ -84,17 +84,15 @@ public:
 //----------------------------------------------------------------------------------------------------------------------
 class JSONSaver::JSONAttributeSaver : public Saver::AttributeData
   {
+XProperties:
+  XROProperty(bool, includeRoot);
+
 public:
   JSONAttributeSaver(Attribute *attr)
-      : hasBegunObject(false),
-        attribute(attr),
-      _includeRoot(true)
+      : _includeRoot(true),
+        hasBegunObject(false),
+        attribute(attr)
     {
-    }
-
-  bool includesRoot() const
-    {
-    return _includeRoot;
     }
 
   void setIncludeRoot(bool include)
@@ -106,9 +104,6 @@ public:
 
   bool hasBegunObject;
   Attribute *attribute;
-
-private:
-  bool _includeRoot;
   };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -124,11 +119,7 @@ public:
       _type("type"),
       _children("contents"),
       _writer(alloc),
-      _typeMap(alloc)
-    {
-    }
-
-  ~CurrentSaveData()
+      _typeMap(InfoSorter(), alloc)
     {
     }
 
@@ -141,7 +132,16 @@ public:
 
   StringSymbol _mode, _input, _value, _type, _children;
   Eks::JSONWriter _writer;
-  Eks::UnorderedMap<const PropertyInformation *, TypeData> _typeMap;
+
+  struct InfoSorter
+    {
+    bool operator() (const PropertyInformation *lhs, const PropertyInformation *rhs) const
+      {
+      return lhs->typeName() < rhs->typeName();
+      }
+    };
+
+  std::map<const PropertyInformation *, TypeData, InfoSorter, Eks::TypedAllocator<std::pair<const PropertyInformation *, TypeData> > > _typeMap;
   };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -188,8 +188,8 @@ void JSONSaver::emitJson(QIODevice *dev)
   auto end = _data->_typeMap.end();
   for(; it != end; ++it)
     {
-    auto type = it.key();
-    const auto& data = it.value();
+    auto type = it->first;
+    const auto& data = it->second;
 
     writer.beginObjectElement(type->typeName().data());
 
@@ -213,7 +213,7 @@ void JSONSaver::emitJson(QIODevice *dev)
   auto root = rootData()->as<JSONAttributeSaver>();
 
   writer.beginObjectElement(NO_ROOT_KEY);
-  writer.addValueForElement(root->includesRoot() ? "0" : "1");
+  writer.addValueForElement(root->includeRoot() ? "0" : "1");
   writer.endElement();
 
   writer.beginObjectElement(DATA_KEY);
@@ -279,7 +279,7 @@ Eks::UniquePointer<Saver::ChildData> JSONSaver::onBeginChildren(AttributeData *d
   {
   auto attr = data->as<JSONSaver::JSONAttributeSaver>();
 
-  if(attr->includesRoot())
+  if(attr->includeRoot())
     {
     const Symbol& sym = childrenSymbol();
     _data->_writer.beginObjectElement(static_cast<const StringSymbol&>(sym).str);
@@ -305,7 +305,7 @@ void JSONSaver::onChildrenComplete(AttributeData *data, ChildData *)
 
   _data->_writer.end();
 
-  if(attr->includesRoot())
+  if(attr->includeRoot())
     {
     _data->_writer.endElement();
     }
@@ -352,7 +352,7 @@ void JSONSaver::onValuesComplete(AttributeData *data, ValueData *v)
   auto values = v->as<JSONValueSaver>();
   auto attr = data->as<JSONSaver::JSONAttributeSaver>();
 
-  if(attr->includesRoot())
+  if(attr->includeRoot())
     {
     if(values->hasOnlyWrittenValueSymbol() && !attr->attribute->castTo<Container>())
       {

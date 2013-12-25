@@ -4,6 +4,7 @@
 #include "shift/sglobal.h"
 #include "Utilities/XProperty.h"
 #include "Containers/XStringSimple.h"
+#include "shift/Utilities/smetatype.h"
 
 #define S_CHANGE_ID(CHANGE_TYPE) (Change::getChangeTypeId<typename CHANGE_TYPE::SubType>(CHANGE_TYPE::Type))
 
@@ -55,26 +56,6 @@
 
 namespace Shift
 {
-namespace detail
-{
-class SHIFT_EXPORT MetaType
-  {
-public:
-  template <typename T>static xuint32 id()
-    {
-    static xuint32 id = newId();
-    return id;
-    }
-
-  template <typename T> static void appendTypeName(Eks::String &str)
-    {
-    str.appendType(id<T>());
-    }
-
-private:
-  static xuint32 newId();
-  };
-}
 
 class Change
   {
