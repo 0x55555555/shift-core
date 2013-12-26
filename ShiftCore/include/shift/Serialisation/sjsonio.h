@@ -24,7 +24,7 @@ public:
   JSONSaver();
 
 private:
-  void emitJson(QIODevice *dev);
+  void emitJson(Eks::AllocatorBase *alloc, QIODevice *dev);
   void addSavedType(const PropertyInformation *info, bool dynamic) X_OVERRIDE;
   void setIncludeRoot(bool include) X_OVERRIDE;
   const SerialisationSymbol &modeSymbol() X_OVERRIDE;
@@ -32,16 +32,16 @@ private:
   const SerialisationSymbol &valueSymbol() X_OVERRIDE;
   const SerialisationSymbol &typeSymbol() X_OVERRIDE;
   const SerialisationSymbol &childrenSymbol();
-  void onBeginSave(Attribute *root, Eks::AllocatorBase *alloc) X_OVERRIDE;
-  void onEndSave() X_OVERRIDE;
+  void begin(Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void end() X_OVERRIDE;
   Eks::UniquePointer<Saver::ChildData> onBeginChildren(AttributeData *data, Saver::ChildrenType type, Eks::AllocatorBase *alloc) X_OVERRIDE;
   void onChildrenComplete(AttributeData *data, ChildData *) X_OVERRIDE;
-  Eks::UniquePointer<Saver::AttributeData> onAddChild(Saver::ChildData *parent, Attribute *a, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  Eks::UniquePointer<Saver::AttributeData> onAddChild(Saver::ChildData *parent, const Shift::Name &name, Eks::AllocatorBase *alloc) X_OVERRIDE;
   void onChildComplete(Saver::ChildData *, AttributeData *child) X_OVERRIDE;
   void completeAttribute(AttributeData *data);
-  Eks::UniquePointer<Saver::ValueData> onBeginValues(AttributeData *, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  Eks::UniquePointer<Saver::ValueData> onBeginValues(AttributeData *, Eks::AllocatorBase *allocator) X_OVERRIDE;
   void onValuesComplete(AttributeData *data, ValueData *v) X_OVERRIDE;
-  void onWriteValue(Saver::ValueData *v, const Symbol &id, const SerialisationValue& value) X_OVERRIDE;
+  void onValue(Saver::ValueData *v, const Symbol &id, const SerialisationValue& value) X_OVERRIDE;
 
   class JSONValueSaver;
   class JSONChildSaver;

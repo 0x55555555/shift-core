@@ -88,10 +88,9 @@ XProperties:
   XROProperty(bool, includeRoot);
 
 public:
-  JSONAttributeSaver(Attribute *attr)
+  JSONAttributeSaver()
       : _includeRoot(true),
-        hasBegunObject(false),
-        attribute(attr)
+        hasBegunObject(false)
     {
     }
 
@@ -103,7 +102,6 @@ public:
     }
 
   bool hasBegunObject;
-  Attribute *attribute;
   };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -119,7 +117,8 @@ public:
       _type("type"),
       _children("contents"),
       _writer(alloc),
-      _typeMap(InfoSorter(), alloc)
+      _typeMap(InfoSorter(), alloc),
+      _allocator(alloc)
     {
     }
 
@@ -142,6 +141,7 @@ public:
     };
 
   std::map<const PropertyInformation *, TypeData, InfoSorter, Eks::TypedAllocator<std::pair<const PropertyInformation *, TypeData> > > _typeMap;
+  Eks::AllocatorBase *_allocator;
   };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -151,26 +151,29 @@ JSONSaver::JSONSaver() : _autoWhitespace(false)
   {
   }
 
-void JSONSaver::onBeginSave(Attribute *, Eks::AllocatorBase *alloc)
+void JSONSaver::begin(Eks::AllocatorBase *alloc)
   {
+  Saver::begin(alloc);
   _data = alloc->createUnique<CurrentSaveData>(alloc);
 
   _data->_writer.setNiceFormatting(autoWhitespace());
   _data->_writer.tabIn();
+  _data->_allocator = alloc;
   }
 
-void JSONSaver::onEndSave()
+void JSONSaver::end()
   {
   completeAttribute(rootData()->as<JSONAttributeSaver>());
-  emitJson(activeBlock()->device());
+  emitJson(_data->_allocator, activeBlock()->device());
 
   _data = nullptr;
+
+  Saver::end();
   }
 
-void JSONSaver::emitJson(QIODevice *dev)
+void JSONSaver::emitJson(Eks::AllocatorBase *allocator, QIODevice *dev)
   {
-  Eks::TemporaryAllocator alloc(rootAttribute()->temporaryAllocator());
-  Eks::JSONWriter writer(&alloc);
+  Eks::JSONWriter writer(allocator);
   writer.setNiceFormatting(_data->_writer.niceFormatting());
 
   writer.beginObject();
@@ -182,7 +185,7 @@ void JSONSaver::emitJson(QIODevice *dev)
   writer.beginObjectElement(TYPES_KEY);
   writer.beginObject();
 
-  Eks::String tempString(&alloc);
+  Eks::String tempString(allocator);
 
   auto it = _data->_typeMap.begin();
   auto end = _data->_typeMap.end();
@@ -278,6 +281,9 @@ const SerialisationSymbol &JSONSaver::childrenSymbol()
 Eks::UniquePointer<Saver::ChildData> JSONSaver::onBeginChildren(AttributeData *data, Saver::ChildrenType type, Eks::AllocatorBase *alloc)
   {
   auto attr = data->as<JSONSaver::JSONAttributeSaver>();
+  // if this isnt true, the maybe value was already written on its own?
+  // this shouldnt happen for things with children - they dont have values...
+  xAssert(attr->hasBegunObject || !attr->includeRoot());
 
   if(attr->includeRoot())
     {
@@ -311,13 +317,13 @@ void JSONSaver::onChildrenComplete(AttributeData *data, ChildData *)
     }
   }
 
-Eks::UniquePointer<Saver::AttributeData> JSONSaver::onAddChild(Saver::ChildData *parent, Attribute *a, Eks::AllocatorBase *alloc)
+Eks::UniquePointer<Saver::AttributeData> JSONSaver::onAddChild(Saver::ChildData *parent, const Shift::Name &name, Eks::AllocatorBase *alloc)
   {
   if(parent)
     {
     if(parent->as<JSONSaver::JSONChildSaver>()->isNamed())
       {
-      _data->_writer.beginObjectElement(a->name().data());
+      _data->_writer.beginObjectElement(name.data());
       }
     else
       {
@@ -325,7 +331,7 @@ Eks::UniquePointer<Saver::AttributeData> JSONSaver::onAddChild(Saver::ChildData 
       }
     }
 
-  return alloc->createUnique<JSONSaver::JSONAttributeSaver>(a);
+  return alloc->createUnique<JSONSaver::JSONAttributeSaver>();
   }
 
 void JSONSaver::onChildComplete(Saver::ChildData *, AttributeData *child)
@@ -354,7 +360,7 @@ void JSONSaver::onValuesComplete(AttributeData *data, ValueData *v)
 
   if(attr->includeRoot())
     {
-    if(values->hasOnlyWrittenValueSymbol() && !attr->attribute->castTo<Container>())
+    if(values->hasOnlyWrittenValueSymbol())
       {
       _data->_writer.addValueForElement(values->valueSymbolDataOnly().data());
       }
@@ -371,7 +377,7 @@ void JSONSaver::onValuesComplete(AttributeData *data, ValueData *v)
     }
   }
 
-void JSONSaver::onWriteValue(Saver::ValueData *v, const Symbol &id, const SerialisationValue& value)
+void JSONSaver::onValue(Saver::ValueData *v, const Symbol &id, const SerialisationValue& value)
   {
   auto values = static_cast<JSONValueSaver*>(v);
   Eks::String valueStr = value.asUtf8(values->allocator);

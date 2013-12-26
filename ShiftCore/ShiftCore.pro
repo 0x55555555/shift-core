@@ -54,7 +54,8 @@ SOURCES += \
     src/Properties/sarray.cpp \
     src/Serialisation/ssaver.cpp \
     src/Serialisation/sattributeio.cpp \
-    src/Utilities/smetatype.cpp
+    src/Utilities/smetatype.cpp \
+    src/Serialisation/sattributeinterface.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -106,7 +107,8 @@ HEADERS += \
     include/shift/Properties/sarray.h \
     include/shift/Serialisation/ssaver.h \
     include/shift/Serialisation/sattributeio.h \
-    include/shift/Utilities/smetatype.h
+    include/shift/Utilities/smetatype.h \
+    include/shift/Serialisation/sattributeinterface.h
 
 
 

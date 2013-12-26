@@ -5,6 +5,8 @@
 # *.[oa]
 # *~
 
+.qmake.stash
+.DS_Store
 *Makefile*
 *.dll
 *.exp

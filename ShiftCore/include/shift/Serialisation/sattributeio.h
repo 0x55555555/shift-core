@@ -11,6 +11,9 @@ namespace Shift
 {
 class Attribute;
 
+/// \brief A symbol is a known key used to identifiy data in a serialised file.
+///        Attribute interfaces should implement their own sub class, which holds
+///        data appropriate for their serialisation style.
 class SerialisationSymbol
   {
 public:
@@ -20,6 +23,8 @@ private:
   X_DISABLE_COPY(SerialisationSymbol);
   };
 
+/// \brief A serialisation value is a value sent from the emitter to the Attribute
+///        interface, and can be turned into binary or Utf8 formats.
 class SerialisationValue
   {
 public:
@@ -29,6 +34,7 @@ public:
   virtual Eks::Vector<xuint8> asBinary(Eks::AllocatorBase* a) const { xAssertFail(); return Eks::Vector<xuint8>(a); }
   };
 
+/// \brief Helper class for wrapping a typed value for Serialisation.
 template <typename T> class TypedSerialisationValue : public SerialisationValue
   {
 public:
@@ -41,6 +47,7 @@ private:
   const T &_val;
   };
 
+/// \brief Attribute saver and loader base class, allows access to symbols used for writing and reading.
 class AttributeIO
   {
 public:
@@ -51,6 +58,7 @@ public:
   virtual const Symbol &valueSymbol() = 0;
   };
 
+/// \brief Util for Saving an attribute
 class AttributeSaver : public AttributeIO
   {
 public:
@@ -65,6 +73,7 @@ public:
     }
   };
 
+/// \brief Util for loading an attribute
 class AttributeLoader : public AttributeIO
   {
 public:
