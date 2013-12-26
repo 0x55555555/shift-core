@@ -54,16 +54,15 @@ const Property *ExternalPointer::resolve(ResolveResult *resultOpt) const
   return prop;
   }
 
-TypedSerialisationValue<QUuid>::TypedSerialisationValue(const QUuid &t) : _val(t)
+TypedSerialisationValue<QUuid>::TypedSerialisationValue(const QUuid *t) : _val(t)
   {
-
   }
 
 Eks::String TypedSerialisationValue<QUuid>::asUtf8(Eks::AllocatorBase *a) const
   {
   Eks::String ret(a);
 
-  ret = _val.toByteArray().constData();
+  ret = _val->toByteArray().constData();
   return ret;
   }
 

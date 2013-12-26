@@ -24,16 +24,16 @@ public:
   JSONSaver();
 
 private:
-  void emitJson(Eks::AllocatorBase *alloc, QIODevice *dev);
+  void emitJson(Eks::AllocatorBase *alloc, AttributeData *root, QIODevice *dev);
   void addSavedType(const PropertyInformation *info, bool dynamic) X_OVERRIDE;
-  void setIncludeRoot(bool include) X_OVERRIDE;
+  void setIncludeRoot(AttributeData *data, bool include) X_OVERRIDE;
   const SerialisationSymbol &modeSymbol() X_OVERRIDE;
   const SerialisationSymbol &inputSymbol() X_OVERRIDE;
   const SerialisationSymbol &valueSymbol() X_OVERRIDE;
   const SerialisationSymbol &typeSymbol() X_OVERRIDE;
   const SerialisationSymbol &childrenSymbol();
-  void begin(Eks::AllocatorBase *alloc) X_OVERRIDE;
-  void end() X_OVERRIDE;
+  void onBegin(AttributeData *block, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void onEnd(AttributeData *block) X_OVERRIDE;
   Eks::UniquePointer<Saver::ChildData> onBeginChildren(AttributeData *data, Saver::ChildrenType type, Eks::AllocatorBase *alloc) X_OVERRIDE;
   void onChildrenComplete(AttributeData *data, ChildData *) X_OVERRIDE;
   Eks::UniquePointer<Saver::AttributeData> onAddChild(Saver::ChildData *parent, const Shift::Name &name, Eks::AllocatorBase *alloc) X_OVERRIDE;

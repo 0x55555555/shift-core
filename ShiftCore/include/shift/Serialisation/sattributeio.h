@@ -38,13 +38,13 @@ public:
 template <typename T> class TypedSerialisationValue : public SerialisationValue
   {
 public:
-  TypedSerialisationValue(const T &t) : _val(t) { }
+  TypedSerialisationValue(const T *t) : _val(t) { }
   bool hasUtf8() const X_OVERRIDE { return true; }
   bool hasBinary() const X_OVERRIDE { return false; }
   Eks::String asUtf8(Eks::AllocatorBase*) const X_OVERRIDE;
 
 private:
-  const T &_val;
+  const T *_val;
   };
 
 /// \brief Attribute saver and loader base class, allows access to symbols used for writing and reading.
@@ -53,9 +53,9 @@ class AttributeIO
 public:
   typedef SerialisationSymbol Symbol;
 
-  virtual const Symbol &modeSymbol() = 0;
-  virtual const Symbol &inputSymbol() = 0;
-  virtual const Symbol &valueSymbol() = 0;
+  virtual const Symbol &modeSymbol() const = 0;
+  virtual const Symbol &inputSymbol() const = 0;
+  virtual const Symbol &valueSymbol() const = 0;
   };
 
 /// \brief Util for Saving an attribute
@@ -67,7 +67,7 @@ public:
 
   template <typename T> void write(const Symbol &id, const T& t)
     {
-    TypedSerialisationValue<T> val(t);
+    TypedSerialisationValue<T> val(&t);
 
     writeValue(id, val);
     }
@@ -106,14 +106,14 @@ Eks::String TypedSerialisationValue<T>::asUtf8(Eks::AllocatorBase* a) const
   Eks::String::Buffer buf(&ret);
   Eks::String::OStream str(&buf);
 
-  str << _val;
+  str << *_val;
   return ret;
   }
 
 template <> class SHIFT_EXPORT TypedSerialisationValue<QUuid> :  public SerialisationValue
   {
 public:
-  TypedSerialisationValue(const QUuid &t);
+  TypedSerialisationValue(const QUuid *t);
 
   bool hasUtf8() const X_OVERRIDE { return true; }
   bool hasBinary() const X_OVERRIDE { return false; }
@@ -121,7 +121,7 @@ public:
   Eks::String asUtf8(Eks::AllocatorBase *a) const;
 
 private:
-  const QUuid &_val;
+  const QUuid *_val;
   };
 
 

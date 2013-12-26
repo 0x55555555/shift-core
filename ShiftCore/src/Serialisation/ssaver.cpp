@@ -1,5 +1,4 @@
 #include "shift/Serialisation/ssaver.h"
-#include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/Properties/sattribute.h"
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/scontaineriterators.h"
@@ -42,22 +41,17 @@ Saver::WriteBlock Saver::beginWriting(QIODevice *device)
   return WriteBlock(this, device);
   }
 
-void Saver::begin(Eks::AllocatorBase *alloc)
+void Saver::onBegin(AttributeData *, Eks::AllocatorBase *)
   {
   xAssert(_block);
   xAssert(!_block->_writing);
   xAssert(!_block->_written);
 
   _block->_writing = true;
-
-  _rootBlock = alloc->createUnique<AttributeBlock>(nullptr, Name(), alloc);
-  _rootBlock->setRoot(this);
   }
 
-void Saver::end()
+void Saver::onEnd(AttributeData *)
   {
-  _rootBlock = nullptr;
-
   xAssert(_block);
   xAssert(_block->_writing);
   xAssert(!_block->_written);
@@ -66,23 +60,15 @@ void Saver::end()
   _block->_written = true;
   }
 
-AttributeInterface::AttributeData *Saver::rootData()
-  {
-  return _rootBlock->user();
-  }
-
-
 void SaveBuilder::save(Attribute *attr, bool includeRoot, Saver *receiver)
   {
   Eks::TemporaryAllocator alloc(attr->temporaryAllocator());
 
-  receiver->begin(&alloc);
+  auto block = receiver->begin(attr->typeInformation(), attr->isDynamic(), &alloc);
 
-  receiver->setIncludeRoot(includeRoot);
+  receiver->setIncludeRoot(block->user(), includeRoot);
 
-  visitAttribute(attr, receiver->rootBlock(), &alloc);
-
-  receiver->end();
+  visitAttribute(attr, block.value(), &alloc);
   }
 
 void SaveBuilder::visitAttribute(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc)
@@ -99,17 +85,25 @@ void SaveBuilder::visitValues(Attribute *attr, Saver::AttributeBlock *data, Eks:
   const PropertyInformation *info = attr->typeInformation();
   xAssert(info);
 
-  const bool dyn = attr->isDynamic();
-
-  data->saveData()->addSavedType(info, dyn);
-
   auto dataAttrs = data->beginValues(alloc);
-  if(dyn)
-    {
-    dataAttrs->write(dataAttrs->typeSymbol(), info->typeName());
-    }
 
-  info->functions().save(attr, *dataAttrs.value());
+  struct SaveHelper : public AttributeSaver
+    {
+    const Symbol &modeSymbol() const X_OVERRIDE { return block->modeSymbol(); }
+    const Symbol &valueSymbol() const X_OVERRIDE { return block->valueSymbol(); }
+    const Symbol &inputSymbol() const X_OVERRIDE { return block->inputSymbol(); }
+
+    void writeValue(const Symbol &id, const SerialisationValue& value) X_OVERRIDE
+      {
+      block->setValue(id, value);
+      }
+
+    Saver::ValueBlock *block;
+    } helper;
+
+  helper.block = dataAttrs.value();
+
+  info->functions().save(attr, helper);
   }
 
 void SaveBuilder::visitChildren(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *attrAlloc)
@@ -147,7 +141,7 @@ void SaveBuilder::visitChildren(Attribute *attr, Saver::AttributeBlock *data, Ek
         {
         Eks::TemporaryAllocator alloc(child->temporaryAllocator());
 
-        auto childData = children->addChild(child->name(), &alloc);
+        auto childData = children->addChild(child->name(), child->typeInformation(), child->isDynamic(), &alloc);
 
         if(info->functions().shouldSaveValue(child))
           {

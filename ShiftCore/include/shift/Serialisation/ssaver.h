@@ -32,10 +32,7 @@ public:
 
   Saver();
 
-  virtual void setIncludeRoot(bool include) = 0;
-
-  AttributeBlock *rootBlock() { return _rootBlock.value(); }
-  AttributeData *rootData();
+  virtual void setIncludeRoot(AttributeData *data, bool include) = 0;
 
   /// \brief Begin writing to [device].
   WriteBlock beginWriting(QIODevice *device);
@@ -43,12 +40,11 @@ public:
   /// \brief Get the active write block.
   WriteBlock *activeBlock() { return _block; }
 
-  void begin(Eks::AllocatorBase *alloc) X_OVERRIDE;
-  void end() X_OVERRIDE;
+  void onBegin(AttributeData *block, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void onEnd(AttributeData *block) X_OVERRIDE;
 
 private:
   WriteBlock *_block;
-  Eks::UniquePointer<AttributeBlock> _rootBlock;
   friend class WriteBlock;
   };
 

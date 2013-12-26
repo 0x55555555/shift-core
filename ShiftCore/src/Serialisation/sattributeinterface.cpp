@@ -1,4 +1,6 @@
 #include "shift/Serialisation/sattributeinterface.h"
+#include "shift/TypeInformation/spropertyinformation.h"
+
 
 namespace Shift
 {
@@ -22,11 +24,15 @@ AttributeInterface::ChildBlock::~ChildBlock()
   _owner->childrenComplete(this);
   }
 
-Eks::UniquePointer<AttributeInterface::AttributeBlock> AttributeInterface::ChildBlock::addChild(const Name &name, Eks::AllocatorBase *alloc)
+Eks::UniquePointer<AttributeInterface::AttributeBlock> AttributeInterface::ChildBlock::addChild(
+    const Name &name,
+    const PropertyInformation *info,
+    bool isDynamic,
+    Eks::AllocatorBase *alloc)
   {
   xAssert(!_activeChild);
 
-  auto out = alloc->createUnique<AttributeInterface::AttributeBlock>(this, name, alloc);
+  auto out = alloc->createUnique<AttributeInterface::AttributeBlock>(this, name, info, isDynamic, alloc);
   xAssert(_activeChild);
 
   return std::move(out);
@@ -65,6 +71,11 @@ AttributeInterface::ValueBlock::~ValueBlock()
   _owner->valuesComplete(this);
   }
 
+void AttributeInterface::ValueBlock::setValue(const Symbol &id, const SerialisationValue& value)
+  {
+  _owner->saveData()->onValue(user(), id, value);
+  }
+
 const SerialisationSymbol &AttributeInterface::ValueBlock::modeSymbol()
   {
   return _owner->saveData()->modeSymbol();
@@ -80,29 +91,26 @@ const SerialisationSymbol &AttributeInterface::ValueBlock::valueSymbol()
   return _owner->saveData()->valueSymbol();
   }
 
-const SerialisationSymbol &AttributeInterface::ValueBlock::typeSymbol()
-  {
-  return _owner->saveData()->typeSymbol();
-  }
-
-void AttributeInterface::ValueBlock::writeValue(const Symbol &id, const SerialisationValue& value)
-  {
-  _owner->saveData()->onValue(user(), id, value);
-  }
-
 //----------------------------------------------------------------------------------------------------------------------
 // AttributeInterface::AttributeBlock Impl
 //----------------------------------------------------------------------------------------------------------------------
-AttributeInterface::AttributeBlock::AttributeBlock(ChildBlock *parent, const Name &name, Eks::AllocatorBase *alloc)
+AttributeInterface::AttributeBlock::AttributeBlock(
+  ChildBlock *parent,
+  const Name &name,
+  const PropertyInformation *info,
+  bool isDynamic,
+  Eks::AllocatorBase *alloc)
     : _parent(parent),
       _data(parent ? parent->owner()->saveData() : nullptr),
+      _isDynamic(isDynamic),
+      _type(info),
       _values(nullptr),
       _children(nullptr),
       _hasValues(false),
       _hasChildren(false),
       _alloc(alloc)
   {
-  initUser(name);
+  init(name);
   }
 
 AttributeInterface::AttributeBlock::~AttributeBlock()
@@ -123,7 +131,7 @@ Eks::UniquePointer<AttributeInterface::ChildBlock> AttributeInterface::Attribute
   return out;
   }
 
-void AttributeInterface::AttributeBlock::initUser(const Name &name)
+void AttributeInterface::AttributeBlock::init(const Name &name)
   {
   if(_user)
     {
@@ -148,12 +156,14 @@ void AttributeInterface::AttributeBlock::initUser(const Name &name)
     {
     _user = _data->onAddChild(nullptr, name, _alloc);
     }
+
+  saveData()->addSavedType(_type, _isDynamic);
   }
 
 void AttributeInterface::AttributeBlock::setRoot(AttributeInterface *data)
   {
   _data = data;
-  initUser(Name());
+  init(Name());
   }
 
 void AttributeInterface::AttributeBlock::setChildren(ChildBlock *vals)
@@ -179,6 +189,13 @@ Eks::UniquePointer<AttributeInterface::ValueBlock> AttributeInterface::Attribute
   xAssert(!_values);
 
   auto out = alloc->createUnique<ValueBlock>(this, alloc);
+
+  if(_isDynamic)
+    {
+    TypedSerialisationValue<Name> str(&_type->typeName());
+    out->setValue(saveData()->typeSymbol(), str);
+    }
+
   xAssert(_values);
   return out;
   }
@@ -198,6 +215,24 @@ void AttributeInterface::AttributeBlock::valuesComplete(ValueBlock *v)
 
   _hasValues = true;
   _values = nullptr;
+  }
+
+AttributeInterface::RootBlock::RootBlock(AttributeInterface *ifc, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc)
+    : AttributeBlock(nullptr, Name(), info, dynamic, alloc)
+  {
+  ifc->onBegin(user(), alloc);
+
+  setRoot(ifc);
+  }
+
+AttributeInterface::RootBlock::~RootBlock()
+  {
+  saveData()->onEnd(user());
+  }
+
+Eks::UniquePointer<AttributeInterface::RootBlock> AttributeInterface::begin(const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc)
+  {
+  return alloc->createUnique<RootBlock>(this, info, dynamic, alloc);
   }
 
 }

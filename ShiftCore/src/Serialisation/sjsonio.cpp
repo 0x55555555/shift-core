@@ -151,9 +151,9 @@ JSONSaver::JSONSaver() : _autoWhitespace(false)
   {
   }
 
-void JSONSaver::begin(Eks::AllocatorBase *alloc)
+void JSONSaver::onBegin(AttributeData *root, Eks::AllocatorBase *alloc)
   {
-  Saver::begin(alloc);
+  Saver::onBegin(root, alloc);
   _data = alloc->createUnique<CurrentSaveData>(alloc);
 
   _data->_writer.setNiceFormatting(autoWhitespace());
@@ -161,17 +161,17 @@ void JSONSaver::begin(Eks::AllocatorBase *alloc)
   _data->_allocator = alloc;
   }
 
-void JSONSaver::end()
+void JSONSaver::onEnd(AttributeData *root)
   {
-  completeAttribute(rootData()->as<JSONAttributeSaver>());
-  emitJson(_data->_allocator, activeBlock()->device());
+  completeAttribute(root->as<JSONAttributeSaver>());
+  emitJson(_data->_allocator, root, activeBlock()->device());
 
   _data = nullptr;
 
-  Saver::end();
+  Saver::onEnd(root);
   }
 
-void JSONSaver::emitJson(Eks::AllocatorBase *allocator, QIODevice *dev)
+void JSONSaver::emitJson(Eks::AllocatorBase *allocator, AttributeData *rootData, QIODevice *dev)
   {
   Eks::JSONWriter writer(allocator);
   writer.setNiceFormatting(_data->_writer.niceFormatting());
@@ -213,7 +213,7 @@ void JSONSaver::emitJson(Eks::AllocatorBase *allocator, QIODevice *dev)
   writer.end();
   writer.endElement();
 
-  auto root = rootData()->as<JSONAttributeSaver>();
+  auto root = rootData->as<JSONAttributeSaver>();
 
   writer.beginObjectElement(NO_ROOT_KEY);
   writer.addValueForElement(root->includeRoot() ? "0" : "1");
@@ -248,9 +248,9 @@ void JSONSaver::addSavedType(const PropertyInformation *info, bool dynamic)
     }
   }
 
-void JSONSaver::setIncludeRoot(bool include)
+void JSONSaver::setIncludeRoot(AttributeData *root, bool include)
   {
-  rootData()->as<JSONAttributeSaver>()->setIncludeRoot(include);
+  root->as<JSONAttributeSaver>()->setIncludeRoot(include);
   }
 
 const SerialisationSymbol &JSONSaver::modeSymbol()

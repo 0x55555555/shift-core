@@ -33,6 +33,7 @@ public:
     };
 
   class AttributeBlock;
+  class RootBlock;
   class ChildBlock;
   class ValueBlock;
 
@@ -40,11 +41,14 @@ public:
   class ChildData : public BaseData { };
   class ValueData : public BaseData { };
 
-  virtual void begin(Eks::AllocatorBase *alloc) = 0;
-  virtual void addSavedType(const PropertyInformation *info, bool dynamic) = 0;
-  virtual void end() = 0;
+  Eks::UniquePointer<RootBlock> begin(const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
 
 protected:
+  virtual void onBegin(AttributeData *block, Eks::AllocatorBase *alloc) = 0;
+  virtual void onEnd(AttributeData *block) = 0;
+
+  virtual void addSavedType(const PropertyInformation *info, bool dynamic) = 0;
+
   /// \brief symbol for attribute mode.
   virtual const SerialisationSymbol &modeSymbol() = 0;
   /// \brief symbol for input mode.
@@ -86,23 +90,20 @@ protected:
 /// \brief An value block represents a value block for an attribute. when it is destroyed the values are complete.
 /// \note It is always emitted before the children.
 class AttributeInterface::ValueBlock
-    : public AttributeSaver,
-      public AttributeSubBlockHelper<AttributeInterface::ValueData>
+    : public AttributeSubBlockHelper<AttributeInterface::ValueData>
   {
 public:
   ValueBlock(AttributeInterface::AttributeBlock *data, Eks::AllocatorBase *alloc);
   ~ValueBlock();
 
-  void writeValue(const Symbol &id, const SerialisationValue& value) X_OVERRIDE;
+  void setValue(const Symbol &id, const SerialisationValue &value);
 
   /// \brief symbol for attribute mode.
-  const Symbol &modeSymbol() X_OVERRIDE;
+  const Symbol &modeSymbol();
   /// \brief symbol for input mode.
-  const Symbol &inputSymbol() X_OVERRIDE;
+  const Symbol &inputSymbol();
   /// \brief symbol for value mode.
-  const Symbol &valueSymbol() X_OVERRIDE;
-  /// \brief symbol for type mode.
-  const Symbol &typeSymbol();
+  const Symbol &valueSymbol();
   };
 
 /// \brief An child block represents the children block for an attribute. when it is destroyed the children are complete.
@@ -114,7 +115,11 @@ public:
   ~ChildBlock();
 
   /// \brief Begin writing an attribute, which ends when the destructor is called.
-  Eks::UniquePointer<AttributeInterface::AttributeBlock> addChild(const Name &name, Eks::AllocatorBase *alloc);
+  Eks::UniquePointer<AttributeInterface::AttributeBlock> addChild(
+    const Name &name,
+    const PropertyInformation *info,
+    bool dynamic,
+    Eks::AllocatorBase *alloc);
 
 protected:
   /// \brief Begin writing an attribute, which ends when the destructor is called.
@@ -133,7 +138,7 @@ private:
 class AttributeInterface::AttributeBlock
   {
 public:
-  AttributeBlock(ChildBlock *parent, const Name &, Eks::AllocatorBase *alloc);
+  AttributeBlock(ChildBlock *parent, const Name &, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
   ~AttributeBlock();
 
   /// \brief get the owning save.
@@ -159,9 +164,11 @@ protected:
   void valuesComplete(ValueBlock *);
 
 private:
-  void initUser(const Name &name);
+  void init(const Name &name);
   ChildBlock *_parent;
   AttributeInterface *_data;
+  bool _isDynamic;
+  const PropertyInformation *_type;
 
   ValueBlock *_values;
   ChildBlock *_children;
@@ -176,6 +183,13 @@ private:
   friend class Saver;
   friend class ChildBlock;
   friend class ValueBlock;
+  };
+
+class AttributeInterface::RootBlock : public AttributeInterface::AttributeBlock
+  {
+public:
+  RootBlock(AttributeInterface *ifc, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
+  ~RootBlock();
   };
 
 }
