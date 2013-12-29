@@ -29,6 +29,66 @@ void buildTestData(Shift::Entity* root)
   vec4->z = 6.2f;
   }
 
+bool checkStrings(const QString &actual, const QString &expected)
+  {
+  xsize lines = 1;
+  xsize lineChars = 0;
+
+  xsize linesContext = 3;
+
+  auto context = [linesContext](const QString &str, int pos)
+    {
+    auto skipLines = [](const QString &str, int pos, xsize linesToGo, int dir)
+      {
+      while(linesToGo && pos > 0)
+        {
+        if(str[pos] == '\n')
+          {
+          --linesToGo;
+          }
+
+        pos += dir;
+        }
+
+      return pos;
+      };
+
+    int start = skipLines(str, pos, linesContext, -1);
+    int end = skipLines(str, pos, linesContext, 1);
+
+
+    return str.mid(start, end-start);
+    };
+
+  for(int i = 0; i < std::max(actual.length(), expected.length()); ++i)
+    {
+    ++lineChars;
+    auto charA = i < actual.length() ? actual[i] : '\0';
+    auto charE = i < expected.length() ? expected[i] : '\0';
+
+    if (charA != charE)
+      {
+      qWarning().nospace() << "Character difference at line " << lines << ", character " << lineChars;
+      qWarning().nospace() << "Expected '" << charE << "' (" << charE.unicode() << "), got '" << charA << "' (" << charA.unicode() << ")";
+
+      qWarning() << "Expected:" << context(expected, i);
+
+      qWarning() << "Actual:" << context(actual, i);
+
+      return false;
+      }
+
+    if (charA == '\n')
+      {
+      lineChars = 0;
+      ++lines;
+      }
+    }
+
+  return true;
+
+  }
+
 bool checkProperties(Shift::Attribute *a, Shift::Attribute *aRoot, Shift::Attribute *b, Shift::Attribute *bRoot)
   {
   if (a == nullptr && b == nullptr)
@@ -134,13 +194,15 @@ void ShiftCoreTest::serialisationCopyTest()
   Shift::SaveBuilder saver;
   Shift::LoadBuilder loader;
 
-    {
-    auto loading = loader.beginLoading(rootB);
+  QBENCHMARK {
+      {
+      auto loading = loader.beginLoading(rootB);
 
-    saver.save(rootA, false, &loader);
-    }
+      saver.save(rootA, false, &loader);
+      }
 
-  QCOMPARE(checkHierarchies(rootA, rootB, false), true);
+    QCOMPARE(checkHierarchies(rootA, rootB, false), true);
+  }
   }
 
 
@@ -167,7 +229,7 @@ void ShiftCoreTest::serialisationJsonTest()
     buffer.close();
   }
 
-#define SAVE_OUTPUT
+#define SAVE_OUTPUTx
 #ifdef SAVE_OUTPUT
     {
     QFileInfo path("./SerialisationTest.json");
@@ -185,7 +247,7 @@ void ShiftCoreTest::serialisationJsonTest()
   QString savedOutput(buffer.data());
   QString expectedOutput(expected.readAll());
 
-  QCOMPARE(savedOutput, expectedOutput);
+  QCOMPARE(checkStrings(savedOutput, expectedOutput), true);
   }
 
 void ShiftCoreTest::deserialisationJsonTest()
