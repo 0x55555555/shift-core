@@ -151,13 +151,13 @@ void AttributeInterface::AttributeBlock::init(const Name &name)
       {
       _parent->setActiveChild(this);
       }
+
+    saveData()->addSavedType(_type, _isDynamic);
     }
   else
     {
     _user = _data->onAddChild(nullptr, name, _alloc);
     }
-
-  saveData()->addSavedType(_type, _isDynamic);
   }
 
 void AttributeInterface::AttributeBlock::setRoot(AttributeInterface *data)
@@ -192,6 +192,7 @@ Eks::UniquePointer<AttributeInterface::ValueBlock> AttributeInterface::Attribute
 
   if(_isDynamic)
     {
+    xAssert(_type);
     TypedSerialisationValue<Name> str(&_type->typeName());
     out->setValue(saveData()->typeSymbol(), str);
     }
@@ -217,12 +218,17 @@ void AttributeInterface::AttributeBlock::valuesComplete(ValueBlock *v)
   _values = nullptr;
   }
 
-AttributeInterface::RootBlock::RootBlock(AttributeInterface *ifc, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc)
+AttributeInterface::RootBlock::RootBlock(bool includeRoot, AttributeInterface *ifc, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc)
     : AttributeBlock(nullptr, Name(), info, dynamic, alloc)
   {
-  ifc->onBegin(user(), alloc);
-
   setRoot(ifc);
+
+  ifc->onBegin(user(), includeRoot, alloc);
+
+  if(includeRoot)
+    {
+    ifc->addSavedType(info, dynamic);
+    }
   }
 
 AttributeInterface::RootBlock::~RootBlock()
@@ -230,9 +236,9 @@ AttributeInterface::RootBlock::~RootBlock()
   saveData()->onEnd(user());
   }
 
-Eks::UniquePointer<AttributeInterface::RootBlock> AttributeInterface::begin(const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc)
+Eks::UniquePointer<AttributeInterface::RootBlock> AttributeInterface::begin(bool includeRoot, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc)
   {
-  return alloc->createUnique<RootBlock>(this, info, dynamic, alloc);
+  return alloc->createUnique<RootBlock>(includeRoot, this, info, dynamic, alloc);
   }
 
 }

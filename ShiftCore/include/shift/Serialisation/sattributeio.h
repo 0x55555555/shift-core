@@ -2,6 +2,7 @@
 #define SATTRIBUTEIO_H
 
 #include "shift/sglobal.h"
+#include "shift/Utilities/spropertyname.h"
 #include "Utilities/XMacroHelpers.h"
 #include "Utilities/XProperty.h"
 #include "Containers/XStringSimple.h"
@@ -10,6 +11,7 @@
 namespace Shift
 {
 class Attribute;
+class PropertyInformation;
 
 /// \brief A symbol is a known key used to identifiy data in a serialised file.
 ///        Attribute interfaces should implement their own sub class, which holds
@@ -73,26 +75,61 @@ public:
     }
   };
 
+namespace detail
+{
+template <typename T> struct ValueExtractor
+  {
+  static bool extract(const Eks::String &ret, T &val)
+    {
+    Eks::String::Buffer buf(&ret);
+    Eks::String::IStream str(&buf);
+
+    str >> val;
+    return true;
+    }
+  };
+
+template <xsize S, typename A> struct ValueExtractor<Eks::StringBase<Eks::String::Char, S, A>>
+  {
+  static bool extract(const Eks::String &ret, Eks::StringBase<Eks::String::Char, S, A> &val)
+    {
+    val = ret;
+    return true;
+    }
+  };
+
+template <> struct ValueExtractor<Eks::String>
+  {
+  static bool extract(const Eks::String &ret, Eks::String &val)
+    {
+    val = ret;
+    return true;
+    }
+  };
+}
+
 /// \brief Util for loading an attribute
 class AttributeLoader : public AttributeIO
   {
 public:
   /// \brief read a value for the attribute, with symbol [id].
   virtual const SerialisationValue& readValue(const Symbol &id) = 0;
+  virtual Eks::AllocatorBase *temporaryAllocator() = 0;
 
-  template <typename T> bool read(const Symbol &id, T&, Eks::AllocatorBase* a)
+  virtual Attribute *existingAttribute() = 0;
+
+  virtual const Name& name() = 0;
+  virtual const PropertyInformation *type() = 0;
+
+  virtual void resolveInputAfterLoad(Property *prop, const Eks::String &path) = 0;
+
+  template <typename T> bool read(const Symbol &id, T &t)
     {
     const SerialisationValue &val = readValue(id);
 
     if (val.hasUtf8())
       {
-      Eks::String ret(a);
-      Eks::String::Buffer buf(&ret);
-      Eks::String::IStream str(&buf);
-
-      xAssertFail(); // fix for strings - they should get all of toUtf8
-      //str >> t;
-      return true;
+      return detail::ValueExtractor<T>::extract(val.asUtf8(temporaryAllocator()), t);
       }
 
     return false;

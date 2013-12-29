@@ -41,11 +41,11 @@ public:
   class ChildData : public BaseData { };
   class ValueData : public BaseData { };
 
-  Eks::UniquePointer<RootBlock> begin(const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
+  Eks::UniquePointer<RootBlock> begin(bool includeRoot, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
 
 protected:
-  virtual void onBegin(AttributeData *block, Eks::AllocatorBase *alloc) = 0;
-  virtual void onEnd(AttributeData *block) = 0;
+  virtual void onBegin(AttributeData *root, bool includeRoot, Eks::AllocatorBase *alloc) = 0;
+  virtual void onEnd(AttributeData *root) = 0;
 
   virtual void addSavedType(const PropertyInformation *info, bool dynamic) = 0;
 
@@ -188,7 +188,8 @@ private:
 class AttributeInterface::RootBlock : public AttributeInterface::AttributeBlock
   {
 public:
-  RootBlock(AttributeInterface *ifc, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
+  RootBlock(bool includeRoot, AttributeInterface *ifc, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
+
   ~RootBlock();
   };
 

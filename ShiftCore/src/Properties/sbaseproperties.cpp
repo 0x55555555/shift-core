@@ -65,17 +65,17 @@ QTextStream &operator>>(QTextStream &s, xuint8 &v)
   }
 
 
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &v)
+SHIFT_EXPORT std::istream &operator>>(std::istream &s, QUuid &v)
   {
-  QString str;
+  std::string str;
   s >> str;
-  v = str;
+  v = QString::fromStdString(str);
   return s;
   }
 
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v)
+SHIFT_EXPORT std::ostream &operator<<(std::ostream &s, const QUuid &v)
   {
-  return s << v.toString();
+  return s << v.toString().toStdString();
   }
 
 namespace Shift

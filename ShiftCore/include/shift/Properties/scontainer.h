@@ -68,6 +68,9 @@ public:
   const Attribute *findChild(const NameArg &name) const;
   Attribute *findChild(const NameArg &name);
 
+  const Attribute *findIdentifier(const NameArg &name) const;
+  Attribute *findIdentifier(const NameArg &name);
+
   bool isEmpty() const { return size() != 0; }
 
   xsize size() const;

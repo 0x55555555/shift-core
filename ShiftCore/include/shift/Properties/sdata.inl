@@ -314,8 +314,7 @@ public:
     Attribute *prop = PropertyBaseTraits::load(parent, l);
     T *ptr = prop->uncheckedCastTo<T>();
 
-    Eks::TemporaryAllocator alloc(parent->temporaryAllocator());
-    l.read(l.valueSymbol(), ptr->_value, &alloc);
+    l.read(l.valueSymbol(), ptr->_value);
     return prop;
     }
 

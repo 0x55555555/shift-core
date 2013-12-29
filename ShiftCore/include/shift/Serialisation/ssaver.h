@@ -3,6 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "shift/Serialisation/sattributeinterface.h"
+#include "shift/Serialisation/sioblock.h"
 
 class QIODevice;
 
@@ -10,48 +11,36 @@ namespace Shift
 {
 class PropertyInformation;
 
-class SHIFT_EXPORT Saver : public AttributeInterface
+class SHIFT_EXPORT Saver : public AttributeInterface, public IOBlockUser
   {
 public:
-  class SHIFT_EXPORT WriteBlock
+  class WriteBlock : private IOBlock
     {
   XProperties:
-    XROProperty(Saver *, writer);
     XROProperty(QIODevice *, device);
-    XROProperty(bool, writing);
-    XROProperty(bool, written);
 
   public:
-    ~WriteBlock();
-
-  private:
     WriteBlock(Saver *w, QIODevice *device);
 
+  private:
     friend class Saver;
     };
 
   Saver();
 
-  virtual void setIncludeRoot(AttributeData *data, bool include) = 0;
-
   /// \brief Begin writing to [device].
-  WriteBlock beginWriting(QIODevice *device);
+  Eks::UniquePointer<WriteBlock> beginWriting(QIODevice *device);
 
-  /// \brief Get the active write block.
-  WriteBlock *activeBlock() { return _block; }
+  QIODevice *activeDevice();
 
-  void onBegin(AttributeData *block, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void onBegin(AttributeData *block, bool includeRoot, Eks::AllocatorBase *alloc) X_OVERRIDE;
   void onEnd(AttributeData *block) X_OVERRIDE;
-
-private:
-  WriteBlock *_block;
-  friend class WriteBlock;
   };
 
 class SHIFT_EXPORT SaveBuilder
   {
 public:
-  void save(Attribute *attr, bool includeRoot, Saver *receiver);
+  void save(Attribute *attr, bool includeRoot, AttributeInterface *receiver);
 
 private:
   void visitAttribute(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);

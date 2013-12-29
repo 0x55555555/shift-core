@@ -151,20 +151,22 @@ JSONSaver::JSONSaver() : _autoWhitespace(false)
   {
   }
 
-void JSONSaver::onBegin(AttributeData *root, Eks::AllocatorBase *alloc)
+void JSONSaver::onBegin(AttributeData *root, bool includeRoot, Eks::AllocatorBase *alloc)
   {
-  Saver::onBegin(root, alloc);
+  Saver::onBegin(root, includeRoot, alloc);
   _data = alloc->createUnique<CurrentSaveData>(alloc);
 
   _data->_writer.setNiceFormatting(autoWhitespace());
   _data->_writer.tabIn();
   _data->_allocator = alloc;
+
+  root->as<JSONAttributeSaver>()->setIncludeRoot(includeRoot);
   }
 
 void JSONSaver::onEnd(AttributeData *root)
   {
   completeAttribute(root->as<JSONAttributeSaver>());
-  emitJson(_data->_allocator, root, activeBlock()->device());
+  emitJson(_data->_allocator, root, activeDevice());
 
   _data = nullptr;
 
@@ -246,11 +248,6 @@ void JSONSaver::addSavedType(const PropertyInformation *info, bool dynamic)
     {
     ++data.dynamicCount;
     }
-  }
-
-void JSONSaver::setIncludeRoot(AttributeData *root, bool include)
-  {
-  root->as<JSONAttributeSaver>()->setIncludeRoot(include);
   }
 
 const SerialisationSymbol &JSONSaver::modeSymbol()

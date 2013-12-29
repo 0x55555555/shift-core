@@ -83,8 +83,8 @@ SHIFT_EXPORT void assignTo(const Attribute *f, BoolProperty *to);
 SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, xuint8 v);
 SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, xuint8 &v);
 
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, QUuid &);
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, const QUuid &v);
+SHIFT_EXPORT std::istream &operator>>(std::istream &s, QUuid &);
+SHIFT_EXPORT std::ostream &operator<<(std::ostream &s, const QUuid &v);
 
 Q_DECLARE_METATYPE(QUuid)
 Q_DECLARE_METATYPE(xuint8);

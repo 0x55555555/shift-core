@@ -446,7 +446,7 @@ Attribute *Attribute::resolvePath(const Eks::String &path)
             return 0;
             }
 
-          cur = container->findChild(name);
+          cur = container->findIdentifier(name);
           }
 
         name.clear();

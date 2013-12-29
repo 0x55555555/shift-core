@@ -85,7 +85,7 @@ public:
     Eks::TemporaryAllocator alloc(p->temporaryAllocator());
 
     ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
-    l.read(l.valueSymbol(), uuidProp->_id, &alloc);
+    l.read(l.valueSymbol(), uuidProp->_id);
 
     return p;
     }

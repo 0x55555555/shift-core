@@ -40,6 +40,7 @@ private Q_SLOTS:
   void simpleOperationTest();
   void simpleDirtyCompute();
   void entityCompute();
+  void serialisationCopyTest();
   void serialisationJsonTest();
   void deserialisationJsonTest();
   void initialiseTest();

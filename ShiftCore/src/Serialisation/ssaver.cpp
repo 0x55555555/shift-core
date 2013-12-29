@@ -14,59 +14,43 @@ class ValueBlock;
 // Saver::WriteBlock Impl
 //----------------------------------------------------------------------------------------------------------------------
 Saver::WriteBlock::WriteBlock(Saver* w, QIODevice *device)
-  : _writer(w),
-    _device(device),
-    _writing(false),
-    _written(false)
+    : IOBlock(w),
+      _device(device)
   {
-  xAssert(!w->_block);
-  w->_block = this;
-  }
-
-Saver::WriteBlock::~WriteBlock()
-  {
-  _writer->_block = nullptr;
   }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Saver::SaveData Impl
 //----------------------------------------------------------------------------------------------------------------------
 Saver::Saver()
-    : _block(nullptr)
   {
   }
 
-Saver::WriteBlock Saver::beginWriting(QIODevice *device)
+Eks::UniquePointer<Saver::WriteBlock> Saver::beginWriting(QIODevice *device)
   {
-  return WriteBlock(this, device);
+  return Eks::Core::globalAllocator()->createUnique<WriteBlock>(this, device);
   }
 
-void Saver::onBegin(AttributeData *, Eks::AllocatorBase *)
+QIODevice *Saver::activeDevice()
   {
-  xAssert(_block);
-  xAssert(!_block->_writing);
-  xAssert(!_block->_written);
+  return static_cast<Saver::WriteBlock*>(activeBlock())->device();
+  }
 
-  _block->_writing = true;
+void Saver::onBegin(AttributeData *, bool, Eks::AllocatorBase *)
+  {
+  IOBlockUser::begin();
   }
 
 void Saver::onEnd(AttributeData *)
   {
-  xAssert(_block);
-  xAssert(_block->_writing);
-  xAssert(!_block->_written);
-
-  _block->_writing = false;
-  _block->_written = true;
+  IOBlockUser::end();
   }
 
-void SaveBuilder::save(Attribute *attr, bool includeRoot, Saver *receiver)
+void SaveBuilder::save(Attribute *attr, bool includeRoot, AttributeInterface *receiver)
   {
   Eks::TemporaryAllocator alloc(attr->temporaryAllocator());
 
-  auto block = receiver->begin(attr->typeInformation(), attr->isDynamic(), &alloc);
-
-  receiver->setIncludeRoot(block->user(), includeRoot);
+  auto block = receiver->begin(includeRoot, attr->typeInformation(), attr->isDynamic(), &alloc);
 
   visitAttribute(attr, block.value(), &alloc);
   }

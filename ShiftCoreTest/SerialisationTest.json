@@ -4,9 +4,6 @@
 		"Array": {
 			"dynamicCount": "0"
 		},
-		"Entity": {
-			"dynamicCount": "1"
-		},
 		"FullFloatProperty": {
 			"dynamicCount": "0"
 		},

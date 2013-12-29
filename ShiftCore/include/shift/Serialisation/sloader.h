@@ -3,6 +3,8 @@
 
 #include "shift/sglobal.h"
 #include "shift/Utilities/spropertyname.h"
+#include "shift/Serialisation/sioblock.h"
+#include "shift/Serialisation/sattributeinterface.h"
 #include "Utilities/XProperty.h"
 #include "Containers/XStringSimple.h"
 #include "QtCore/QTextStream"
@@ -17,19 +19,50 @@ class Property;
 class Container;
 class PropertyInformation;
 
-class LoadInterface
+class LoadBuilder : public AttributeInterface, public IOBlockUser
   {
 public:
+  class LoadBlock : private IOBlock
+    {
+  XProperties:
+    XROProperty(Attribute *, root);
 
-  };
+  public:
+    LoadBlock(LoadBuilder *w, Attribute *root);
 
-class LoadBuilder : public LoadInterface
-  {
-XProperties:
-  XROProperty(Container *, root);
+  private:
+    friend class LoadBuilder;
+    };
 
-public:
-  LoadBuilder(Container *root);
+  LoadBuilder();
+
+  /// \brief Begin loading under to [device].
+  Eks::UniquePointer<LoadBlock> beginLoading(Attribute *root);
+
+protected:
+  void onBegin(AttributeData *root, bool includeRoot, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void onEnd(AttributeData *root) X_OVERRIDE;
+
+  void addSavedType(const PropertyInformation *info, bool dynamic) X_OVERRIDE;
+
+  const SerialisationSymbol &modeSymbol() X_OVERRIDE;
+  const SerialisationSymbol &inputSymbol() X_OVERRIDE;
+  const SerialisationSymbol &valueSymbol() X_OVERRIDE;
+  const SerialisationSymbol &typeSymbol() X_OVERRIDE;
+
+  Eks::UniquePointer<ChildData> onBeginChildren(AttributeData *data, ChildrenType type, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void onChildrenComplete(AttributeData *data, ChildData *) X_OVERRIDE;
+
+  Eks::UniquePointer<AttributeData> onAddChild(ChildData *data, const Name &name, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void onChildComplete(ChildData *, AttributeData *data) X_OVERRIDE;
+
+  Eks::UniquePointer<ValueData> onBeginValues(AttributeData *data, Eks::AllocatorBase *alloc) X_OVERRIDE;
+  void onValue(ValueData *, const Symbol &id, const SerialisationValue& value) X_OVERRIDE;
+  void onValuesComplete(AttributeData *data, ValueData *) X_OVERRIDE;
+
+private:
+  class LoadData;
+  Eks::UniquePointer<LoadData> _currentData;
   };
 
 /*
@@ -62,21 +95,21 @@ public:
 
   void loadChildren(Container *parent);
 
-  virtual bool beginChildren() const = 0;
-  virtual void endChildren() const = 0;
-  virtual bool hasNextChild() const = 0;
+  virtual bool beginChildren() const X_OVERRIDE;
+  virtual void endChildren() const X_OVERRIDE;
+  virtual bool hasNextChild() const X_OVERRIDE;
 
-  virtual void beginNextChild() = 0;
-  virtual bool childHasValue() const = 0;
-  virtual void endNextChild() = 0;
+  virtual void beginNextChild() X_OVERRIDE;
+  virtual bool childHasValue() const X_OVERRIDE;
+  virtual void endNextChild() X_OVERRIDE;
 
   void read(Container *parent);
 
-  virtual void beginAttribute(const char *) = 0;
-  virtual void endAttribute(const char *) = 0;
+  virtual void beginAttribute(const char *) X_OVERRIDE;
+  virtual void endAttribute(const char *) X_OVERRIDE;
 
   typedef Eks::StringBase<Eks::Char, 1024> InputString;
-  virtual void resolveInputAfterLoad(Property *, const InputString &) = 0;
+  virtual void resolveInputAfterLoad(Property *, const InputString &) X_OVERRIDE;
 
   QTextStream &textStream() { return _ts; }
   QDataStream &binaryStream() { return _ds; }

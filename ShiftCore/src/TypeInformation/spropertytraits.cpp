@@ -53,65 +53,50 @@ void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l, bool writeI
     }
   }
 
-Attribute *PropertyBaseTraits::load(Container */* parent */, AttributeLoader &)
+Attribute *PropertyBaseTraits::load(Container *parent, AttributeLoader &l)
   {
   class Initialiser : public PropertyInstanceInformationInitialiser
     {
   public:
-    //Initialiser() : affects(0) { }
     void initialise(PropertyInstanceInformation *inst)
       {
-      //inst->setAffects(affects);
       inst->setModeString(mode);
       }
 
-    //xsize *affects;
-    QString mode;
+    Eks::String mode;
     };
 
   SProfileFunction
 
   Initialiser initialiser;
 
-  xAssertFail();
-  /*
-  const auto data = l.currentData();
+  Eks::TemporaryAllocator alloc(parent->temporaryAllocator());
 
-  l.beginAttribute("mode");
-  readValue(l, initialiser.mode);
-  l.endAttribute("mode");
+  initialiser.mode = Eks::String(&alloc);
+  l.read(l.modeSymbol(), initialiser.mode);
 
-  Attribute *attr = 0;
-  if(data->dynamic != 0)
+  auto attr = l.existingAttribute();
+  if(!attr)
     {
-    const PropertyInformation *type = data->type;
+    const PropertyInformation *type = l.type();
     xAssert(type);
 
-    attr = parent->addAttribute(type, X_UINT8_SENTINEL, data->name, &initialiser);
+    attr = parent->addAttribute(type, X_SIZE_SENTINEL, l.name(), &initialiser);
     xAssert(attr);
     }
-  else
-    {
-    attr = data->existing;
-    xAssert(attr);
-    }
+
 
   if(Property *prop = attr->castTo<Property>())
     {
-    l.beginAttribute("input");
-    Loader::InputString input;
-    readValue(l, input);
-    l.endAttribute("input");
+    Eks::String input = Eks::String(&alloc);
 
-    if(!input.isEmpty())
+    if(l.read(l.inputSymbol(), input))
       {
       l.resolveInputAfterLoad(prop, input);
       }
     }
 
   return attr;
-    */
-  return nullptr;
   }
 
 bool PropertyBaseTraits::shouldSaveValue(const Attribute *p)

@@ -67,6 +67,12 @@ public:
     _childMap.remove(a->name());
     }
 
+  Attribute *findChild(const Name &n)
+    {
+    return _childMap.value(n, nullptr);
+    }
+
+private:
   Eks::UnorderedMap<Name, Attribute *> _childMap;
   };
 
@@ -158,6 +164,30 @@ Attribute *Container::findChild(const NameArg &name)
   return internalFindChild(name);
   }
 
+const Attribute *Container::findIdentifier(const NameArg &name) const
+  {
+  return const_cast<Container*>(this)->findIdentifier(name);
+  }
+
+Attribute *Container::findIdentifier(const NameArg &name)
+  {
+  if(hasNamedChildren())
+    {
+    return findChild(name);
+    }
+
+  Name out;
+  name.toName(out);
+
+  Name::Buffer buf(&out);
+  Eks::String::IStream stream(&buf);
+
+  xsize index;
+  stream >> index;
+
+  return at(index);
+  }
+
 Attribute *Container::internalFindChild(const NameArg &nameIn)
   {
   xAssert(hasNamedChildren());
@@ -166,7 +196,7 @@ Attribute *Container::internalFindChild(const NameArg &nameIn)
     {
     Name n;
     nameIn.toName(n);
-    return cache->_childMap.value(n);
+    return cache->findChild(n);
     }
 
   const EmbeddedPropertyInstanceInformation *inst = typeInformation()->childFromName(nameIn);

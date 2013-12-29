@@ -55,7 +55,8 @@ SOURCES += \
     src/Serialisation/ssaver.cpp \
     src/Serialisation/sattributeio.cpp \
     src/Utilities/smetatype.cpp \
-    src/Serialisation/sattributeinterface.cpp
+    src/Serialisation/sattributeinterface.cpp \
+    src/Serialisation/sioblock.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -108,7 +109,8 @@ HEADERS += \
     include/shift/Serialisation/ssaver.h \
     include/shift/Serialisation/sattributeio.h \
     include/shift/Utilities/smetatype.h \
-    include/shift/Serialisation/sattributeinterface.h
+    include/shift/Serialisation/sattributeinterface.h \
+    include/shift/Serialisation/sioblock.h
 
 
 
