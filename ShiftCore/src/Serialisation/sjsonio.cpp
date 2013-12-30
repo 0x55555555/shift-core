@@ -8,14 +8,23 @@
 #include "Utilities/XEventLogger.h"
 #include "Utilities/XJsonWriter.h"
 
+static const char *formatVersion = "2";
+
 namespace Shift
 {
 
 #define VERSION_KEY "version"
 #define NO_ROOT_KEY "noroot"
+#define NO_ROOT_ON "1"
+#define NO_ROOT_OFF "0"
 #define TYPES_KEY "types"
 #define DATA_KEY "data"
 #define DYNAMIC_COUNT_KEY "dynamicCount"
+#define CHILDREN_KEY "contents"
+#define INPUT_KEY "input"
+#define MODE_KEY "mode"
+#define VALUE_KEY "value"
+#define TYPE_KEY "type"
 
 //----------------------------------------------------------------------------------------------------------------------
 // String Symbol Def
@@ -111,11 +120,11 @@ class JSONSaver::CurrentSaveData
   {
 public:
   CurrentSaveData(Eks::AllocatorBase *alloc)
-    : _mode("mode"),
-      _input("input"),
-      _value("value"),
-      _type("type"),
-      _children("contents"),
+    : _mode(MODE_KEY),
+      _input(INPUT_KEY),
+      _value(VALUE_KEY),
+      _type(TYPE_KEY),
+      _children(CHILDREN_KEY),
       _writer(alloc),
       _typeMap(InfoSorter(), alloc),
       _allocator(alloc)
@@ -181,7 +190,7 @@ void JSONSaver::emitJson(Eks::AllocatorBase *allocator, AttributeData *rootData,
   writer.beginObject();
 
   writer.beginObjectElement(VERSION_KEY);
-  writer.addValueForElement("2");
+  writer.addValueForElement(formatVersion);
   writer.endElement();
 
   writer.beginObjectElement(TYPES_KEY);
@@ -218,7 +227,7 @@ void JSONSaver::emitJson(Eks::AllocatorBase *allocator, AttributeData *rootData,
   auto root = rootData->as<JSONAttributeSaver>();
 
   writer.beginObjectElement(NO_ROOT_KEY);
-  writer.addValueForElement(root->includeRoot() ? "0" : "1");
+  writer.addValueForElement(root->includeRoot() ? NO_ROOT_OFF : NO_ROOT_ON);
   writer.endElement();
 
   writer.beginObjectElement(DATA_KEY);
@@ -395,348 +404,470 @@ void JSONSaver::onValue(Saver::ValueData *v, const Symbol &id, const Serialisati
 
 
 //----------------------------------------------------------------------------------------------------------------------
-// JSONLoader Impl
+// JSONLoaderImpl Impl
 //----------------------------------------------------------------------------------------------------------------------
-/*JSONLoader::JSONLoader()
-    : _current(Start)
+
+class JSONLoaderImpl
   {
-  _buffer.open(QIODevice::ReadOnly);
-
-  setStreamDevice(Text, &_buffer);
-
-  JSON_config config;
-
-  init_JSON_config(&config);
-
-  config.depth = 19;
-  config.callback = &callback;
-  config.callback_ctx = this;
-  config.allow_comments = 1;
-  config.handle_floats_manually = 0;
-
-  _jc = new_JSON_parser(&config);
-  }
-
-JSONLoader::~JSONLoader()
-  {
-  delete_JSON_parser(_jc);
-  }
-
-int JSONLoader::callback(void *ctx, int type, const JSON_value* value)
-  {
-  SProfileFunction
-  JSONLoader *ldr = (JSONLoader*)ctx;
-
-  if(ldr->_current == Start)
+public:
+  JSONLoaderImpl(Eks::AllocatorBase *alloc, AttributeInterface *ifc)
+    : _current(Start),
+      _loadStack(alloc),
+      _specialLoading(None),
+      _currentKey(nullptr),
+      _noRoot(false),
+      _alloc(alloc),
+      _interface(ifc)
     {
-    if(type != JSON_T_OBJECT_BEGIN)
-      {
-      return 0;
-      }
+    JSON_config config;
 
-    ldr->_current = Attributes;
+    init_JSON_config(&config);
+
+    config.depth = 19;
+    config.callback = &callback;
+    config.callback_ctx = this;
+    config.allow_comments = 1;
+    config.handle_floats_manually = 0;
+
+    _jc = new_JSON_parser(&config);
     }
-  else if(ldr->_current == Attributes)
+
+  ~JSONLoaderImpl()
     {
-    if(type == JSON_T_KEY)
+    delete_JSON_parser(_jc);
+    }
+
+  JSON_parser_struct* _jc;
+  mutable QIODevice *_device;
+
+  static int callback(void *ctx, int type, const JSON_value_struct* value);
+
+  enum State
+    {
+    Start,
+    Header,
+    HeaderAwaitingValue,
+    ContainedTypes,
+    ContainedTypesAwaitingValue,
+    ContainedType,
+    ContainedTypeAwaitingValue,
+    Attribute,
+    AttributeAwaitingValue,
+    AttributeAwaitingChildren,
+    IndexedChildren,
+    NamedChildren,
+    NamedChildKey,
+    MaxState
+    } _current;
+
+  Eks::UniquePointer<AttributeInterface::RootBlock> _rootBlock;
+
+  struct StateData
+    {
+    Eks::UniquePointer<AttributeInterface::AttributeBlock> attribute;
+    Eks::UniquePointer<AttributeInterface::ValueBlock> values;
+    Eks::UniquePointer<AttributeInterface::ChildBlock> children;
+    bool namedChildren;
+    };
+
+  Eks::Vector<StateData> _loadStack;
+
+  enum SpecialSymbols
+    {
+    NoRoot,
+    Version,
+    AttributeKey,
+    ContainedTypesKey,
+    Type,
+    None
+    } _specialLoading;
+  const AttributeInterface::Symbol *_currentKey;
+  Name _loadedName;
+
+  bool _noRoot;
+
+  Eks::AllocatorBase *_alloc;
+
+  AttributeInterface *_interface;
+  };
+
+
+typedef bool (*ActionFunction)(JSONLoaderImpl *loader, int type, const JSON_value *value);
+
+bool err(JSONLoaderImpl *, int, const JSON_value *)
+  {
+  xAssertFail();
+  return false;
+  }
+
+template <JSONLoaderImpl::State S> bool to(JSONLoaderImpl *loader, int, const JSON_value *)
+  {
+  loader->_current = S;
+  return true;
+  }
+
+void initAttribute(JSONLoaderImpl *loader, const PropertyInformation *infoHint)
+  {
+  auto &back = loader->_loadStack.back();
+  if(!back.attribute)
+    {
+    if(loader->_loadStack.size() == 1)
       {
-      xAssert(ldr->_currentKey.isEmpty());
-      ldr->_currentKey = value->vu.str.value;
-      if(ldr->_currentKey == CHILDREN_KEY)
+      back.attribute = loader->_interface->begin(loader->_noRoot, infoHint, infoHint != nullptr, loader->_alloc);
+
+      if(!loader->_noRoot)
         {
-        ldr->_currentKey.clear();
-        ldr->_current = AttributesEnd;
+        back.values = back.attribute->beginValues(loader->_alloc);
         }
       }
-    else if(type == JSON_T_OBJECT_END)
-      {
-      xAssert(ldr->_currentKey.isEmpty());
-      ldr->_current = End;
-      }
     else
       {
-      xAssert(!ldr->_currentKey.isEmpty());
-      xAssert(type == JSON_T_STRING);
-      ldr->_currentAttributes[ldr->_currentKey] = value->vu.str.value;
-      ldr->_currentKey.clear();
-      }
-    }
-  else if(ldr->_current == AttributesEnd)
-    {
-    if(type != JSON_T_ARRAY_BEGIN)
-      {
-      xAssertFail();
-      return 0;
-      }
-    ldr->_current = Children;
-    }
-  else if(ldr->_current == Children)
-    {
-    if(type == JSON_T_OBJECT_BEGIN)
-      {
-      ldr->_current = Attributes;
-      }
-    else if(type == JSON_T_ARRAY_END)
-      {
-      ldr->_current = ChildrenEnd;
-      }
-    else
-      {
-      xAssertFail();
-      return 0;
-      }
-    }
-  else if(ldr->_current == ChildrenEnd)
-    {
-    if(type != JSON_T_OBJECT_END)
-      {
-      xAssertFail();
-      return 0;
-      }
-    ldr->_current = End;
-    }
-  else if(ldr->_current == End)
-    {
-    if(type != JSON_T_ARRAY_END && type != JSON_T_OBJECT_BEGIN)
-      {
-      xAssertFail();
-      return 0;
+      auto &last = loader->_loadStack[loader->_loadStack.size() - 2];
+      back.attribute = last.children->addChild(loader->_loadedName, infoHint, infoHint != nullptr, loader->_alloc);
+      back.values = back.attribute->beginValues(loader->_alloc);
       }
 
-    if(type == JSON_T_OBJECT_BEGIN)
+    loader->_loadedName.clear();
+    }
+  }
+
+bool children(JSONLoaderImpl *loader, int type, const JSON_value *)
+  {
+  auto &back = loader->_loadStack.back();
+
+  initAttribute(loader, nullptr);
+
+  back.values = nullptr;
+
+  bool named = type == JSON_T_OBJECT_BEGIN;
+  if (named)
+    {
+    back.children = back.attribute->beginChildren(AttributeInterface::Named, loader->_alloc);
+    back.namedChildren = true;
+
+    loader->_current = JSONLoaderImpl::NamedChildren;
+    }
+  else
+    {
+    back.children = back.attribute->beginChildren(AttributeInterface::Indexed, loader->_alloc);
+    back.namedChildren = false;
+
+    loader->_current = JSONLoaderImpl::IndexedChildren;
+    }
+
+  return true;
+  }
+
+bool endChildren(JSONLoaderImpl *loader, int, const JSON_value *)
+  {
+  auto &back = loader->_loadStack.back();
+  xAssert(back.children);
+  back.children = nullptr;
+  loader->_current = JSONLoaderImpl::Attribute;
+  return true;
+  }
+
+bool childName(JSONLoaderImpl *loader, int, const JSON_value *val)
+  {
+  loader->_loadedName = val->vu.str.value;
+  loader->_current = JSONLoaderImpl::NamedChildKey;
+  return true;
+  }
+
+bool addChild(JSONLoaderImpl *loader, int, const JSON_value *)
+  {
+  loader->_loadStack.createBack();
+  loader->_current = JSONLoaderImpl::Attribute;
+  return true;
+  }
+
+bool endChild(JSONLoaderImpl *loader, int, const JSON_value *)
+  {
+  loader->_loadStack.popBack();
+
+  if (loader->_loadStack.size())
+    {
+    auto &back = loader->_loadStack.back();
+    xAssert(back.children);
+
+    if(back.namedChildren)
       {
-      ldr->_current = Attributes;
+      loader->_current = JSONLoaderImpl::NamedChildren;
       }
-    if(type == JSON_T_ARRAY_END)
+    else
       {
-      ldr->_current = ChildrenEnd;
+      loader->_current = JSONLoaderImpl::IndexedChildren;
       }
     }
   else
     {
-    xAssertFail();
-    return 0;
+    loader->_current = JSONLoaderImpl::Header;
     }
-
-  ldr->_readNext = true;
-
-  return 1;
+  return true;
   }
 
-void JSONLoader::readNext() const
+bool attrKey(JSONLoaderImpl *loader, int, const JSON_value *val)
+  {
+  loader->_currentKey = nullptr;
+  loader->_specialLoading = JSONLoaderImpl::None;
+
+  auto &back = loader->_loadStack.back();
+
+  if(strcmp(val->vu.str.value, TYPE_KEY) == 0)
+    {
+    loader->_specialLoading = JSONLoaderImpl::Type;
+    }
+  else if(strcmp(val->vu.str.value, MODE_KEY) == 0)
+    {
+    xAssert(back.values);
+    loader->_currentKey = &back.values->modeSymbol();
+    }
+  else if(strcmp(val->vu.str.value, INPUT_KEY) == 0)
+    {
+    xAssert(back.values);
+    loader->_currentKey = &back.values->inputSymbol();
+    }
+  else if(strcmp(val->vu.str.value, VALUE_KEY) == 0)
+    {
+    xAssert(back.values);
+    loader->_currentKey = &back.values->valueSymbol();
+    }
+  else if(strcmp(val->vu.str.value, CHILDREN_KEY) == 0)
+    {
+    loader->_current = JSONLoaderImpl::AttributeAwaitingChildren;
+    return true;
+    }
+  else
+    {
+    return false;
+    }
+
+  loader->_current = JSONLoaderImpl::AttributeAwaitingValue;
+  return true;
+  }
+
+bool attrVal(JSONLoaderImpl *loader, int, const JSON_value *val)
+  {
+  auto &back = loader->_loadStack.back();
+
+  const PropertyInformation *info = nullptr;
+  if(loader->_specialLoading == JSONLoaderImpl::Type)
+    {
+    info = TypeRegistry::findType(val->vu.str.value);
+    }
+
+  if(!back.attribute)
+    {
+    initAttribute(loader, info);
+    }
+
+  if(loader->_specialLoading == JSONLoaderImpl::None)
+    {
+    xAssert(loader->_currentKey);
+
+    struct SerialisationValueWrapper : public SerialisationValue
+      {
+      bool hasUtf8() const X_OVERRIDE { return true; }
+      bool hasBinary() const X_OVERRIDE { return false; }
+
+      Eks::String asUtf8(Eks::AllocatorBase* a) const X_OVERRIDE
+        {
+        return Eks::String(data, a);
+        }
+
+      const char* data;
+      } wrap;
+
+    wrap.data = val->vu.str.value;
+
+    back.values->setValue(*loader->_currentKey, wrap);
+    }
+
+  loader->_specialLoading = JSONLoaderImpl::None;
+  loader->_currentKey = nullptr;
+  loader->_current = JSONLoaderImpl::Attribute;
+  return true;
+  }
+
+bool addSimpleChild(JSONLoaderImpl *loader, int type, const JSON_value *val)
+  {
+  addChild(loader, type, val);
+
+  initAttribute(loader, nullptr);
+
+  auto &back = loader->_loadStack.back();
+
+  xAssert(back.values);
+  loader->_currentKey = &back.values->valueSymbol();
+  loader->_current = JSONLoaderImpl::AttributeAwaitingValue;
+
+  attrVal(loader, type, val);
+
+  endChild(loader, type, val);
+
+  return true;
+  }
+
+bool headerKey(JSONLoaderImpl *loader, int, const JSON_value *val)
+  {
+  if(strcmp(val->vu.str.value, DATA_KEY) == 0)
+    {
+    loader->_specialLoading = JSONLoaderImpl::AttributeKey;
+    }
+  else if(strcmp(val->vu.str.value, NO_ROOT_KEY) == 0)
+    {
+    loader->_specialLoading = JSONLoaderImpl::NoRoot;
+    }
+  else if(strcmp(val->vu.str.value, VERSION_KEY) == 0)
+    {
+    loader->_specialLoading = JSONLoaderImpl::Version;
+    }
+  else if(strcmp(val->vu.str.value, TYPES_KEY) == 0)
+    {
+    loader->_specialLoading = JSONLoaderImpl::ContainedTypesKey;
+    }
+  else
+    {
+    return false;
+    }
+
+  loader->_current = JSONLoaderImpl::HeaderAwaitingValue;
+  return true;
+  }
+
+bool headerVal(JSONLoaderImpl *loader, int type, const JSON_value *val)
+  {
+  if(loader->_specialLoading == JSONLoaderImpl::Version)
+    {
+    if(strcmp(val->vu.str.value, formatVersion) != 0)
+      {
+      return false;
+      }
+    }
+  else if(loader->_specialLoading == JSONLoaderImpl::NoRoot)
+    {
+    if(strcmp(val->vu.str.value, NO_ROOT_ON) == 0)
+      {
+      loader->_noRoot = true;
+      }
+    }
+  else if(loader->_specialLoading == JSONLoaderImpl::ContainedTypesKey)
+    {
+    loader->_current = JSONLoaderImpl::ContainedTypes;
+    return true;
+    }
+  else if(loader->_specialLoading == JSONLoaderImpl::AttributeKey)
+    {
+    // create a placeholder for the data to come.
+    auto &data = loader->_loadStack.createBack();
+
+    if(loader->_noRoot)
+      {
+      data.attribute = loader->_interface->begin(false, nullptr, true, loader->_alloc);
+
+      children(loader, type, val);
+      }
+    else
+      {
+      loader->_current = JSONLoaderImpl::Attribute;
+      }
+
+    return true;
+    }
+
+  loader->_current = JSONLoaderImpl::Header;
+  return true;
+  }
+
+int JSONLoaderImpl::callback(void *ctx, int type, const JSON_value *value)
+  {
+  JSONLoaderImpl *ldr = (JSONLoaderImpl*)ctx;
+
+  typedef const ActionFunction StateFunctions[JSON_T_MAX];
+
+  static StateFunctions functions[MaxState] =
+    {
+    //  NONE    ARRAY_BEGIN   ARRAY_END     OBJECT_BEGIN       OBJECT_END          INTEGER   FLOAT   NULL   TRUE    FALSE     STRING             KEY
+
+    //  Start
+    {   err,    err,          err,          to<Header>,        err,                err,      err,    err,   err,    err,      err,               err },
+
+    //  Header
+    {   err,    err,          err,          err,               err,                err,      err,    err,   err,    err,      err,               headerKey },
+
+    //  HeaderAwaitingValue
+    {   err,    headerVal,    err,          headerVal,         err,                err,      err,    err,   err,    err,      headerVal,         err },
+
+    //  ContainedTypes
+    {   err,    err,          err,          err,               to<Header>,         err,      err,    err,   err,    err,      err,               to<ContainedTypesAwaitingValue> },
+
+    //  ContainedTypesAwaitingValue
+    {   err,    err,          err,          to<ContainedType>, err,                err,      err,    err,   err,    err,      err,               err },
+
+    //  ContainedType
+    {   err,    err,          err,          err,               to<ContainedTypes>, err,      err,    err,   err,    err,      err,               to<ContainedTypeAwaitingValue> },
+
+    //  ContainedTypeAwaitingValue
+    {   err,    err,          err,          err,               err,                err,      err,    err,   err,    err,      to<ContainedType>, err },
+
+    //  Attribute
+    {   err,    err,          err,          err,               endChild,           err,      err,    err,   err,    err,      err,               attrKey },
+
+    //  AttributeAwaitingValue
+    {   err,    err,          err,          err,               err,                err,      err,    err,   err,    err,      attrVal,           err },
+
+    //  AttributeAwaitingChildren
+    {   err,    children,     err,          children,          err,                err,      err,    err,   err,    err,      err,               err },
+
+    //  IndexedChildren
+    {   err,    err,          endChildren,  addChild,          err,                err,      err,    err,   err,    err,      addSimpleChild,    err },
+
+    //  NamedChildren
+    {   err,    err,          err,          err,               endChildren,        err,      err,    err,   err,    err,      err,               childName },
+
+    //  NamedChildKey
+    {   err,    err,          err,          addChild,          err,                err,      err,    err,   err,    err,      addSimpleChild,    err },
+    };
+
+  const StateFunctions& stateFunctions = functions[ldr->_current];
+
+  bool result = stateFunctions[type](ldr, type, value) ? 1 : 0;
+  xAssert(result);
+  return result;
+  }
+
+
+//----------------------------------------------------------------------------------------------------------------------
+// JSONLoaderImpl Impl
+//----------------------------------------------------------------------------------------------------------------------
+JSONLoader::JSONLoader()
+  {
+  }
+
+JSONLoader::~JSONLoader()
+  {
+  }
+
+void JSONLoader::load(QIODevice *device, AttributeInterface *ifc)
   {
   SProfileFunction
-  xAssert(_parseError == false);
-  _readNext = false;
-  while(!_device->atEnd() && !_readNext)
+
+  Eks::TemporaryAllocator alloc(Eks::Core::temporaryAllocator());
+
+  Eks::UniquePointer<JSONLoaderImpl> impl = alloc.createUnique<JSONLoaderImpl>(&alloc, ifc);
+
+  while(!device->atEnd())
     {
     char nextChar;
-    _device->getChar(&nextChar);
+    device->getChar(&nextChar);
 
-    if(!JSON_parser_char(_jc, nextChar))
+    if(!JSON_parser_char(impl->_jc, nextChar))
       {
-      _parseError = true;
       qWarning() << "JSON_parser_char: syntax error";
       xAssertFail();
       return;
       }
     }
   }
-
-void JSONLoader::readAllAttributes()
-  {
-  SProfileFunction
-  xAssert(_current == Attributes);
-  while(_current != AttributesEnd && _current != End)
-    {
-    readNext();
-    if(_parseError)
-      {
-      break;
-      }
-    }
-  }
-
-void JSONLoader::readFromDevice(QIODevice *device, Container *parent)
-  {
-  Block b(parent->handler());
-  SProfileFunction
-  _root = parent;
-
-  _device = device;
-  _parseError = false;
-
-  _current = Start;
-  readNext();
-  readAllAttributes();
-
-  if(!_currentAttributes.contains(NO_ROOT_KEY))
-    {
-    read(_root);
-    }
-  else
-    {
-    loadChildren(_root);
-    }
-
-  xAssert(_current == End);
-
-  auto it = _resolveAfterLoad.begin();
-  auto end = _resolveAfterLoad.end();
-  for(; it != end; ++it)
-    {
-    Property *prop = it.key();
-    Attribute* input = prop->resolvePath(it.value());
-
-    xAssert(input);
-    if(input)
-      {
-      if(Property *inputProp = input->castTo<Property>())
-        {
-        inputProp->connect(prop);
-        }
-      }
-    }
-
-  _buffer.close();
-  _root = 0;
-  }
-
-bool JSONLoader::beginChildren() const
-  {
-  SProfileFunction
-  if(_current == AttributesEnd)
-    {
-    readNext();
-    }
-
-  if(_current == Children)
-    {
-    return true;
-    }
-  else if(_current == End)
-    {
-    return false;
-    }
-
-  xAssertFail();
-  return false;
-  }
-
-void JSONLoader::endChildren() const
-  {
-  SProfileFunction
-  if(_current == Children)
-    {
-    readNext();
-    }
-  xAssert(_current == ChildrenEnd);
-  readNext();
-  xAssert(_current == End);
-  }
-
-bool JSONLoader::hasNextChild() const
-  {
-  SProfileFunction
-  if(_current == Children)
-    {
-    readNext();
-    }
-
-  if(_current == ChildrenEnd)
-    {
-    return false;
-    }
-
-  if(_current == Attributes)
-    {
-    return true;
-    }
-
-
-  xAssertFail();
-  return false;
-  }
-
-void JSONLoader::beginNextChild()
-  {
-  _currentAttributes.clear();
-  xAssert(_current != ChildrenEnd);
-  xAssert(_current != Children);
-  readAllAttributes();
-
-  _currentValue = _currentAttributes.value(VALUE_KEY);
-
-  _buffer.close();
-  _buffer.setBuffer(&_currentValue);
-  _buffer.open(QIODevice::ReadOnly);
-  textStream().seek(0);
-  }
-
-bool JSONLoader::childHasValue() const
-  {
-  if(!_currentValue.isEmpty())
-    {
-    return true;
-    }
-
-  if(_current == AttributesEnd)
-    {
-    readNext();
-    }
-
-  if(_current == Children)
-    {
-    return true;
-    }
-
-  return false;
-  }
-
-void JSONLoader::endNextChild()
-  {
-  SProfileFunction
-  if(_current == AttributesEnd)
-    {
-    readNext();
-    xAssert(_current == Children);
-    readNext();
-    }
-  if(_current == End)
-    {
-    readNext();
-    }
-  xAssert(_current == ChildrenEnd || _current == Attributes);
-  }
-
-void JSONLoader::beginAttribute(const char *attr)
-  {
-  SProfileFunction
-  xAssert(_currentAttributeValue.isEmpty());
-  _scratch.clear();
-  _currentAttributeValue = _currentAttributes.value(attr);
-
-  _buffer.close();
-  _buffer.setBuffer(&_currentAttributeValue);
-  _buffer.open(QIODevice::ReadOnly);
-  textStream().seek(0);
-  }
-
-void JSONLoader::endAttribute(const char *)
-  {
-  SProfileFunction
-  _buffer.close();
-  _buffer.setBuffer(&_currentValue);
-  _buffer.open(QIODevice::ReadOnly);
-  textStream().seek(0);
-
-  _currentAttributeValue.clear();
-  }
-
-void JSONLoader::resolveInputAfterLoad(Property *prop, const InputString &path)
-  {
-  SProfileFunction
-  _resolveAfterLoad.insert(prop, path);
-  }*/
 
 }

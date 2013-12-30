@@ -8,7 +8,7 @@
 			"dynamicCount": "0"
 		},
 		"Set": {
-			"dynamicCount": "0"
+			"dynamicCount": "1"
 		},
 		"TestEntity": {
 			"dynamicCount": "1"
@@ -23,6 +23,7 @@
 	"noroot": "1",
 	"data": {
 		"children": {
+			"type": "Set",
 			"contents": {
 				"TestEntity0": {
 					"type": "TestEntity",

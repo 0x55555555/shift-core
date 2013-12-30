@@ -46,23 +46,23 @@ void Saver::onEnd(AttributeData *)
   IOBlockUser::end();
   }
 
-void SaveBuilder::save(Attribute *attr, bool includeRoot, AttributeInterface *receiver)
+void SaveBuilder::save(const Attribute *attr, bool includeRoot, AttributeInterface *receiver)
   {
   Eks::TemporaryAllocator alloc(attr->temporaryAllocator());
 
   auto block = receiver->begin(includeRoot, attr->typeInformation(), attr->isDynamic(), &alloc);
 
-  visitAttribute(attr, block.value(), &alloc);
+  visitAttribute(true, attr, block.value(), &alloc);
   }
 
-void SaveBuilder::visitAttribute(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc)
+void SaveBuilder::visitAttribute(bool topLevel, const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc)
   {
   visitValues(attr, data, alloc);
 
-  visitChildren(attr, data, alloc);
+  visitChildren(topLevel, attr, data, alloc);
   }
 
-void SaveBuilder::visitValues(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc)
+void SaveBuilder::visitValues(const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc)
   {
   xAssert(attr);
 
@@ -90,9 +90,9 @@ void SaveBuilder::visitValues(Attribute *attr, Saver::AttributeBlock *data, Eks:
   info->functions().save(attr, helper);
   }
 
-void SaveBuilder::visitChildren(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *attrAlloc)
+void SaveBuilder::visitChildren(bool topLevel, const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *attrAlloc)
   {
-  Container* cont = attr->castTo<Container>();
+  const Container* cont = attr->castTo<Container>();
   if (!cont)
     {
     return;
@@ -125,11 +125,11 @@ void SaveBuilder::visitChildren(Attribute *attr, Saver::AttributeBlock *data, Ek
         {
         Eks::TemporaryAllocator alloc(child->temporaryAllocator());
 
-        auto childData = children->addChild(child->name(), child->typeInformation(), child->isDynamic(), &alloc);
+        auto childData = children->addChild(child->name(), child->typeInformation(), topLevel || child->isDynamic(), &alloc);
 
         if(info->functions().shouldSaveValue(child))
           {
-          visitAttribute(child, childData.value(), &alloc);
+          visitAttribute(false, child, childData.value(), &alloc);
           }
         }
       }

@@ -186,7 +186,7 @@ template <typename Res, typename T, typename Cont>  Res makeWalkerFrom(Cont *c, 
     }
   else
     {
-    idx = xMin((xsize)0U, (xsize)info->childCount());
+    idx = (xsize)info->childCount();
     dyProp = prop;
     }
 
@@ -221,7 +221,7 @@ template <typename Res, typename T, typename Cont> Res makeWalkerFromNext(Cont *
     }
   else
     {
-    idx = xMin((xsize)0, (xsize)type->childCount());
+    idx = (xsize)type->childCount();
     Attribute* itProp = prop;
     while(!dyProp && itProp)
       {
@@ -255,7 +255,7 @@ inline Container::Walker Container::walkerFrom(Attribute *prop)
     }
   else
     {
-    idx = xMin((xuint8)0, info->childCount());
+    idx = info->childCount();
     dyProp = prop;
     }
 

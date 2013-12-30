@@ -168,6 +168,8 @@ void AttributeInterface::AttributeBlock::setRoot(AttributeInterface *data)
 
 void AttributeInterface::AttributeBlock::setChildren(ChildBlock *vals)
   {
+  xAssert(!_parent || _hasValues);
+  xAssert(!_values);
   xAssert(!_children);
   _children = vals;
   }
@@ -203,6 +205,9 @@ Eks::UniquePointer<AttributeInterface::ValueBlock> AttributeInterface::Attribute
 
 void AttributeInterface::AttributeBlock::setValues(ValueBlock *vals)
   {
+  xAssert(!_children);
+  xAssert(!_hasChildren);
+
   xAssert(!_values);
   _values = vals;
   }

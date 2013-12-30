@@ -40,12 +40,12 @@ public:
 class SHIFT_EXPORT SaveBuilder
   {
 public:
-  void save(Attribute *attr, bool includeRoot, AttributeInterface *receiver);
+  void save(const Attribute *attr, bool includeRoot, AttributeInterface *receiver);
 
 private:
-  void visitAttribute(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
-  void visitValues(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
-  void visitChildren(Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
+  void visitAttribute(bool topLevel, const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
+  void visitValues(const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
+  void visitChildren(bool topLevel, const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc);
   };
 
 }

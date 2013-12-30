@@ -509,6 +509,12 @@ void Container::fixupIndices(Attribute* justBefore)
     {
     IndexedUtils::setIndex(indexFixup, index++);
 
+    if(index > 2)
+      {
+      int i = 0;
+      ++i;
+      }
+
     indexFixup = ChildLL::getNext(indexFixup);
     }
   }

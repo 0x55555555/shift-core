@@ -335,6 +335,9 @@ public:
 
   static void next(Iterator &i)
     {
+    ChildTreeExtraData &d = i.data();
+    xAssert(d._currentParent);
+
     Attribute *current = *i;
     Container *cont = current->castTo<Container>();
     if(cont)
@@ -342,7 +345,6 @@ public:
       Attribute *child = cont->firstChild();
       if(child)
         {
-        ChildTreeExtraData &d = i.data();
         d._currentParent = cont;
 
         i.setAttribute(child);
@@ -350,7 +352,6 @@ public:
         }
       }
 
-    ChildTreeExtraData &d = i.data();
     auto walker = d._currentParent->walkerFrom(current);
     auto walkerIt = ++walker.begin();
     Attribute *n = *walkerIt;
