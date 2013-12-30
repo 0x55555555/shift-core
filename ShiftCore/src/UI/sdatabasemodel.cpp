@@ -1,6 +1,7 @@
 #include "shift/UI/sdatabasemodel.h"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Properties/scontainer.inl"
+#include "shift/Properties/sattribute.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/TypeInformation/sinterfaces.h"
 #include "shift/sentity.h"

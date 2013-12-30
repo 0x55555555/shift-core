@@ -1,6 +1,7 @@
 #include "shift/Serialisation/sloader.h"
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/scontainer.inl"
+#include "shift/Properties/sattribute.inl"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertytraits.h"

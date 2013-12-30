@@ -152,7 +152,10 @@ void AttributeInterface::AttributeBlock::init(const Name &name)
       _parent->setActiveChild(this);
       }
 
-    saveData()->addSavedType(_type, _isDynamic);
+    if(_type)
+      {
+      saveData()->addSavedType(_type, _isDynamic);
+      }
     }
   else
     {

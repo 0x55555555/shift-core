@@ -3,6 +3,7 @@
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/scontainer.inl"
 #include "shift/Properties/scontaineriterators.h"
+#include "shift/Properties/sattribute.inl"
 #include "shift/Serialisation/sloader.h"
 #include "shift/Serialisation/sattributeio.h"
 #include "Utilities/XEventLogger.h"

@@ -2,6 +2,7 @@
 #include "shift/Properties/scontainerinternaliterators.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/scontainer.inl"
+#include "shift/Properties/sattribute.inl"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "Utilities/XEventLogger.h"

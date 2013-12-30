@@ -1,4 +1,5 @@
 #include "shifttest.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Utilities/siterator.h"
@@ -53,8 +54,8 @@ bool checkStrings(const QString &actual, const QString &expected)
       return pos;
       };
 
-    int start = skipLines(str, pos, linesContext, -1);
-    int end = skipLines(str, pos, linesContext, 1);
+    int start = skipLines(str, pos, linesContext + 1, -1);
+    int end = skipLines(str, pos, linesContext + 1, 1);
 
 
     return str.mid(start, end-start);
@@ -285,4 +286,3 @@ void ShiftCoreTest::deserialisationJsonTest()
 
   QCOMPARE(checkHierarchies(rootA, rootB, false), 30U);
   }
-

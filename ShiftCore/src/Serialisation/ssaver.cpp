@@ -2,6 +2,8 @@
 #include "shift/Properties/sattribute.h"
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/scontaineriterators.h"
+#include "shift/Properties/sattribute.inl"
+#include "shift/Properties/scontainer.inl"
 #include "Memory/XTemporaryAllocator.h"
 
 namespace Shift

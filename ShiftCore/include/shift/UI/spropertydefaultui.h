@@ -5,6 +5,7 @@
 #include "shift/Utilities/sentityweakpointer.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/sbaseproperties.h"
+#include "shift/Properties/sbaseproperties.inl"
 #include "QtWidgets/QCheckBox"
 #include "QtWidgets/QToolButton"
 #include "QtWidgets/QSpinBox"
