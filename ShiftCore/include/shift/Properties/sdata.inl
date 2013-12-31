@@ -305,8 +305,11 @@ public:
     {
     PropertyBaseTraits::save(p, l);
 
-    const T *ptr = p->uncheckedCastTo<T>();
-    l.write(l.valueSymbol(), ptr->_value);
+    if(p->typeInformation()->functions().shouldSaveValue(p))
+      {
+      const T *ptr = p->uncheckedCastTo<T>();
+      l.write(l.valueSymbol(), ptr->_value);
+      }
     }
 
   static Attribute *load(Container *parent, AttributeLoader &l)

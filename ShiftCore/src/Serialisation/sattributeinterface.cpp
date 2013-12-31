@@ -48,6 +48,7 @@ void AttributeInterface::ChildBlock::childComplete(AttributeInterface::Attribute
   {
   xAssert(_activeChild);
   xAssert(a == _activeChild);
+  xAssert(a->isRoot() || a->_hasValues);
 
   _owner->saveData()->onChildComplete(user(), a->user());
 

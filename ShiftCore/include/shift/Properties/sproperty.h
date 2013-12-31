@@ -47,6 +47,8 @@ public:
   bool isComputed() const;
   bool hasInput() const { return _input; }
   bool hasOutputs() const { return _output; }
+  bool parentHasInput() const;
+  bool parentHasOutput() const;
   Eks::Vector<const Property *> affects() const;
   Eks::Vector<Property *> affects();
 

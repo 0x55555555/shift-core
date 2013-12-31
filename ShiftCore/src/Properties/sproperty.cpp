@@ -224,6 +224,16 @@ void Property::disconnect() const
     }
   }
 
+bool Property::parentHasInput() const
+  {
+  return _flags.hasFlag(ParentHasInput);
+  }
+
+bool Property::parentHasOutput() const
+  {
+  return _flags.hasFlag(ParentHasOutput);
+  }
+
 Eks::Vector<const Property *> Property::affects() const
   {
   Eks::Vector<Property *> aff = const_cast<Property*>(this)->affects();

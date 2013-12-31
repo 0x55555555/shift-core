@@ -104,6 +104,11 @@ bool PropertyBaseTraits::shouldSaveValue(const Attribute *p)
   {
   if(const Property *prop = p->castTo<Property>())
     {
+    if(prop->parentHasInput())
+      {
+      return false;
+      }
+
     if(prop->hasInput())
       {
       return false;
@@ -193,6 +198,11 @@ void PropertyContainerTraits::assign(const Attribute *f, Attribute *t)
 bool PropertyContainerTraits::shouldSaveValue(const Attribute *p)
   {
   const Container *ptr = p->uncheckedCastTo<Container>();
+  if(ptr->size() == 0)
+    {
+    return false;
+    }
+
   if(ptr->containedProperties() < ptr->size())
     {
     return true;

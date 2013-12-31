@@ -37,12 +37,7 @@
 											"contents": [
 												{
 													"type": "TestVector",
-													"input": "../../../../TestVector2",
-													"contents": {
-														"x": "1",
-														"y": "2",
-														"z": "3"
-													}
+													"input": "../../../../TestVector2"
 												},
 												{
 													"type": "TestVector",
@@ -58,13 +53,6 @@
 								}
 							}
 						},
-						"reciprocal": {
-							"contents": {
-								"x": "inf",
-								"y": "inf",
-								"z": "inf"
-							}
-						},
 						"TestVector2": {
 							"type": "TestVector",
 							"contents": {
@@ -75,12 +63,7 @@
 						},
 						"TestVector3": {
 							"type": "TestVector",
-							"input": "../children/TestIndexedEntity0/testArray/0",
-							"contents": {
-								"x": "1",
-								"y": "2",
-								"z": "3"
-							}
+							"input": "../children/TestIndexedEntity0/testArray/0"
 						}
 					}
 				}

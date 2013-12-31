@@ -129,10 +129,7 @@ void SaveBuilder::visitChildren(bool topLevel, const Attribute *attr, Saver::Att
 
         auto childData = children->addChild(child->name(), child->typeInformation(), topLevel || child->isDynamic(), &alloc);
 
-        if(info->functions().shouldSaveValue(child))
-          {
-          visitAttribute(false, child, childData.value(), &alloc);
-          }
+        visitAttribute(false, child, childData.value(), &alloc);
         }
       }
     }
