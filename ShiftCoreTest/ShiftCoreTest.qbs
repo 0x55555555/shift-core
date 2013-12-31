@@ -6,5 +6,5 @@ Eks.Test {
   
   Depends { name: "ShiftCore" }
 
-  files: [ "*.h", "*.cpp" ]
+  files: [ "*.h", "*.cpp", "*.qrc" ]
 }
