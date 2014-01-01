@@ -9,6 +9,18 @@ Shift::PropertyGroup &propertyGroup() { \
   static Shift::PropertyGroup grp; \
   return grp; } }
 
+#define QCOMPARE_FN(actual, expected) \
+do {\
+    if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))\
+        throw std::exception();\
+} while (0)
+
+#define QVERIFY_FN(statement) \
+do {\
+    if (!QTest::qVerify((statement), #statement, "", __FILE__, __LINE__))\
+        throw std::exception();\
+} while (0)
+
 namespace Test
 {
 Shift::PropertyGroup &propertyGroup();
