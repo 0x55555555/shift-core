@@ -17,6 +17,10 @@ public:
     {
     return TypeTraitsCreation::destroy(ptr);
     }
+  static Eks::ResourceDescription resourceDescription()
+    {
+    return TypeTraitsCreation::resourceDescription();
+    }
   };
 
 template <typename TypeTraits> class PropertyCreateSelector<TypeTraits, true>
@@ -28,19 +32,26 @@ public:
     createInPlace = 0,
     destroy = 0
     };
+
+  static Eks::ResourceDescription resourceDescription()
+    {
+    return Eks::ResourceDescription();
+    }
   };
 
 
 class PropertyTraits
   {
 public:
-  template <typename PropType> static void build(PropertyInformationFunctions &fns)
+  template <typename PropType> static void build(PropertyInformationFunctions &fns, Eks::ResourceDescription &desc)
     {
     typedef typename PropType::Traits Traits;
     typedef typename Traits::template TypeTraits<PropType>::Type TypeTraits;
 
     typedef typename TypeTraits::template Creation<PropType> TypeTraitsCreation;
     typedef PropertyCreateSelector<TypeTraitsCreation, PropType::IsAbstract> CreateSelection;
+
+    desc = CreateSelection::resourceDescription();
 
     fns.create =
         (PropertyInformationFunctions::CreateFunction)
@@ -90,6 +101,11 @@ public:
     static Eks::MemoryResource destroy(Attribute *ptr)
       {
       return Eks::MemoryResource::destroy((Type*)ptr);
+      }
+
+    static Eks::ResourceDescription resourceDescription()
+      {
+      return Eks::ResourceDescriptionTypeHelper<Type>::createFor();
       }
     };
 

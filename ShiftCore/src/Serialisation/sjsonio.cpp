@@ -464,10 +464,32 @@ public:
 
   struct StateData
     {
+    StateData()
+      {
+      }
+    StateData(StateData &&oth)
+      : attribute(std::move(oth.attribute)),
+        values(std::move(oth.values)),
+        children(std::move(oth.children)),
+        namedChildren(oth.namedChildren)
+      {
+      }
+    StateData &operator=(StateData &&oth)
+      {
+      attribute = std::move(oth.attribute);
+      values = std::move(oth.values);
+      children = std::move(oth.children);
+      namedChildren = oth.namedChildren;
+      return *this;
+      }
+
     Eks::UniquePointer<AttributeInterface::AttributeBlock> attribute;
     Eks::UniquePointer<AttributeInterface::ValueBlock> values;
     Eks::UniquePointer<AttributeInterface::ChildBlock> children;
     bool namedChildren;
+
+  private:
+    X_DISABLE_COPY(StateData);
     };
 
   Eks::Vector<StateData> _loadStack;

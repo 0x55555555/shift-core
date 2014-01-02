@@ -499,7 +499,8 @@ public:
 private:
   static void initiate(Eks::AllocatorBase *allocator, PropertyInformationTyped<PropType> *info, const char *typeName)
     {
-    PropertyTraits::build<PropType>(info->functions());
+    Eks::ResourceDescription desc;
+    PropertyTraits::build<PropType>(info->functions(), desc);
 
     xCompileTimeAssert(detail::ChildModesCheck<PropType>::ValidStaticMode);
     xCompileTimeAssert(detail::ChildModesCheck<PropType>::ValidDynamicMode);
@@ -510,7 +511,7 @@ private:
     info->setChildData(0);
     info->setChildCount(0);
 
-    info->setFormat(Eks::ResourceDescriptionTypeHelper<PropType>::createFor());
+    info->setFormat(desc);
     info->setDynamicInstanceInformationFormat(
       Eks::ResourceDescriptionTypeHelper<typename PropType::DynamicInstanceInformation>::createFor());
     info->setEmbeddedInstanceInformationFormat(

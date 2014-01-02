@@ -2,6 +2,7 @@
 #define SContainerITERATORS_H
 
 #include "shift/Properties/scontainer.h"
+#include "shift/Properties/scontainer.inl"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 

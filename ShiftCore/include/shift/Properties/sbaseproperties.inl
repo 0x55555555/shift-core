@@ -8,7 +8,7 @@ namespace Shift
 {
 namespace detail
 {
-class UuidPropertyInstanceInformation : public EmbeddedPropertyInstanceInformation
+class SHIFT_EXPORT UuidPropertyInstanceInformation : public EmbeddedPropertyInstanceInformation
   {
   typedef QUuid PODType;
 

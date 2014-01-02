@@ -30,12 +30,17 @@ void buildTestData(Shift::Entity* root)
   vec4->z = 6.2f;
   }
 
-bool checkStrings(const QString &actual, const QString &expected)
+bool checkStrings(const QString &actualIn, const QString &expectedIn)
   {
   xsize lines = 1;
   xsize lineChars = 0;
 
   xsize linesContext = 3;
+
+  QString actual = actualIn;
+  actual.replace('\r', "");
+  QString expected = expectedIn;
+  expected.replace('\r', "");
 
   auto context = [linesContext](const QString &str, int pos)
     {
@@ -64,8 +69,8 @@ bool checkStrings(const QString &actual, const QString &expected)
   for(int i = 0; i < std::max(actual.length(), expected.length()); ++i)
     {
     ++lineChars;
-    auto charA = i < actual.length() ? actual[i] : '\0';
-    auto charE = i < expected.length() ? expected[i] : '\0';
+    auto charA = i < actual.length() ? ((const QString &)actual)[i] : '\0';
+    auto charE = i < expected.length() ? ((const QString &)expected)[i] : '\0';
 
     if (charA != charE)
       {
@@ -87,7 +92,6 @@ bool checkStrings(const QString &actual, const QString &expected)
     }
 
   return true;
-
   }
 
 bool checkProperties(Shift::Attribute *a, Shift::Attribute *aRoot, Shift::Attribute *b, Shift::Attribute *bRoot)

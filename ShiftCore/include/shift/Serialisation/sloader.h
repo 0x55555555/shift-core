@@ -19,7 +19,7 @@ class Property;
 class Container;
 class PropertyInformation;
 
-class LoadBuilder : public AttributeInterface, public IOBlockUser
+class SHIFT_EXPORT LoadBuilder : public AttributeInterface, public IOBlockUser
   {
 public:
   class LoadBlock : private IOBlock

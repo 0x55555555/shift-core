@@ -24,7 +24,7 @@ protected:
   friend class IOBlockUser;
   };
 
-class IOBlockUser
+class SHIFT_EXPORT IOBlockUser
   {
 protected:
   IOBlockUser();
