@@ -213,7 +213,9 @@ void ShiftCoreTest::serialisationCopyTest()
   QBENCHMARK {
     {
     rootB = db.addChild<Shift::Entity>();
-    auto loading = loader.beginLoading(rootB);
+
+    Eks::TemporaryAllocator alloc(rootB->temporaryAllocator());
+    auto loading = loader.beginLoading(rootB, &alloc);
 
     saver.save(rootA, false, &loader);
     }
@@ -282,7 +284,8 @@ void ShiftCoreTest::deserialisationJsonTest()
     QCOMPARE(true, toLoad.open(QFile::ReadOnly));
 
     Shift::LoadBuilder builder;
-    auto loading = builder.beginLoading(rootB);
+    Eks::TemporaryAllocator alloc(rootB->temporaryAllocator());
+    auto loading = builder.beginLoading(rootB, &alloc);
 
     Shift::JSONLoader loader;
     loader.load(&toLoad, &builder);

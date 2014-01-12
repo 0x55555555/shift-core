@@ -19,12 +19,12 @@ class Property;
 class AttributeLoader;
 class AttributeSaver;
 class ContainerPropertyInformation;
-class PropertyGroup;
 
 class PropertyInformationCreateData
   {
 public:
-  PropertyInformationCreateData(Eks::AllocatorBase *a)
+  PropertyInformationCreateData(Module &m, Eks::AllocatorBase *a)
+      : module(m)
     {
     allocator = a;
     registerAttributes = false;
@@ -34,6 +34,7 @@ public:
   bool registerAttributes;
   bool registerInterfaces;
   Eks::AllocatorBase *allocator;
+  Module &module;
   };
 
 struct PropertyInformationFunctions
@@ -150,16 +151,17 @@ public:
       const PropertyInformation *parent);
 
   static PropertyInformation *createTypeInformationInternal(
+      Module &module,
       const char *name,
       const PropertyInformation *parent,
-      void (Eks::AllocatorBase *, PropertyInformation *, const char *),
+      void (Module &, Eks::AllocatorBase *, PropertyInformation *, const char *),
       Eks::AllocatorBase *allocator);
 
   PropertyInformation *extendContainedProperty(
       const PropertyInformationCreateData &data,
       EmbeddedPropertyInstanceInformation *inst);
 
-  static PropertyInformation *derive(
+  static PropertyInformation *derive(Module &module,
       const PropertyInformation *obj,
       Eks::AllocatorBase *allocator,
       bool addChildren);

@@ -13,9 +13,14 @@
 namespace Shift
 {
 
-static PropertyGroup::Information _sAttribyteTypeInformation =
-  Shift::propertyGroup().registerPropertyInformation(&_sAttribyteTypeInformation,
+static Module::Information _sAttribyteTypeInformation =
+  Shift::shiftModule().registerPropertyInformation(_sAttribyteTypeInformation,
                                                      Attribute::bootstrapStaticTypeInformation);
+
+Shift::Module &Attribute::module()
+  {
+  return Shift::shiftModule();
+  }
 
 const PropertyInformation *Attribute::staticTypeInformation()
   {

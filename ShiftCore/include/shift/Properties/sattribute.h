@@ -13,6 +13,7 @@ class TemporaryAllocatorCore;
 namespace Shift
 {
 
+class Module;
 class Container;
 class PropertyInstanceInformation;
 class EmbeddedPropertyInstanceInformation;

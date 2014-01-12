@@ -7,7 +7,6 @@
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/TypeInformation/spropertytraits.h"
-#include "shift/TypeInformation/spropertygroup.h"
 
 #if X_ASSERTS_ENABLED
 #include "shift/sdatabase.h"
@@ -350,9 +349,10 @@ public:
 
 #define S_POD_INFO_NAME(T, Mode) _staticTypeInformation ## T ## Mode
 #define IMPLEMENT_POD_PROPERTY(EXPORT, group, T, Mode, niceName) \
-  Shift::PropertyGroup::Information S_POD_INFO_NAME(niceName, Mode) = \
-    group::propertyGroup().registerPropertyInformation( \
-      &S_POD_INFO_NAME(niceName, Mode), \
+  template <> Shift::Module &Shift::Data<T, Shift::Mode>::module() { return group :: shiftModule(); } \
+  Shift::Module::Information S_POD_INFO_NAME(niceName, Mode) = \
+    group::shiftModule().registerPropertyInformation( \
+      S_POD_INFO_NAME(niceName, Mode), \
       Shift::Data<T, Shift::Mode>::bootstrapStaticTypeInformation); \
   template <> \
       EXPORT const Shift::PropertyInformation *Shift::Data<T, Shift::Mode>::staticTypeInformation() { \

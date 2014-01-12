@@ -49,13 +49,23 @@ S_DEFINE_INTERFACE_TYPE(PropertyPositionInterface, 3)
 S_DEFINE_INTERFACE_TYPE(PropertyColourInterface, 4)
 S_DEFINE_INTERFACE_TYPE(PropertyConnectionInterface, 5)
 
+#define S_MODULE_SIGNATURE Shift::Module &shiftModule()
+#define S_MODULE(EXP, moduleName) namespace moduleName { EXP S_MODULE_SIGNATURE; }
+
+#define S_IMPLEMENT_MODULE_EXPLICIT(moduleName, className) namespace moduleName { S_MODULE_SIGNATURE { static className grp; return grp; } }
+#define S_IMPLEMENT_MODULE(moduleName) S_IMPLEMENT_MODULE_EXPLICIT(moduleName, Shift::Module)
+#define S_IMPLEMENT_MODULE_WITH_INTERFACES(moduleName) \
+  class moduleName##Module : public Shift::Module { virtual void initialiseInterfaces(Module &module) X_OVERRIDE; }; \
+  S_IMPLEMENT_MODULE_EXPLICIT(moduleName, moduleName##Module) \
+  void moduleName##Module::initialiseInterfaces(Module &module)
+
 namespace Shift
 {
 class Entity;
 class Attribute;
 class Property;
 class Observer;
-class PropertyGroup;
+class Module;
 
 enum DataMode
   {
@@ -77,7 +87,8 @@ enum ChildModes
   IndexedChildren = 4
   };
 
-PropertyGroup &propertyGroup();
 }
+
+S_MODULE(SHIFT_EXPORT, Shift)
 
 #endif // SHIFT_GLOBAL_H

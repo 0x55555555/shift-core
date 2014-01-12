@@ -55,11 +55,12 @@ bool PropertyInformation::hasIndexedChildren() const
   }
 
 PropertyInformation *PropertyInformation::derive(
+    Module &module,
     const PropertyInformation *from,
     Eks::AllocatorBase *allocator,
     bool addChildren)
   {
-  PropertyInformationCreateData data(allocator);
+  PropertyInformationCreateData data(module, allocator);
 
   PropertyInformation *copy = PropertyInformation::allocate(allocator);
 
@@ -115,7 +116,7 @@ PropertyInformation *PropertyInformation::extendContainedProperty(
     EmbeddedPropertyInstanceInformation *inst)
   {
   const PropertyInformation *oldInst = inst->childInformation();
-  PropertyInformation *info = PropertyInformation::derive(oldInst, data.allocator, false);
+  PropertyInformation *info = PropertyInformation::derive(data.module, oldInst, data.allocator, false);
 
   info->setExtendedParent(inst);
   inst->setChildInformation(info);
@@ -124,9 +125,10 @@ PropertyInformation *PropertyInformation::extendContainedProperty(
   }
 
 PropertyInformation *PropertyInformation::createTypeInformationInternal(
+    Module &module,
     const char *name,
     const PropertyInformation *parentType,
-    void (init)(Eks::AllocatorBase *, PropertyInformation *, const char *),
+    void (init)(Module &, Eks::AllocatorBase *, PropertyInformation *, const char *),
     Eks::AllocatorBase *allocator)
   {
   SProfileScopedBlock("Initiate information")
@@ -136,7 +138,7 @@ PropertyInformation *PropertyInformation::createTypeInformationInternal(
 
   createdInfo->setParentTypeInformation(parentType);
 
-  init(allocator, createdInfo, name);
+  init(module, allocator, createdInfo, name);
 
   // seal API
   createdInfo->apiInterface()->seal();

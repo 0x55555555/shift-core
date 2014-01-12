@@ -75,10 +75,8 @@ public:
 
     const ExternalUuidPointer *uuidProp = p->uncheckedCastTo<ExternalUuidPointer>();
 
-    if(p->typeInformation()->functions().shouldSaveValue(p))
-      {
-      s.write(s.valueSymbol(), uuidProp->_id);
-      }
+    xAssert(!uuidProp->input() == uuidProp->_id.isNull());
+    s.write(s.valueSymbol(), uuidProp->_id);
     }
 
   static Attribute *load(Container *parent, AttributeLoader &l)

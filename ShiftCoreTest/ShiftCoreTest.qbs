@@ -5,6 +5,4 @@ Eks.Test {
   toRoot: "../../"
   
   Depends { name: "ShiftCore" }
-
-  files: [ "*.h", "*.cpp", "*.qrc" ]
 }

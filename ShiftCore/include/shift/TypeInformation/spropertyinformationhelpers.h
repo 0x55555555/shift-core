@@ -3,7 +3,7 @@
 
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
-#include "shift/TypeInformation/spropertygroup.h"
+#include "shift/TypeInformation/smodule.h"
 #include "shift/TypeInformation/spropertytraits.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/scontainer.h"
@@ -19,15 +19,21 @@ namespace Shift
 template <typename T> class PropertyInformationTyped;
 
 #define S_IMPLEMENT_PROPERTY_BASE(myType, myIdentifier, grp)\
-  static Shift::PropertyGroup::Information _##myIdentifier##StaticTypeInformation = \
-    grp :: propertyGroup().registerPropertyInformation( \
-    &_##myIdentifier##StaticTypeInformation, myType::bootstrapStaticTypeInformation); \
-  const Shift::PropertyInformation *myType::staticTypeInformation() { return _##myIdentifier##StaticTypeInformation.information; }
+  static Shift::Module::Information _##myIdentifier##StaticTypeInformation = \
+    grp :: shiftModule().registerPropertyInformation( \
+    _##myIdentifier##StaticTypeInformation, myType::bootstrapStaticTypeInformation); \
+  const Shift::PropertyInformation *myType::staticTypeInformation() { return _##myIdentifier##StaticTypeInformation.information; } \
+  Shift::Module &myType::module() { return grp::shiftModule(); }
 
 #define S_IMPLEMENT_PROPERTY_EXPLICIT(INTRO, myType, myIdentifier, grp) S_IMPLEMENT_PROPERTY_BASE(myType, myIdentifier, grp) \
   INTRO const Shift::PropertyInformation *myType::bootstrapStaticTypeInformation(Eks::AllocatorBase *allocator) \
-  { Shift::detail::checkType<myType>(); Shift::PropertyInformationTyped<myType>::bootstrapTypeInformation(&_##myIdentifier##StaticTypeInformation.information, \
-  #myIdentifier, myType::ParentType::bootstrapStaticTypeInformation(allocator), allocator); return staticTypeInformation(); }
+  { Shift::detail::checkType<myType>(); \
+    Shift::PropertyInformationTyped<myType>::bootstrapTypeInformation( \
+      &_##myIdentifier##StaticTypeInformation.information, \
+      #myIdentifier, \
+      myType::ParentType::bootstrapStaticTypeInformation(allocator), \
+      allocator); \
+    return staticTypeInformation(); }
 
 #define S_IMPLEMENT_PROPERTY(myType, grp) S_IMPLEMENT_PROPERTY_EXPLICIT( , myType, myType, grp)
 
@@ -411,14 +417,15 @@ private:
 template <typename PropType> class PropertyInformationTyped : public PropertyInformation
   {
 public:
-  static void bootstrapTypeInformation(PropertyInformation **info,
-                               const char *name,
-                               const PropertyInformation *parent,
-                               Eks::AllocatorBase *allocator)
+  static void bootstrapTypeInformation(
+      PropertyInformation **info,
+      const char *name,
+      const PropertyInformation *parent,
+      Eks::AllocatorBase *allocator)
     {
     if(!*info)
       {
-      *info = createTypeInformation(name, parent, allocator);
+      *info = createTypeInformation(PropType::module(), name, parent, allocator);
       }
     }
 
@@ -438,15 +445,19 @@ public:
     return static_cast<const XScript::Interface<PropType>*>(PropertyInformation::apiInterface());
     }
 
-  static PropertyInformation *createTypeInformation(const char *name, const PropertyInformation *parentType, Eks::AllocatorBase *allocator)
+  static PropertyInformation *createTypeInformation(
+      Module &module,
+      const char *name,
+      const PropertyInformation *parentType,
+      Eks::AllocatorBase *allocator)
     {
-    typedef void (*FnType)(Eks::AllocatorBase *, PropertyInformationTyped<PropType> *, const char *);
+    typedef void (*FnType)(Module &, Eks::AllocatorBase *, PropertyInformationTyped<PropType> *, const char *);
     FnType fn = PropertyInformationTyped<PropType>::initiate;
 
-    typedef void (*BaseFnType)(Eks::AllocatorBase *, PropertyInformation *, const char *);
+    typedef void (*BaseFnType)(Module &, Eks::AllocatorBase *, PropertyInformation *, const char *);
     BaseFnType bFn = (BaseFnType)fn;
 
-    return createTypeInformationInternal(name, parentType, bFn, allocator);
+    return createTypeInformationInternal(module, name, parentType, bFn, allocator);
     }
 
   template <typename PropTypeIn, typename InstanceTypeIn>
@@ -497,7 +508,11 @@ public:
 #endif
 
 private:
-  static void initiate(Eks::AllocatorBase *allocator, PropertyInformationTyped<PropType> *info, const char *typeName)
+  static void initiate(
+      Module &module,
+      Eks::AllocatorBase *allocator,
+      PropertyInformationTyped<PropType> *info,
+      const char *typeName)
     {
     Eks::ResourceDescription desc;
     PropertyTraits::build<PropType>(info->functions(), desc);
@@ -531,7 +546,7 @@ private:
 
     detail::ApiHelper<PropType>::create(info);
 
-    PropertyInformationCreateData data(allocator);
+    PropertyInformationCreateData data(module, allocator);
     data.registerAttributes = true;
     data.registerInterfaces = true;
     PropType::createTypeInformation(info, data);

@@ -7,6 +7,7 @@
 #include "shift/Serialisation/sattributeinterface.h"
 #include "Utilities/XProperty.h"
 #include "Containers/XStringSimple.h"
+#include "Memory/XTemporaryAllocator.h"
 #include "QtCore/QTextStream"
 #include "QtCore/QDataStream"
 
@@ -26,9 +27,10 @@ public:
     {
   XProperties:
     XROProperty(Attribute *, root);
+    XROByRefProperty(Eks::Vector<Attribute*>, loadedData);
 
   public:
-    LoadBlock(LoadBuilder *w, Attribute *root);
+    LoadBlock(LoadBuilder *w, Attribute *root, Eks::AllocatorBase *alloc);
 
   private:
     friend class LoadBuilder;
@@ -37,7 +39,7 @@ public:
   LoadBuilder();
 
   /// \brief Begin loading under to [device].
-  Eks::UniquePointer<LoadBlock> beginLoading(Attribute *root);
+  Eks::UniquePointer<LoadBlock> beginLoading(Attribute *root, Eks::AllocatorBase *);
 
 protected:
   void onBegin(AttributeData *root, bool includeRoot, Eks::AllocatorBase *alloc) X_OVERRIDE;

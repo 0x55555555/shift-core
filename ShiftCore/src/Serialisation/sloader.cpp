@@ -114,9 +114,10 @@ public:
   Eks::UnorderedMap<Property *, Eks::String> resolveLater;
   };
 
-LoadBuilder::LoadBlock::LoadBlock(LoadBuilder *w, Attribute *root)
+LoadBuilder::LoadBlock::LoadBlock(LoadBuilder *w, Attribute *root, Eks::AllocatorBase *alloc)
     : IOBlock(w),
-      _root(root)
+      _root(root),
+      _loadedData(alloc)
   {
   }
 
@@ -124,9 +125,9 @@ LoadBuilder::LoadBuilder()
   {
   }
 
-Eks::UniquePointer<LoadBuilder::LoadBlock> LoadBuilder::beginLoading(Attribute *root)
+Eks::UniquePointer<LoadBuilder::LoadBlock> LoadBuilder::beginLoading(Attribute *root, Eks::AllocatorBase *alloc)
   {
-  return Eks::Core::globalAllocator()->createUnique<LoadBlock>(this, root);
+  return Eks::Core::globalAllocator()->createUnique<LoadBlock>(this, root, alloc);
   }
 
 void LoadBuilder::onBegin(AttributeData *root, bool includeRoot, Eks::AllocatorBase *alloc)
@@ -347,5 +348,11 @@ void LoadBuilder::onValuesComplete(AttributeData *attr, ValueData *)
   xAssert(helper.typeInfo || attrData->attribute);
 
   attrData->attribute = info->functions().load(attrData->parent, helper);
+
+  auto block = static_cast<LoadBlock*>(activeBlock());
+  if (attrData->parent == block->_root)
+    {
+    static_cast<LoadBlock*>(activeBlock())->_loadedData.pushBack(attrData->attribute);
+    }
   }
 }

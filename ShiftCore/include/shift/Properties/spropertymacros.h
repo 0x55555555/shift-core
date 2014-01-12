@@ -10,6 +10,7 @@
 
 #define S_REGISTER_TYPE_FUNCTION(name) \
   public: \
+  static Shift::Module &module(); \
   static void createTypeInformation(Shift::PropertyInformationTyped<name> *info, \
     const Shift::PropertyInformationCreateData &data); \
   static const Shift::PropertyInformation *staticTypeInformation(); \

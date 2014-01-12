@@ -12,14 +12,20 @@ class TemporaryAllocatorCore;
 namespace Shift
 {
 
+class Module;
 class NameArg;
-class PropertyGroup;
 class PropertyInformation;
 class InterfaceBaseFactory;
 
 class SHIFT_EXPORT TypeRegistry
   {
 public:
+  TypeRegistry(Eks::AllocatorBase *allocator);
+  ~TypeRegistry();
+
+  void installModule(Module &);
+  void uninstallModule(Module &);
+
   class Observer
     {
   public:
@@ -30,19 +36,12 @@ public:
   static void addTypeObserver(Observer *o);
   static void removeTypeObserver(Observer *o);
 
-  static void initiate(Eks::AllocatorBase *allocator);
-  static void terminate();
-
   static Eks::AllocatorBase *persistentBlockAllocator();
   static Eks::AllocatorBase *generalPurposeAllocator();
   static Eks::AllocatorBase *interfaceAllocator();
   static Eks::TemporaryAllocatorCore *temporaryAllocator();
 
-  static const Eks::Vector<const PropertyGroup *> &groups();
   static const Eks::Vector<const PropertyInformation *> &types();
-
-  static void addPropertyGroup(PropertyGroup &);
-  static void addType(PropertyInformation *);
 
   static const PropertyInformation *findType(const NameArg &);
 
@@ -53,12 +52,7 @@ public:
       const PropertyInformation *info,
       xuint32 typeId);
 
-  static void addInterfaceFactory(const PropertyInformation *info,
-      xuint32 typeId,
-      InterfaceBaseFactory *factory, xptrdiff offset);
-
 private:
-  TypeRegistry();
   X_DISABLE_COPY(TypeRegistry);
 
   static void internalAddType(PropertyInformation *);

@@ -99,8 +99,6 @@ public:
     }
 #endif
   };
-
-void setupBaseInterfaces();
 }
 
 #endif // SINTERFACES_H

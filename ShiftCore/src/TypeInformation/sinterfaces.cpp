@@ -1,7 +1,6 @@
 #include "shift/TypeInformation/sinterfaces.h"
+#include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/Properties/sbaseproperties.h"
-#include "shift/Properties/scontainer.inl"
-#include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/sentity.h"
@@ -109,32 +108,4 @@ Eks::Colour SBasicColourInterface::colour(const PropertyInformation *t) const
   return Eks::Colour(col);
   }
 
-struct Util
-  {
-  template <typename T> static void addPODInterface()
-    {
-    Interface::addStaticInterface<T, PODPropertyVariantInterface<T, typename T::PODType> >();
-    }
-  };
-
-void setupBaseInterfaces()
-  {
-  Interface::addStaticInterface<Entity, SBasicPositionInterface>();
-  Interface::addStaticInterface<Property, SBasicColourInterface>();
-  Interface::addInheritedInterface<Database, Handler>();
-
-
-  Util::addPODInterface<BoolProperty>();
-  Util::addPODInterface<IntProperty>();
-  Util::addPODInterface<LongIntProperty>();
-  Util::addPODInterface<UnsignedIntProperty>();
-  Util::addPODInterface<LongUnsignedIntProperty>();
-  Util::addPODInterface<FloatProperty>();
-  Util::addPODInterface<DoubleProperty>();
-  Util::addPODInterface<Vector2DProperty>();
-  Util::addPODInterface<Vector3DProperty>();
-  Util::addPODInterface<Vector4DProperty>();
-  Util::addPODInterface<QuaternionProperty>();
-  Util::addPODInterface<ColourProperty>();
-  }
 }

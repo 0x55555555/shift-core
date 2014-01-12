@@ -6,6 +6,7 @@
 #include "Memory/XGlobalAllocator.h"
 #include "shifttestcommon.h"
 #include "shift/sentity.h"
+#include "shift/TypeInformation/smodule.h"
 #include "shift/Properties/sarray.h"
 #include "shift/Properties/sbaseproperties.h"
 
@@ -18,16 +19,13 @@ class ShiftCoreTest : public QObject
   Q_OBJECT
 
 public:
-  ShiftCoreTest()
+  ShiftCoreTest() : registry(core.defaultAllocator())
     {
-    Shift::TypeRegistry::initiate(core.defaultAllocator());
-
-    Shift::TypeRegistry::addPropertyGroup(Test::propertyGroup());
+    registry.installModule(Test::shiftModule());
     }
 
   ~ShiftCoreTest()
     {
-    Shift::TypeRegistry::terminate();
     }
 
 private Q_SLOTS:
@@ -49,6 +47,7 @@ private Q_SLOTS:
 
 private:
   Eks::Core core;
+  Shift::TypeRegistry registry;
   };
 
 class TestVector : public Shift::Container

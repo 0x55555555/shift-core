@@ -2,9 +2,10 @@
 #define SBASEPOINTERPROPERTIES_H
 
 #include "shift/sdatabase.h"
+#include "shift/TypeInformation/sinterfaces.h"
+#include "shift/TypeInformation/smodule.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/sarray.h"
-#include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Properties/scontaineriterators.h"
 
 namespace Shift
@@ -137,8 +138,9 @@ private:
   void name::createTypeInformation(Shift::PropertyInformationTyped<name> *, \
     const Shift::PropertyInformationCreateData &) { }
 
-template <typename T, typename TYPE> void createTypedPointerArray(PropertyInformationTyped<T> *info,
-                                                                  const PropertyInformationCreateData &data)
+template <typename T, typename TYPE> void createTypedPointerArray(
+    PropertyInformationTyped<T> *info,
+    const PropertyInformationCreateData &data)
   {
   if(data.registerInterfaces)
     {
@@ -166,7 +168,7 @@ template <typename T, typename TYPE> void createTypedPointerArray(PropertyInform
         }
       };
 
-    Interface::addStaticInterface<PointerArrayConnectionInterface>(info);
+    data.module.addStaticInterface<PointerArrayConnectionInterface>(info);
 
     typedef XScript::MethodToInCa
         <TypedPointerArray<TYPE>, void (), &T::clear>

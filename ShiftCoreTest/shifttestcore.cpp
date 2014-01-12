@@ -1,6 +1,6 @@
 #include "shifttest.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
-#include "shift/TypeInformation/spropertygroup.h"
+#include "shift/TypeInformation/smodule.h"
 #include "shift/Properties/sdata.inl"
 
 xCompileTimeAssert(sizeof(Shift::Attribute) == sizeof(void*));

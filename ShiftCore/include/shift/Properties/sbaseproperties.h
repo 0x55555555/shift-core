@@ -15,7 +15,7 @@
 namespace Shift
 {
 
-#define DEFINE_POD_PROPERTY(name, type) S_DECLARE_METATYPE(Shift::Data<type>, name); typedef Shift::Data<type> name;
+#define DEFINE_POD_PROPERTY(name, type) S_DECLARE_METATYPE(Shift::Data<type>, #name); typedef Shift::Data<type> name
 
 DEFINE_POD_PROPERTY(BoolProperty, xuint8);
 DEFINE_POD_PROPERTY(IntProperty, xint32);

@@ -535,7 +535,7 @@ void initAttribute(JSONLoaderImpl *loader, const PropertyInformation *infoHint)
     {
     if(loader->_loadStack.size() == 1)
       {
-      back.attribute = loader->_interface->begin(loader->_noRoot, infoHint, infoHint != nullptr, loader->_alloc);
+      back.attribute = loader->_interface->begin(!loader->_noRoot, infoHint, infoHint != nullptr, loader->_alloc);
 
       if(!loader->_noRoot)
         {
@@ -815,7 +815,7 @@ int JSONLoaderImpl::callback(void *ctx, int type, const JSON_value *value)
     {   err,    err,          err,          to<Header>,        err,                err,      err,    err,   err,    err,      err,               err },
 
     //  Header
-    {   err,    err,          err,          err,               err,                err,      err,    err,   err,    err,      err,               headerKey },
+    {   err,    err,          err,          err,               to<Start>,          err,      err,    err,   err,    err,      err,               headerKey },
 
     //  HeaderAwaitingValue
     {   err,    headerVal,    err,          headerVal,         err,                err,      err,    err,   err,    err,      headerVal,         err },

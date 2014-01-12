@@ -8,6 +8,15 @@
   typedef interfaceType InterfaceType; \
   private:
 
+#define S_INTERFACE_TYPE(typeId) public: \
+  enum { InterfaceTypeId = SInterfaceTypes::typeId }; \
+  private:
+
+#define S_STATIC_INTERFACE_TYPE(type, typeID) public: \
+  S_INTERFACE_TYPE(typeID) \
+  xuint32 interfaceTypeId() const X_OVERRIDE { return InterfaceTypeId; } \
+  S_INTERFACE_FACTORY_TYPE(type)
+
 namespace Shift
 {
 
@@ -17,18 +26,12 @@ class InterfaceBaseFactory
   {
   S_INTERFACE_FACTORY_TYPE(InterfaceBase);
 
-XProperties:
-  XProperty(xptrdiff, offset, setOffset);
-
 public:
   virtual ~InterfaceBaseFactory() { }
+
+  virtual xuint32 interfaceTypeId() const = 0;
   virtual InterfaceBase *classInterface(Attribute *) { return 0; }
   };
-
-#define S_INTERFACE_TYPE(typeId) public: \
-  enum { InterfaceTypeId = SInterfaceTypes::typeId }; \
-  virtual xuint32 interfaceTypeId() const { return InterfaceTypeId; } \
-  private:
 
 class InterfaceBase
 #ifdef S_PROPERTY_USER_DATA
@@ -42,79 +45,12 @@ class InterfaceBase
 #endif
   };
 
-
-#define S_STATIC_INTERFACE_TYPE(type, interfaceTypeId) public: \
-  S_INTERFACE_TYPE(interfaceTypeId) \
-  S_INTERFACE_FACTORY_TYPE(type)
-
 class StaticInterfaceBase : public InterfaceBase, public InterfaceBaseFactory
   {
 public:
   InterfaceBase *classInterface(Attribute *) X_OVERRIDE { return this; }
   };
 
-
-namespace Interface
-{
-
-template <typename PropType, typename T> static T *addStaticInterface()
-  {
-  T* t = TypeRegistry::interfaceAllocator()->create<T>();
-
-  InterfaceBaseFactory *fac = t;
-  xptrdiff offset = (xuint8*)t - (xuint8*)fac;
-
-  TypeRegistry::addInterfaceFactory(
-        PropType::staticTypeInformation(),
-        T::InterfaceType::InterfaceTypeId,
-        t,
-        offset);
-  return t;
-  }
-
-template <typename T> static void addStaticInterface(
-    PropertyInformation *info,
-    T *factory)
-  {
-  TypeRegistry::addInterfaceFactory(
-        info,
-        T::InterfaceType::InterfaceTypeId,
-        factory);
-  }
-
-template <typename T> static T *addStaticInterface(PropertyInformation *info)
-  {
-  T* t = TypeRegistry::interfaceAllocator()->create<T>();
-
-  InterfaceBaseFactory *fac = t;
-  xptrdiff offset = (xuint8*)t - (xuint8*)fac;
-
-  typedef typename T::InterfaceType IfcType;
-  TypeRegistry::addInterfaceFactory(
-        info,
-        IfcType::InterfaceTypeId,
-        t,
-        offset);
-  return t;
-  }
-
-template <typename PropType, typename T> static void addInheritedInterface()
-  {
-  class InheritedInterface : public InterfaceBaseFactory
-    {
-    S_INTERFACE_FACTORY_TYPE(T)
-  public:
-    InterfaceBase *classInterface(Attribute *prop) X_OVERRIDE
-      {
-      PropType *type = prop->castTo<PropType>();
-      T *t = type;
-      return t;
-      }
-    };
-
-  addStaticInterface<PropType, InheritedInterface>();
-  }
-}
 }
 
 #endif // SINTERFACE_H

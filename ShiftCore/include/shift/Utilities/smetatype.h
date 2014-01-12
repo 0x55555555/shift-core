@@ -42,6 +42,6 @@ public:
 #define S_DECLARE_METATYPE(TYPE, NAME) \
 template <> class Shift::detail::MetaTypeHelper<TYPE> { public: \
   static void getTypeName(Eks::String &str) { \
-    str.append(#NAME); } };
+    str.append(NAME); } }
 
 #endif // METATYPE_H

@@ -3,11 +3,7 @@
 
 #include "shift/sdatabase.h"
 
-#define S_IMPLEMENT_TEST \
-namespace Test { \
-Shift::PropertyGroup &propertyGroup() { \
-  static Shift::PropertyGroup grp; \
-  return grp; } }
+#define S_IMPLEMENT_TEST S_IMPLEMENT_MODULE(Test)
 
 #define QCOMPARE_FN(actual, expected) \
 do {\
@@ -21,10 +17,7 @@ do {\
         throw std::exception();\
 } while (0)
 
-namespace Test
-{
-Shift::PropertyGroup &propertyGroup();
-}
+S_MODULE(X_DECL_EXPORT, Test)
 
 class TestDatabase : public Shift::Database
   {

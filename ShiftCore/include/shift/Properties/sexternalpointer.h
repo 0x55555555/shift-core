@@ -47,10 +47,8 @@ private:
   S_PROPERTY(ExternalPointer, Property)
 
 public:
-
   Property *resolve(ResolveResult *result=0);
   const Property *resolve(ResolveResult *result=0) const;
-
 
   template <typename T>
   const T *pointed() const

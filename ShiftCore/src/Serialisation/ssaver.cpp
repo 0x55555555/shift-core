@@ -54,7 +54,7 @@ void SaveBuilder::save(const Attribute *attr, bool includeRoot, AttributeInterfa
 
   auto block = receiver->begin(includeRoot, attr->typeInformation(), attr->isDynamic(), &alloc);
 
-  visitAttribute(true, attr, block.value(), &alloc);
+  visitAttribute(!includeRoot, attr, block.value(), &alloc);
   }
 
 void SaveBuilder::visitAttribute(bool topLevel, const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc)
