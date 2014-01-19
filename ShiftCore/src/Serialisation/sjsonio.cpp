@@ -396,7 +396,11 @@ void JSONSaver::onValue(Saver::ValueData *v, const Symbol &id, const Serialisati
     values->valueOnly = valueStr;
     }
 
-  values->allValuesWriter.addKeyValueStandalone(static_cast<const StringSymbol &>(id).str, valueStr.data(), values->attrCount != 0);
+  auto &sym = static_cast<const StringSymbol &>(id);
+
+  const char *data = valueStr.data() ? valueStr.data() : "";
+
+  values->allValuesWriter.addKeyValueStandalone(sym.str, data, values->attrCount != 0);
 
   xAssert(values->allValuesWriter.string().data());
   ++values->attrCount;

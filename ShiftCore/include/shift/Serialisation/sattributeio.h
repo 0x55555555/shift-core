@@ -140,10 +140,13 @@ template <typename T>
 Eks::String TypedSerialisationValue<T>::asUtf8(Eks::AllocatorBase* a) const
   {
   Eks::String ret(a);
-  Eks::String::Buffer buf(&ret);
-  Eks::String::OStream str(&buf);
+    {
+    Eks::String::Buffer buf(&ret);
+    Eks::String::OStream str(&buf);
 
-  str << *_val;
+    str << *_val;
+    }
+
   return ret;
   }
 
