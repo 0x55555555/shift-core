@@ -17,17 +17,17 @@ public:
     DynamicChildMode = Container::DynamicChildMode | Shift::IndexedChildren
     };
 
-  template <typename T> T *add(xsize index=X_SIZE_SENTINEL)
+  template <typename T> T *add(xsize index=std::numeric_limits<xsize>::max())
     {
     return addAttribute(T::staticTypeInformation(), index, NameArg())->template castTo<T>();
     }
 
-  Attribute *add(const PropertyInformation *info, PropertyInstanceInformationInitialiser *init=0, xsize index=X_UINT8_SENTINEL)
+  Attribute *add(const PropertyInformation *info, PropertyInstanceInformationInitialiser *init=0, xsize index=std::numeric_limits<xsize>::max())
     {
     return Container::addAttribute(info, index, NameArg(), init);
     }
 
-  Attribute *add(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL)
+  Attribute *add(const PropertyInformation *info, xsize index=std::numeric_limits<xsize>::max())
     {
     return Container::addAttribute(info, index, NameArg(), 0);
     }

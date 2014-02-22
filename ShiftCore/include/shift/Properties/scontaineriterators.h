@@ -26,7 +26,7 @@ public:
       _index(idx),
       _fromDynamic(dP)
     {
-    xAssert(idx != X_SIZE_SENTINEL);
+    xAssert(idx != Eks::maxFor(idx));
     _embeddedCount = _info->childCount();
     }
   T *operator*() const
@@ -89,7 +89,7 @@ public:
       const PropertyInformation* info = It::_info;
       ++index;
       info->nextChild<T>(&index);
-      if(index == X_SIZE_SENTINEL)
+      if(index == Eks::maxFor(index))
         {
         index = lastIndex;
         }

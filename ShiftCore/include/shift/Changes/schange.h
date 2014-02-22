@@ -77,7 +77,7 @@ public:
   template <typename T> static xuint32 getChangeTypeId(xuint32 t)
     {
     int id = detail::MetaType::id<T>();
-    xAssert(id < X_UINT16_SENTINEL);
+    xAssert(id < std::numeric_limits<xuint16>::max());
 
     return (t<<16) + id;
     }

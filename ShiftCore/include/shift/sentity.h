@@ -124,7 +124,10 @@ public:
 
   /// \defgroup addAttribute Adding dynamic properties
   /// @{
-  template <typename T>T *addAttribute(xsize index = X_SIZE_SENTINEL, const NameArg& name="", PropertyInstanceInformationInitialiser *init=0)
+  template <typename T>T *addAttribute(
+      xsize index = std::numeric_limits<xsize>::max(),
+      const NameArg& name="",
+      PropertyInstanceInformationInitialiser *init=0)
     {
     Attribute *p = addAttribute(T::staticTypeInformation(), index, name, init);
     xAssert(p);
@@ -132,7 +135,11 @@ public:
     return p->uncheckedCastTo<T>();
     }
 
-  Attribute *addAttribute(const PropertyInformation *info, xsize index = X_SIZE_SENTINEL, const NameArg& name=NameArg(), PropertyInstanceInformationInitialiser *inst=0);
+  Attribute *addAttribute(
+    const PropertyInformation *info,
+    xsize index = std::numeric_limits<xsize>::max(),
+    const NameArg& name=NameArg(),
+    PropertyInstanceInformationInitialiser *inst=0);
   /// @}
 
   /// Remove a dynamic property

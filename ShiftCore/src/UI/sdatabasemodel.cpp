@@ -687,7 +687,7 @@ InputModel::InputModel(Database *db, Entity *ent, const PropertyInformation *ite
     _childAttr(childGroup),
     _holderChanging(0),
     _itemChanging(0),
-    _itemIndexChanging(X_SIZE_SENTINEL),
+    _itemIndexChanging(Eks::maxFor(_itemIndexChanging)),
     _changingAdding(false)
   {
   if(_root.isValid())

@@ -59,7 +59,7 @@ template <typename T> const EmbeddedPropertyInstanceInformation *PropertyInforma
       }
     }
 
-  *i = X_SIZE_SENTINEL;
+  *i = Eks::maxFor(*i);
   return 0;
   }
 

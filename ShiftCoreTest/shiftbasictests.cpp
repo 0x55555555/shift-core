@@ -398,7 +398,7 @@ void ShiftCoreTest::indexedChildTest()
   QCOMPARE(indexed->testArray.hasNamedChildren(), false);
 
   auto namedFirst = named->children.add<TestEntity>("Test");
-  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), std::numeric_limits<xuint32>::max());
   QCOMPARE(named->children.index(namedFirst), 0U);
   QCOMPARE(namedFirst->dynamicInstanceInformation()->name(), "Test");
   QCOMPARE(namedFirst->identifier(), "Test");
@@ -421,7 +421,7 @@ void ShiftCoreTest::indexedChildTest()
   QCOMPARE(namedFirst->identifier(), "1");
 
   indexed->testArray.moveAttribute(&named->children, indexedFirst);
-  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), std::numeric_limits<xuint32>::max());
   QCOMPARE(named->children.index(indexedFirst), 0U);
   QVERIFY(indexedFirst->dynamicInstanceInformation()->name() != "");
   QVERIFY(indexedFirst->identifier().length() > 5U);
@@ -431,17 +431,17 @@ void ShiftCoreTest::indexedChildTest()
   QCOMPARE(namedFirst->identifier(), "0");
 
   indexed->testArray.moveAttribute(&named->children, namedFirst);
-  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), std::numeric_limits<xuint32>::max());
   QCOMPARE(named->children.index(indexedFirst), 0U);
   QVERIFY(indexedFirst->dynamicInstanceInformation()->name() != "");
   QVERIFY(indexedFirst->identifier().length() > 5U);
-  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(namedFirst->dynamicInstanceInformation()->index(), std::numeric_limits<xuint32>::max());
   QCOMPARE(named->children.index(namedFirst), 1U);
   QVERIFY(namedFirst->dynamicInstanceInformation()->name() != "");
   QVERIFY(namedFirst->identifier().length() > 5U);
 
   named->children.moveAttribute(&indexed->testArray, namedFirst, 0U);
-  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), X_UINT32_SENTINEL);
+  QCOMPARE(indexedFirst->dynamicInstanceInformation()->index(), std::numeric_limits<xuint32>::max());
   QCOMPARE(named->children.index(indexedFirst), 0U);
   QVERIFY(indexedFirst->dynamicInstanceInformation()->name() != "");
   QVERIFY(indexedFirst->identifier().length() > 5);

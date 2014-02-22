@@ -42,7 +42,7 @@ void SBasicPositionInterface::setPositionGeneric(Property * p, const Eks::Vector
   if(!prop)
     {
     Initialiser init;
-    prop = ent->addAttribute<Vector3DProperty>(X_SIZE_SENTINEL, name, &init);
+    prop = ent->addAttribute<Vector3DProperty>(std::numeric_limits<xsize>::max(), name, &init);
     }
   xAssert(prop);
 

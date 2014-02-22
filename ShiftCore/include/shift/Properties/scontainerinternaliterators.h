@@ -19,7 +19,7 @@ public:
 
   Attribute *operator*()
     {
-    if(_embedded != X_SIZE_SENTINEL)
+    if(_embedded != Eks::maxFor(_embedded))
       {
       return _info->childFromIndex(_embedded)->locate(_cont);
       }
@@ -34,16 +34,16 @@ public:
 
   void operator++()
     {
-    if(_embedded != X_SIZE_SENTINEL)
+    if(_embedded != Eks::maxFor(_embedded))
       {
       ++_embedded;
       if(_embedded >= _info->childCount())
         {
-        _embedded = X_SIZE_SENTINEL;
+        _embedded = Eks::maxFor(_embedded);
         }
       }
 
-    if(_dynamic && _embedded == X_SIZE_SENTINEL)
+    if(_dynamic && _embedded == Eks::maxFor(_embedded))
       {
       const DynamicPropertyInstanceInformation* dynInfo = _dynamic->dynamicInstanceInformation();
       _dynamic = dynInfo->nextSibling();
@@ -67,14 +67,14 @@ public:
   LightIterator begin()
     {
     NoUpdateBlock up(_cont);
-    xsize firstEmbedded = _cont->typeInformation()->childCount() > 0 ? 0 : X_SIZE_SENTINEL;
+    xsize firstEmbedded = _cont->typeInformation()->childCount() > 0 ? 0 : Eks::maxFor(firstEmbedded);
     return LightIterator(_cont, firstEmbedded, _cont->firstDynamicChild());
     }
 
   LightIterator end()
     {
     NoUpdateBlock up(_cont);
-    return LightIterator(_cont, X_SIZE_SENTINEL, 0);
+    return LightIterator(_cont, std::numeric_limits<xsize>::max(), 0);
     }
 
 private:

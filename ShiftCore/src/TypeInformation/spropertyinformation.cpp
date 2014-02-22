@@ -81,7 +81,7 @@ PropertyInformation *PropertyInformation::derive(
           const_cast<EmbeddedPropertyInstanceInformation*>(from->childFromIndex(i));
 
       auto ref = inst->referenceCount();
-      xAssert(ref < X_UINT8_SENTINEL);
+      xAssert(ref < Eks::maxFor(ref));
       ++ref;
 
       inst->setReferenceCount(ref);
@@ -89,7 +89,7 @@ PropertyInformation *PropertyInformation::derive(
       children[i] = inst;
       }
 
-    xAssert(childCount < X_UINT8_SENTINEL);
+    xAssert(childCount < std::numeric_limits<xuint8>::max());
     copy->setChildCount((xuint8)childCount);
     copy->setChildData(children);
     }

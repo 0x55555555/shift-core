@@ -73,7 +73,7 @@ TypeRegistry::TypeRegistry(Eks::AllocatorBase *baseAllocator)
 
 TypeRegistry::~TypeRegistry()
   {
-  for(xsize i = _internalTypes->modules.size()-1; i != X_SIZE_SENTINEL; --i)
+  for(xsize i = _internalTypes->modules.size()-1; i != Eks::maxFor(i); --i)
     {
     uninstallModule(*_internalTypes->modules[i]);
     }

@@ -22,7 +22,7 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
 
   xsize childCount = _properties.size();
 
-  xAssert(childCount < X_UINT8_SENTINEL)
+  xAssert(childCount < std::numeric_limits<xuint8>::max())
   xAssert(!_information->childData());
   _information->setChildCount((xuint8)childCount);
   if(childCount == 0)
@@ -35,7 +35,7 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
       _data.allocator->alloc(sizeof(EmbeddedPropertyInstanceInformation *) * childCount);
 
   xCompileTimeAssert(sizeof(_information->childCount()) == sizeof(xuint8));
-  xAssert(childCount < X_UINT8_SENTINEL);
+  xAssert(childCount < std::numeric_limits<xuint8>::max());
 
   Eks::UnorderedMap<Name, bool> names(&_temporaryAllocator);
 
@@ -55,7 +55,7 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
     names.insert(name, true);
 
     auto ref = inst->referenceCount();
-    xAssert(ref < X_UINT8_SENTINEL);
+    xAssert(ref < std::numeric_limits<xuint8>::max());
     ++ref;
 
     inst->setReferenceCount(ref);

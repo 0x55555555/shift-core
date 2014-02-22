@@ -80,7 +80,7 @@ void Entity::reparent(Entity *ent)
 
 Attribute *Entity::addChild(const PropertyInformation *info, const NameArg& name)
   {
-  Attribute *ent = children.add(info, X_SIZE_SENTINEL, name);
+  Attribute *ent = children.add(info, std::numeric_limits<xsize>::max(), name);
   xAssert(ent);
   return ent;
   }

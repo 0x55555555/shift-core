@@ -176,10 +176,10 @@ void EmbeddedPropertyInstanceInformation::initiate(const PropertyInformation *in
   setChildInformation(info);
   n.toName(name());
 
-  xAssert(location < X_UINT16_SENTINEL);
+  xAssert(location < std::numeric_limits<xuint16>::max());
   setLocation((xuint16)location);
 
-  xAssert(index < X_UINT8_SENTINEL);
+  xAssert(index < std::numeric_limits<xuint8>::max());
   setIndex((xuint8)index);
   }
 
@@ -314,7 +314,7 @@ void EmbeddedPropertyInstanceInformation::setDefaultInput(const EmbeddedProperty
   xAssert(sourceBase->inheritsFromType(targetBase));
 
   xptrdiff inp = targetOffset.value() - sourceOffset.value();
-  xAssert(inp < X_INT16_MAX && inp > X_INT16_MIN);
+  xAssert(inp < std::numeric_limits<xint16>::max() && inp > std::numeric_limits<xint16>::min());
   xAssert(inp != 0);
   _defaultInput = inp;
 
@@ -360,7 +360,7 @@ DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation()
     : PropertyInstanceInformation(true),
       _parent(0),
       _nextSibling(0),
-      _index(X_UINT32_SENTINEL)
+      _index(Eks::maxFor(_index))
   {
   }
 DynamicPropertyInstanceInformation::DynamicPropertyInstanceInformation(

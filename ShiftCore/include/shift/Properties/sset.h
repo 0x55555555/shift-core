@@ -19,19 +19,19 @@ public:
 
   template <typename T> T *add(const NameArg& name)
     {
-    return addAttribute(T::staticTypeInformation(), X_SIZE_SENTINEL, name)->template castTo<T>();
+    return addAttribute(T::staticTypeInformation(), std::numeric_limits<xsize>::max(), name)->template castTo<T>();
     }
-  template <typename T> T *add(xsize index=X_SIZE_SENTINEL, const NameArg &name=NameArg())
+  template <typename T> T *add(xsize index=std::numeric_limits<xsize>::max(), const NameArg &name=NameArg())
     {
     return addAttribute(T::staticTypeInformation(), index, name)->template castTo<T>();
     }
 
-  Attribute *add(const PropertyInformation *info, const NameArg &name, PropertyInstanceInformationInitialiser *init=0, xsize index=X_UINT8_SENTINEL)
+  Attribute *add(const PropertyInformation *info, const NameArg &name, PropertyInstanceInformationInitialiser *init=0, xsize index=std::numeric_limits<xsize>::max())
     {
     return Container::addAttribute(info, index, name, init);
     }
 
-  Attribute *add(const PropertyInformation *info, xsize index=X_SIZE_SENTINEL, const NameArg &name=NameArg())
+  Attribute *add(const PropertyInformation *info, xsize index=std::numeric_limits<xsize>::max(), const NameArg &name=NameArg())
     {
     return Container::addAttribute(info, index, name, 0);
     }

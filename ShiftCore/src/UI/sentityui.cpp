@@ -41,7 +41,7 @@ xuint64 EntityUI::widgetType(const Attribute *p) const
     {
     return _uiTypes[actualType];
     }
-  return X_UINT64_SENTINEL;
+  return std::numeric_limits<xuint64>::max();
   }
 
 QWidget *EntityUI::createControlWidget(Entity *ent, QWidget *parent, bool *added) const

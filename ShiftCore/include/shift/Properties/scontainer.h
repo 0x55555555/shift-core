@@ -80,7 +80,7 @@ public:
   const Attribute *at(xsize i) const;
 
   // move a property from this to newParent
-  void moveAttribute(Container *newParent, Attribute *property, xsize index = X_SIZE_SENTINEL);
+  void moveAttribute(Container *newParent, Attribute *property, xsize index = std::numeric_limits<xsize>::max());
 
   bool contains(const Attribute *) const;
 
@@ -111,7 +111,7 @@ protected:
   // should really be left alone and not exposed in sub classes
   Attribute *addAttribute(
     const PropertyInformation *info,
-    xsize index=X_SIZE_SENTINEL,
+    xsize index=std::numeric_limits<xsize>::max(),
     const NameArg& name=NameArg(),
     PropertyInstanceInformationInitialiser *inst=0);
   void removeAttribute(Attribute *);

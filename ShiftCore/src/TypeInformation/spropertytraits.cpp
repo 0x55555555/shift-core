@@ -82,7 +82,7 @@ Attribute *PropertyBaseTraits::load(Container *parent, AttributeLoader &l)
     const PropertyInformation *type = l.type();
     xAssert(type);
 
-    attr = parent->addAttribute(type, X_SIZE_SENTINEL, l.name(), &initialiser);
+    attr = parent->addAttribute(type, std::numeric_limits<xsize>::max(), l.name(), &initialiser);
     xAssert(attr);
     }
 

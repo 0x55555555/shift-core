@@ -536,7 +536,7 @@ void Container::internalInsert(Attribute *newProp, xsize index)
 
   Attribute *justBefore = nullptr;
 
-  if(index != X_SIZE_SENTINEL)
+  if(index != Eks::maxFor(index))
     {
     xsize dynamicIndex = index - containedProperties();
     justBefore = ChildLL::insert(&_dynamicChild, newProp, dynamicIndex);
@@ -646,7 +646,7 @@ void Container::internalRemove(Attribute *oldProp)
 
   if (!hasNamedChildren())
     {
-    IndexedUtils::setIndex(oldProp, X_UINT32_SENTINEL);
+    IndexedUtils::setIndex(oldProp, std::numeric_limits<xuint32>::max());
     fixupIndices(beforeRemoved);
     }
   else if(EditCache *cache = database()->findEditCache(this))
