@@ -5,130 +5,68 @@
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 
-#define S_ENTITY_WEAK_POINTER_CHECK xAssert(data());
+#define S_ENTITY_WEAK_POINTER_CHECK xAssert(Eks::WeakSharedPointer<T>::data());
 
 namespace Shift
 {
 
-class EntityWeakPointer : private XWeakSharedPointer<Entity>
+template <typename T> class EntityWeakPointer : private Eks::WeakSharedPointer<T>
   {
 public:
-  explicit EntityWeakPointer(Entity *ptr=0) : XWeakSharedPointer<Entity>(ptr)
+  explicit EntityWeakPointer(T *ptr=0) : Eks::WeakSharedPointer<T>(ptr)
     {
     }
 
-  Entity *operator=(Entity *ptr)
+  T *operator=(T *ptr)
     {
-    XWeakSharedPointer<Entity>::assign(ptr);
-    return ptr;
-    }
-
-  void assign(Entity *ptr)
-    {
-    XWeakSharedPointer<Entity>::assign(ptr);
-    }
-
-  const Entity *operator->() const
-    {
-    S_ENTITY_WEAK_POINTER_CHECK
-    return data();
-    }
-
-  Entity *operator->()
-    {
-    S_ENTITY_WEAK_POINTER_CHECK
-    return data();
-    }
-
-  const Entity *entity() const
-    {
-    S_ENTITY_WEAK_POINTER_CHECK
-    return data();
-    }
-
-  Entity *entity()
-    {
-    S_ENTITY_WEAK_POINTER_CHECK
-    return data();
-    }
-
-  bool isValid() const
-    {
-    return data() != 0;
-    }
-
-  operator Entity*()
-    {
-    return data();
-    }
-
-  operator const Entity*() const
-    {
-    return data();
-    }
-  };
-
-#define S_ENTITY_TYPED_WEAK_POINTER_CHECK xAssert(EntityWeakPointer::entity() && ((Entity*)EntityWeakPointer::entity())->castTo<T>(), (xsize)EntityWeakPointer::entity());
-
-template <typename T> class EntityTypedWeakPointer : public EntityWeakPointer
-  {
-public:
-  explicit EntityTypedWeakPointer(T *ptr=0) : EntityWeakPointer(ptr)
-    {
-    }
-
-  Entity *operator=(T *ptr)
-    {
-    EntityWeakPointer::assign(ptr);
+    Eks::WeakSharedPointer<T>::assign(ptr);
     return ptr;
     }
 
   void assign(T *ptr)
     {
-    EntityWeakPointer::assign(ptr);
+    Eks::WeakSharedPointer<T>::assign(ptr);
     }
 
   const T *operator->() const
     {
-    S_ENTITY_TYPED_WEAK_POINTER_CHECK
-    return entity();
+    S_ENTITY_WEAK_POINTER_CHECK
+    return Eks::WeakSharedPointer<T>::data();
     }
 
   T *operator->()
     {
-    S_ENTITY_TYPED_WEAK_POINTER_CHECK
-    return entity();
+    S_ENTITY_WEAK_POINTER_CHECK
+    return Eks::WeakSharedPointer<T>::data();
     }
 
   const T *entity() const
     {
-    S_ENTITY_TYPED_WEAK_POINTER_CHECK
-    Entity *ent = EntityWeakPointer::entity();
-    return ent->uncheckedCastTo<T>();
+    S_ENTITY_WEAK_POINTER_CHECK
+    return Eks::WeakSharedPointer<T>::data();
     }
 
   T *entity()
     {
-    S_ENTITY_TYPED_WEAK_POINTER_CHECK
-    Entity *ent = EntityWeakPointer::entity();
-    return ent->uncheckedCastTo<T>();
+    S_ENTITY_WEAK_POINTER_CHECK
+    return Eks::WeakSharedPointer<T>::data();
+    }
+
+  bool isValid() const
+    {
+    return Eks::WeakSharedPointer<T>::data() != 0;
     }
 
   operator T*()
     {
-    return entity();
+    return Eks::WeakSharedPointer<T>::data();
     }
 
   operator const T*() const
     {
-    return entity();
+    return Eks::WeakSharedPointer<T>::data();
     }
   };
-
-inline bool operator!=(Property *prop, const EntityWeakPointer &ptr)
-  {
-  return prop != ptr.entity();
-  }
 
 }
 

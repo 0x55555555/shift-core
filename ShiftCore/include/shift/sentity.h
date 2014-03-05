@@ -90,7 +90,7 @@ namespace Shift
   \sa PropertyInformation PropertyInformation::derive
 
  */
-class SHIFT_EXPORT Entity : public Container, public XWeakSharedData
+class SHIFT_EXPORT Entity : public Container, public Eks::WeakSharedData
   {
   S_ENTITY(Entity, Container);
 

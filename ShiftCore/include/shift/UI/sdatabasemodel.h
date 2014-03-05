@@ -80,7 +80,7 @@ public:
 
 protected:
   Database *_db;
-  EntityWeakPointer _root;
+  EntityWeakPointer<Entity> _root;
   QHash<int, QByteArray> _roles;
   bool _showValues;
   };

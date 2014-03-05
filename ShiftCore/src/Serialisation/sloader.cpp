@@ -344,6 +344,7 @@ void LoadBuilder::onValuesComplete(AttributeData *attr, ValueData *)
   else
     {
     xAssertFail();
+    return;
     }
   xAssert(helper.typeInfo || attrData->attribute);
 

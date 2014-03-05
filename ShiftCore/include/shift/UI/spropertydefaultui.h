@@ -69,7 +69,7 @@ private:
     }
 
   T *_value;
-  EntityWeakPointer _entity;
+  EntityWeakPointer<Entity> _entity;
   bool _dirty;
   };
 
