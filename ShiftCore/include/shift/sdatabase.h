@@ -4,7 +4,6 @@
 #include "Memory/XBucketAllocator.h"
 #include "shift/sglobal.h"
 #include "shift/sentity.h"
-#include "shift/Serialisation/sloader.h"
 #include "shift/Changes/shandler.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "Memory/XUniquePointer.h"

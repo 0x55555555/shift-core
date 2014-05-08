@@ -101,12 +101,6 @@ PropertyInformation *PropertyInformation::derive(
 
   copy->_parentTypeInformation = from;
 
-  data.registerAttributes = true;
-  data.registerInterfaces = false;
-
-  copy->_apiInterface = from->_apiInterface;
-  xAssert(copy->_apiInterface);
-
   xAssert(copy);
   return copy;
   }
@@ -139,9 +133,6 @@ PropertyInformation *PropertyInformation::createTypeInformationInternal(
   createdInfo->setParentTypeInformation(parentType);
 
   init(module, allocator, createdInfo, name);
-
-  // seal API
-  createdInfo->apiInterface()->seal();
 
   xAssert(!parentType || createdInfo->childCount() >= parentType->childCount());
   return createdInfo;
@@ -253,37 +244,4 @@ void PropertyInformation::dereference() const
   --((PropertyInformation*)this)->_instances;
   }
 
-}
-
-namespace XScript
-{
-namespace Convert
-{
-namespace internal
-{
-JSToNative<Shift::PropertyInformation>::ResultType JSToNative<Shift::PropertyInformation>::operator()(Value const &h) const
-  {
-  if(h.isObject())
-    {
-    Object obj(h);
-    return (Shift::PropertyInformation*)Shift::TypeRegistry::findType(obj.get("typeName").toString());
-    }
-  else
-    {
-    return (Shift::PropertyInformation*)Shift::TypeRegistry::findType(h.toString());
-    }
-  }
-
-Value NativeToJS<Shift::PropertyInformation>::operator()(const Shift::PropertyInformation &x) const
-  {
-  return Eks::String(x.typeName());
-  }
-
-Value NativeToJS<Shift::PropertyInformation>::operator()(const Shift::PropertyInformation *x) const
-  {
-  xAssert(x)
-  return Eks::String(x->typeName());
-  }
-}
-}
 }

@@ -1,4 +1,7 @@
-#include "shift/UI/sdatabasemodel.h"
+#include "shift/QtExtensions/UI/sdatabasemodel.h"
+
+#if X_QT_INTEROP
+
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Properties/scontainer.inl"
 #include "shift/Properties/sattribute.inl"
@@ -997,3 +1000,5 @@ void InputModel::actOnChanges()
 
 
 }
+
+#endif

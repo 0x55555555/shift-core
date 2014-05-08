@@ -1,7 +1,6 @@
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "shift/TypeInformation/styperegistry.h"
-#include "shift/TypeInformation/sinterfaces.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 
 namespace Shift
@@ -12,32 +11,10 @@ S_IMPLEMENT_PROPERTY(Entity, Shift)
 void Entity::createTypeInformation(PropertyInformationTyped<Entity> *info,
                                     const PropertyInformationCreateData &data)
   {
-  if(data.registerAttributes)
-    {
-    auto childBlock = info->createChildrenBlock(data);
+  auto childBlock = info->createChildrenBlock(data);
 
-    auto *childInst = childBlock.add(&Entity::children, "children");
-    childInst->setMode(PropertyInstanceInformation::Internal);
-    }
-
-  if(data.registerInterfaces)
-    {
-    auto api = info->apiInterface();
-
-    static XScript::ClassDef<0,0,5> cls = {
-      {
-      api->method<Attribute* (const PropertyInformation *, const NameArg &), &Entity::addChild>("addChild"),
-
-      api->method<void (TreeObserver*), &Entity::addTreeObserver>("addTreeObserver"),
-      api->method<void (ConnectionObserver*), &Entity::addConnectionObserver>("addConnectionObserver"),
-
-      api->method<void (TreeObserver*), &Entity::removeTreeObserver>("removeTreeObserver"),
-      api->method<void (ConnectionObserver*), &Entity::removeConnectionObserver>("removeConnectionObserver")
-      }
-    };
-
-    api->buildInterface(cls);
-    }
+  auto *childInst = childBlock.add(&Entity::children, "children");
+  childInst->setMode(PropertyInstanceInformation::Internal);
   }
 
 template <typename T> void xRemoveAll(Eks::Vector<T>& vec, const T &ptr)
@@ -207,7 +184,7 @@ void Entity::removeObserver(Observer *in)
 void Entity::informTreeObservers(const Change *event, bool backwards)
   {
   SProfileFunction
-  Q_FOREACH(const ObserverStruct &obs, _observers)
+  xForeach(const ObserverStruct &obs, _observers)
     {
     if(obs.mode == ObserverStruct::Tree)
       {
@@ -227,7 +204,7 @@ void Entity::informTreeObservers(const Change *event, bool backwards)
 void Entity::informConnectionObservers(const Change *event, bool backwards)
   {
   SProfileFunction
-  Q_FOREACH(const ObserverStruct &obs, _observers)
+  xForeach(const ObserverStruct &obs, _observers)
     {
     if(obs.mode == ObserverStruct::Connection)
       {

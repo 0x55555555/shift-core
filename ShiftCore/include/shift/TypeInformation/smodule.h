@@ -38,16 +38,18 @@ XProperties:
     {
     auto t = TypeRegistry::interfaceAllocator()->createUnique<T>();
 
+    T *val = t.get();
     _interfaces.emplaceBack(PropType::staticTypeInformation(), std::move(t));
-    return t.value();
+    return val;
     }
 
   template <typename T> T *addStaticInterface(PropertyInformation *info)
     {
     auto t = TypeRegistry::interfaceAllocator()->createUnique<T>();
 
+    T *val = t.get();
     _interfaces.emplaceBack(info, std::move(t));
-    return t.value();
+    return val;
     }
 
   template <typename PropType, typename T> void addInheritedInterface()

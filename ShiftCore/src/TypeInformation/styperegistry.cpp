@@ -3,14 +3,15 @@
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/smodule.h"
-#include "shift/TypeInformation/sinterfaces.h"
 #include "shift/Properties/sbaseproperties.h"
 #include "shift/Properties/scontainer.inl"
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/Changes/sobserver.h"
+#include "shift/QtExtensions/sinterfaces.h"
 #include "Memory/XTemporaryAllocator.h"
 #include "Containers/XUnorderedMap.h"
+#include "Utilities/XTemplateHelpers.h"
 
 namespace Shift
 {
@@ -51,7 +52,7 @@ struct TypeData
     };
   Eks::String _modeStrings[ModeCount];
 
-  typedef QPair<const PropertyInformation *, xuint32> InterfaceKey;
+  typedef std::pair<const PropertyInformation *, xuint32> InterfaceKey;
   Eks::UnorderedMap<InterfaceKey, const InterfaceBaseFactory*> interfaces;
 
   Eks::AllocatorBase *baseAllocator;
@@ -61,14 +62,9 @@ static Eks::UniquePointer<TypeData> _internalTypes;
 
 TypeRegistry::TypeRegistry(Eks::AllocatorBase *baseAllocator)
   {
-  XScript::Engine::initiate(false);
-
   _internalTypes = baseAllocator->createUnique<TypeData>(baseAllocator);
 
   installModule(Shift::shiftModule());
-
-  XScript::Interface<TreeObserver> *treeObs = XScript::Interface<TreeObserver>::create("_TreeObserver");
-  treeObs->seal();
   }
 
 TypeRegistry::~TypeRegistry()
@@ -80,12 +76,9 @@ TypeRegistry::~TypeRegistry()
 
   xAssert(_internalTypes->modules.isEmpty());
   xAssert(_internalTypes->types.isEmpty());
-  xAssert(_internalTypes->interfaces.isEmpty());
+  xAssert(_internalTypes->interfaces.empty());
 
   _internalTypes = nullptr;
-
-  // script engine needs to access type info.
-  XScript::Engine::terminate();
   }
 
 class RegistryModuleBuilder : public ModuleBuilder
@@ -123,14 +116,14 @@ class RegistryModuleBuilder : public ModuleBuilder
 
   void removeInterfaceFactory(const PropertyInformation *info, const InterfaceBaseFactory *factory) X_OVERRIDE
     {
-    _internalTypes->interfaces.remove(TypeData::InterfaceKey(info, factory->interfaceTypeId()));
+    _internalTypes->interfaces.erase(TypeData::InterfaceKey(info, factory->interfaceTypeId()));
     }
 
   void internalAddType(PropertyInformation *t)
     {
     xAssert(t);
     xAssert(!TypeRegistry::findType(t->typeName()));
-    if(!_internalTypes->types.contains(t))
+    if (!_internalTypes->types.contains(t))
       {
       _internalTypes->types << t;
       }
@@ -236,32 +229,14 @@ const InterfaceBaseFactory *TypeRegistry::interfaceFactory(
 
 }
 
-struct Util
-  {
-  template <typename T> static void addPODInterface(Shift::Module &m)
-    {
-    m.addStaticInterface<T, Shift::PODPropertyVariantInterface<T, typename T::PODType> >();
-    }
-  };
 
 S_IMPLEMENT_MODULE_WITH_INTERFACES(Shift)
   {
   using namespace Shift;
+#if X_QT_INTEROP
   module.addStaticInterface<Entity, SBasicPositionInterface>();
   module.addStaticInterface<Property, SBasicColourInterface>();
+#endif
+
   module.addInheritedInterface<Database, Handler>();
-
-
-  Util::addPODInterface<BoolProperty>(module);
-  Util::addPODInterface<IntProperty>(module);
-  Util::addPODInterface<LongIntProperty>(module);
-  Util::addPODInterface<UnsignedIntProperty>(module);
-  Util::addPODInterface<LongUnsignedIntProperty>(module);
-  Util::addPODInterface<FloatProperty>(module);
-  Util::addPODInterface<DoubleProperty>(module);
-  Util::addPODInterface<Vector2DProperty>(module);
-  Util::addPODInterface<Vector3DProperty>(module);
-  Util::addPODInterface<Vector4DProperty>(module);
-  Util::addPODInterface<QuaternionProperty>(module);
-  Util::addPODInterface<ColourProperty>(module);
   }

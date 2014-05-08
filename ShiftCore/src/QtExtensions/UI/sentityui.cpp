@@ -1,5 +1,8 @@
-#include "shift/UI/sentityui.h"
-#include "shift/UI/spropertydefaultui.h"
+#include "shift/QtExtensions/UI/sentityui.h"
+
+#if X_QT_INTEROP
+
+#include "shift/QtExtensions/UI/spropertydefaultui.h"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/scontainer.inl"
@@ -101,3 +104,5 @@ void EntityUI::setUIType(const PropertyInformation *type, int widgetType)
   }
 
 }
+
+#endif

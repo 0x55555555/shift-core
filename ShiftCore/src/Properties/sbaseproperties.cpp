@@ -1,82 +1,10 @@
 #include "shift/Properties/sbaseproperties.h"
-#include "shift/Properties/sbaseproperties.inl"
+#include "shift/Properties/sdata.inl"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/sdatabase.h"
 #include "shift/Serialisation/sattributeio.h"
-
-namespace Shift
-{
-
-namespace detail
-{
-
-void readEscapedQuotedString(QTextStream &s, QString &str)
-  {
-  str.clear();
-
-  while(!s.atEnd())
-    {
-    QChar tempChar;
-    s >> tempChar;
-    if(tempChar == '\\')
-      {
-      s >> tempChar;
-      }
-    else if(tempChar == '"')
-      {
-      break;
-      }
-
-    str.append(tempChar);
-    }
-  }
-
-void writeEscapedQuotedString(QTextStream &s, Eks::String str)
-  {
-  Eks::String::Replacement replacements[] =
-  {
-    { "\\", "\\\\" },
-    { "\"", "\\\"" },
-  };
-
-  xAssertFail(); // test the replace fn.
-  Eks::String escaped;
-  Eks::String::replace(str, &escaped, replacements, X_ARRAY_COUNT(replacements));
-
-  s << "\"" << escaped << "\"";
-  }
-
-}
-}
-
-QTextStream &operator<<(QTextStream &s, xuint8 v)
-  {
-  return s << (xuint32)v;
-  }
-
-QTextStream &operator>>(QTextStream &s, xuint8 &v)
-  {
-  xuint32 t;
-  s >> t;
-  v = (xuint8)t;
-  return s;
-  }
-
-
-SHIFT_EXPORT std::istream &operator>>(std::istream &s, QUuid &v)
-  {
-  std::string str;
-  s >> str;
-  v = QString::fromStdString(str);
-  return s;
-  }
-
-SHIFT_EXPORT std::ostream &operator<<(std::ostream &s, const QUuid &v)
-  {
-  return s << v.toString().toStdString();
-  }
 
 namespace Shift
 {
@@ -147,7 +75,6 @@ IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Vector4D, FullData, 4d)
 IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Quaternion, FullData, quat)
 IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::String, FullData, str)
 IMPLEMENT_POD_SHIFT_PROPERTY_SPECIAL(Eks::Colour, FullData, col)
-IMPLEMENT_POD_SHIFT_PROPERTY(QUuid, FullData)
 
 namespace detail
 {
@@ -704,28 +631,6 @@ void assignTo(const Attribute *f, Data<Eks::String> *to)
     to->assign(sProp->value());
     return;
     }
-  }
-
-void assignTo(const Attribute *f, Data<QUuid> *to)
-  {
-  const Data<QUuid> *sProp = f->castTo<Data<QUuid>>();
-  if(sProp)
-    {
-    to->assign(sProp->value());
-    return;
-    }
-  }
-
-void detail::UuidPropertyInstanceInformation::initiateAttribute(
-    Attribute *propertyToInitiate,
-    AttributeInitialiserHelper *helper) const
-  {
-  Property::EmbeddedInstanceInformation::initiateAttribute(propertyToInitiate, helper);
-
-  NoUpdateBlock b(propertyToInitiate);
-
-  auto obj = propertyToInitiate->uncheckedCastTo<Data<QUuid>>();
-  obj->computeLock() = QUuid::createUuid();
   }
 
 }

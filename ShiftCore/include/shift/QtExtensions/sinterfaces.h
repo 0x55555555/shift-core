@@ -1,8 +1,12 @@
 #ifndef SINTERFACES_H
 #define SINTERFACES_H
 
+#include "shift/sglobal.h"
+
+#if X_QT_INTEROP
+
 #include "Math/XMathVector.h"
-#include "sinterface.h"
+#include "shift/TypeInformation/sinterface.h"
 #include "Math/XColour.h"
 #include "Math/XQuaternion.h"
 #include "Containers/XStringBuffer.h"
@@ -10,6 +14,7 @@
 namespace Shift
 {
 
+#if X_QT_INTEROP
 class PropertyVariantInterface : public StaticInterfaceBase
   {
   S_STATIC_INTERFACE_TYPE(PropertyVariantInterface, PropertyVariantInterface);
@@ -19,6 +24,7 @@ public:
   virtual QVariant asVariant(const Attribute *) const = 0;
   virtual void setVariant(Attribute *, const QVariant &) const = 0;
   };
+#endif
 
 class PropertyPositionInterface : public StaticInterfaceBase
   {
@@ -76,10 +82,10 @@ public:
   virtual Eks::Colour colour(const PropertyInformation *) const;
   };
 
+#if X_QT_INTEROP
 template <typename PROP, typename POD> class PODPropertyVariantInterface : public PropertyVariantInterface
   {
 public:
-#if X_QT_INTEROP
   virtual Eks::String asString(const Attribute *p) const
     {
     Eks::String d;
@@ -97,8 +103,10 @@ public:
     {
     p->uncheckedCastTo<PROP>()->assign(v.value<POD>());
     }
-#endif
   };
+#endif
 }
+
+#endif
 
 #endif // SINTERFACES_H

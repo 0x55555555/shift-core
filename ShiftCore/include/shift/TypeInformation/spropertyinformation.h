@@ -6,12 +6,6 @@
 #include "Utilities/XProperty.h"
 #include "Containers/XUnorderedMap.h"
 
-namespace XScript
-{
-class InterfaceBase;
-template <typename T> class Interface;
-}
-
 namespace Shift
 {
 
@@ -19,6 +13,7 @@ class Property;
 class AttributeLoader;
 class AttributeSaver;
 class ContainerPropertyInformation;
+class InterfaceBaseFactory;
 
 class PropertyInformationCreateData
   {
@@ -27,12 +22,8 @@ public:
       : module(m)
     {
     allocator = a;
-    registerAttributes = false;
-    registerInterfaces = false;
     }
 
-  bool registerAttributes;
-  bool registerInterfaces;
   Eks::AllocatorBase *allocator;
   Module &module;
   };
@@ -72,7 +63,6 @@ class SHIFT_EXPORT PropertyInformation
   {
 public:
   typedef xuint16 DataKey;
-  typedef Eks::UnorderedMap<DataKey, QVariant> DataHash;
   typedef Eks::UnorderedMap<xuint32, InterfaceBaseFactory *> InterfaceHash;
 
   typedef PropertyInformationFunctions Functions;
@@ -107,9 +97,6 @@ XProperties:
   XProperty(xsize, instances, setInstances);
 
   XProperty(EmbeddedPropertyInstanceInformation *, extendedParent, setExtendedParent);
-
-  XProperty(XScript::InterfaceBase *, apiInterface, setApiInterface);
-
 
 public:
   PropertyInformation() { }
@@ -228,7 +215,5 @@ private:
 };
 
 }
-
-Q_DECLARE_METATYPE(const Shift::PropertyInformation*);
 
 #endif // SPROPERTYINFORMATION_H

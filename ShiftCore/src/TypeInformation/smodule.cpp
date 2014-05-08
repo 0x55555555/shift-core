@@ -1,5 +1,6 @@
 #include "shift/TypeInformation/smodule.h"
 #include "shift/TypeInformation/spropertyinformation.h"
+#include "shift/Properties/sattribute.inl"
 
 namespace Shift
 {
@@ -26,7 +27,7 @@ void Module::install(Shift::ModuleBuilder *builder, Eks::AllocatorBase *alloc)
     }
   xForeach(const Module::InterfaceData &fac, interfaces())
     {
-    builder->addInterfaceFactory(fac.type, fac.factory.value());
+    builder->addInterfaceFactory(fac.type, fac.factory.get());
     }
   }
 
@@ -45,7 +46,7 @@ void Module::uninstall(Shift::ModuleBuilder *builder, Eks::AllocatorBase *alloc)
 
   xForeach(const Module::InterfaceData &fac, interfaces())
     {
-    builder->removeInterfaceFactory(fac.type, fac.factory.value());
+    builder->removeInterfaceFactory(fac.type, fac.factory.get());
     }
 
   _interfaces.clear();

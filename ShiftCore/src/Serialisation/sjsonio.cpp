@@ -1,12 +1,13 @@
 #include "shift/Serialisation/sjsonio.h"
+#include "shift/Properties/sattribute.inl"
 #include "shift/sentity.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/Changes/shandler.h"
-#include "QDebug"
 #include "../Serialisation/JsonParser/JSON_parser.h"
 #include "Utilities/XEventLogger.h"
 #include "Utilities/XJsonWriter.h"
+#include <map>
 
 static const char *formatVersion = "2";
 
@@ -160,6 +161,10 @@ JSONSaver::JSONSaver() : _autoWhitespace(false)
   {
   }
 
+JSONSaver::~JSONSaver()
+  {
+  }
+
 void JSONSaver::onBegin(AttributeData *root, bool includeRoot, Eks::AllocatorBase *alloc)
   {
   Saver::onBegin(root, includeRoot, alloc);
@@ -182,7 +187,7 @@ void JSONSaver::onEnd(AttributeData *root)
   Saver::onEnd(root);
   }
 
-void JSONSaver::emitJson(Eks::AllocatorBase *allocator, AttributeData *rootData, QIODevice *dev)
+void JSONSaver::emitJson(Eks::AllocatorBase *allocator, AttributeData *rootData, Eks::String *dev)
   {
   Eks::JSONWriter writer(allocator);
   writer.setNiceFormatting(_data->_writer.niceFormatting());
@@ -232,15 +237,15 @@ void JSONSaver::emitJson(Eks::AllocatorBase *allocator, AttributeData *rootData,
 
   writer.beginObjectElement(DATA_KEY);
 
-  dev->write(writer.string().data(), writer.string().length());
-  dev->write(_data->_writer.string().data());
+  *dev = writer.string();
+  *dev += _data->_writer.string();
   if(_data->_writer.niceFormatting())
     {
-    dev->write("\n}\n");
+    *dev += "\n}\n";
     }
   else
     {
-    dev->write("}");
+    *dev += "}";
     }
 
   writer.endElement();
@@ -874,7 +879,7 @@ JSONLoader::~JSONLoader()
   {
   }
 
-void JSONLoader::load(QIODevice *device, AttributeInterface *ifc)
+void JSONLoader::load(Eks::String *device, AttributeInterface *ifc)
   {
   SProfileFunction
 
@@ -882,14 +887,12 @@ void JSONLoader::load(QIODevice *device, AttributeInterface *ifc)
 
   Eks::UniquePointer<JSONLoaderImpl> impl = alloc.createUnique<JSONLoaderImpl>(&alloc, ifc);
 
-  while(!device->atEnd())
+  xForeach(auto c, *device)
     {
-    char nextChar;
-    device->getChar(&nextChar);
 
-    if(!JSON_parser_char(impl->_jc, nextChar))
+    if(!JSON_parser_char(impl->_jc, c))
       {
-      qWarning() << "JSON_parser_char: syntax error";
+      std::cerr << "JSON_parser_char: syntax error" << std::endl;
       xAssertFail();
       return;
       }

@@ -1,6 +1,7 @@
 #ifndef SCONTAINERINTERNALITERATORS_H
 #define SCONTAINERINTERNALITERATORS_H
 
+#include "Math/XMathHelpers.h"
 #include "shift/Properties/scontainer.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"

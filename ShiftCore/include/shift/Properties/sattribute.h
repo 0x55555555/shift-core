@@ -3,7 +3,6 @@
 
 #include "shift/Properties/spropertymacros.h"
 #include "shift/Utilities/spropertyname.h"
-#include "XInterface.h"
 
 namespace Eks
 {
@@ -99,10 +98,6 @@ public:
 
   const Eks::String &mode() const;
 
-  QVariant value() const;
-  void setValue(const QVariant &);
-  Eks::String valueAsString() const;
-
   // set only works for dynamic properties
   void setName(const NameArg &);
   const Name &name() const;
@@ -174,9 +169,6 @@ public:
   typedef PropertyDataChange DataChange;
   typedef PropertyNameChange NameChange;
 
-  const XScript::InterfaceBase *apiInterface() const;
-  static const XScript::InterfaceBase *staticApiInterface();
-
   Eks::TemporaryAllocatorCore *temporaryAllocator() const;
   Eks::AllocatorBase *persistentBlockAllocator() const;
   Eks::AllocatorBase *generalPurposeAllocator() const;
@@ -204,40 +196,9 @@ private:
   friend class detail::PropertyBaseTraits;
   };
 
-template <typename T> inline const XScript::InterfaceBase *findPropertyInterface(const T* prop)
-  {
-  if(prop)
-    {
-    return prop->apiInterface();
-    }
-  return T::staticApiInterface();
-  }
+#define S_PROPERTY_INTERFACE(name)
 
-#define S_PROPERTY_INTERFACE(name) X_SCRIPTABLE_TYPE_INHERITS(name, Shift::Attribute) \
-  namespace XScript { \
-  template <> inline const InterfaceBase *findInterface<name>(const name *p) { \
-    return Shift::findPropertyInterface<Shift::Attribute>(p); } \
-  namespace Convert { \
-  template <> inline name *castFromBase<name, Shift::Attribute>(Shift::Attribute *ptr) { \
-    return ptr->castTo<name>(); } } }
-
-#define S_PROPERTY_ABSTRACT_INTERFACE(name) X_SCRIPTABLE_ABSTRACT_TYPE_INHERITS(name, Shift::Attribute) \
-  namespace XScript { \
-  template <> inline const InterfaceBase *findInterface<name>(const name *p) { \
-    return Shift::findPropertyInterface<Shift::Attribute>(p); } \
-  namespace Convert { \
-  template <> inline name *castFromBase<name, Shift::Attribute>(Shift::Attribute *ptr) { \
-    return ptr->castTo<name>(); } } }
-}
-
-X_SCRIPTABLE_TYPE(Shift::Attribute)
-
-namespace XScript
-{
-template <> inline const InterfaceBase *findInterface<Shift::Attribute>(const Shift::Attribute* p)
-  {
-  return Shift::findPropertyInterface<Shift::Attribute>(p);
-  }
+#define S_PROPERTY_ABSTRACT_INTERFACE(name)
 }
 
 #endif // SATTRIBUTE_H

@@ -125,6 +125,10 @@ LoadBuilder::LoadBuilder()
   {
   }
 
+LoadBuilder::~LoadBuilder()
+  {
+  }
+
 Eks::UniquePointer<LoadBuilder::LoadBlock> LoadBuilder::beginLoading(Attribute *root, Eks::AllocatorBase *alloc)
   {
   return Eks::Core::globalAllocator()->createUnique<LoadBlock>(this, root, alloc);
@@ -156,8 +160,8 @@ void LoadBuilder::onEnd(AttributeData *)
   auto end = _currentData->resolveLater.end();
   for(; it != end; ++it)
     {
-    auto prop = it.key();
-    auto path = it.value();
+    auto& prop = it->first;
+    auto& path = it->second;
 
     auto input = prop->resolvePath(path);
 
@@ -327,7 +331,7 @@ void LoadBuilder::onValuesComplete(AttributeData *attr, ValueData *)
 
   helper.tempAlloc = attrData->allocator;
   helper.builder = this;
-  helper.data = _currentData.value();
+  helper.data = _currentData.get();
   helper.attributeWrapper = attrData;
 
   const PropertyInformation *info = nullptr;

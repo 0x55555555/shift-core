@@ -1,4 +1,7 @@
-#include "shift/UI/sdebugger.h"
+#include "shift/QtExtensions/UI/sdebugger.h"
+
+#if X_QT_INTEROP
+
 #include "QtWidgets/QToolBar"
 #include "QtWidgets/QVBoxLayout"
 #include "QtWidgets/QGraphicsView"
@@ -400,3 +403,5 @@ void ConnectionItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   }
 
 }
+
+#endif

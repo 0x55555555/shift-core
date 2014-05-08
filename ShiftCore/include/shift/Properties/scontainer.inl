@@ -6,6 +6,25 @@
 namespace Shift
 {
 
+class Container::EditCache
+  {
+XProperties:
+  XROProperty(Container *, container)
+  XROProperty(Database *, database)
+  XROProperty(Eks::AllocatorBase *, allocator)
+
+public:
+  EditCache(Container *c, Eks::AllocatorBase *a);
+  ~EditCache();
+
+  void addChild(Attribute *a);
+  void removeChild(Attribute *a);
+  Attribute *findChild(const Name &n);
+
+private:
+  Eks::UnorderedMap<Name, Attribute *> _childMap;
+  };
+
 template <typename T> const T *Container::firstDynamicChild() const
   {
   return ((Container*)this)->firstDynamicChild<T>();

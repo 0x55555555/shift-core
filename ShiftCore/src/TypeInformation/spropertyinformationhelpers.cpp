@@ -52,7 +52,7 @@ PropertyInformationChildrenCreator::~PropertyInformationChildrenCreator()
 
     const Name &name = inst->name();
 
-    names.insert(name, true);
+    names[name] = true;
 
     auto ref = inst->referenceCount();
     xAssert(ref < std::numeric_limits<xuint8>::max());

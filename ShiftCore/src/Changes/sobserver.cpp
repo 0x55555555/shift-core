@@ -1,5 +1,6 @@
 #include "shift/Changes/sobserver.h"
 #include "shift/sentity.h"
+#include "shift/Properties/sattribute.inl"
 
 namespace Shift
 {
@@ -11,7 +12,7 @@ Observer::Observer()
 
 Observer::~Observer()
   {
-  Q_FOREACH(Entity *ent, _entities)
+  xForeach(Entity *ent, _entities)
     {
     ent->removeObserver(this);
     }

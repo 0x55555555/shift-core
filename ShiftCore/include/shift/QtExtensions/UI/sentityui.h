@@ -2,6 +2,9 @@
 #define SENTITYUI_H
 
 #include "shift/sglobal.h"
+
+#if X_QT_INTEROP
+
 #include "Utilities/XProperty.h"
 #include "Containers/XUnorderedMap.h"
 
@@ -55,5 +58,7 @@ private:
   };
 
 }
+
+#endif
 
 #endif // SENTITYUI_H

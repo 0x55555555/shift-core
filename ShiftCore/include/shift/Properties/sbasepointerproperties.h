@@ -2,7 +2,6 @@
 #define SBASEPOINTERPROPERTIES_H
 
 #include "shift/sdatabase.h"
-#include "shift/TypeInformation/sinterfaces.h"
 #include "shift/TypeInformation/smodule.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/Properties/sarray.h"
@@ -139,66 +138,9 @@ private:
     const Shift::PropertyInformationCreateData &) { }
 
 template <typename T, typename TYPE> void createTypedPointerArray(
-    PropertyInformationTyped<T> *info,
-    const PropertyInformationCreateData &data)
+    PropertyInformationTyped<T> *,
+    const PropertyInformationCreateData &)
   {
-  if(data.registerInterfaces)
-    {
-    typedef typename TYPE::PtrType PtrType;
-
-    class PointerArrayConnectionInterface : public PropertyConnectionInterface
-      {
-    public:
-      virtual void connect(Property *driven, const Property *driver) const
-        {
-        Block b(driven->database());
-
-        T* arr = driven->castTo<T>();
-        xAssert(arr);
-
-        const PtrType* ptr = driver->castTo<PtrType>();
-        if(ptr)
-          {
-          arr->addPointer(ptr);
-          }
-        else
-          {
-          arr->setInput(driver);
-          }
-        }
-      };
-
-    data.module.addStaticInterface<PointerArrayConnectionInterface>(info);
-
-    typedef XScript::MethodToInCa
-        <TypedPointerArray<TYPE>, void (), &T::clear>
-        ClearType;
-
-    typedef XScript::MethodToInCa
-        <TypedPointerArray<TYPE>, TYPE *(const PtrType *), &T::addPointer>
-        AddType;
-
-    typedef XScript::MethodToInCa
-        <TypedPointerArray<TYPE>, bool (const PtrType *), &T::hasPointer>
-        HasType;
-
-    typedef XScript::MethodToInCa
-        <TypedPointerArray<TYPE>, void (const PtrType *), &T::removePointer>
-        RemoveType;
-
-    XScript::InterfaceBase* api = info->apiInterface();;
-
-    XScript::ClassDef<0,0,4> cls = {
-      {
-        api->method<ClearType>("clear"),
-        api->method<AddType>("addPointer"),
-        api->method<HasType>("hasPointer"),
-        api->method<RemoveType>("removePointer"),
-      }
-    };
-
-    api->buildInterface(cls);
-    }
   }
 
 #define S_TYPED_POINTER_ARRAY_TYPE(exportType, name, type) \

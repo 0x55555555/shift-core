@@ -1,11 +1,32 @@
-#ifndef SBASEPROPERTIES_INL
-#define SBASEPROPERTIES_INL
+#ifndef SQTPROPERTIES_H
+#define SQTPROPERTIES_H
 
-#include "shift/TypeInformation/spropertyinstanceinformation.h"
-#include "sdata.inl"
+#include "shift/sglobal.h"
+
+#if X_QT_INTEROP
+
+#include "QtCore/QByteArray"
+#include "QtCore/QUuid"
 
 namespace Shift
 {
+
+SHIFT_EXPORT void assignTo(const Attribute *f, Data<QUuid> *to);
+
+template <> class SHIFT_EXPORT TypedSerialisationValue<QUuid> :  public SerialisationValue
+  {
+public:
+  TypedSerialisationValue(const QUuid *t);
+
+  bool hasUtf8() const X_OVERRIDE { return true; }
+  bool hasBinary() const X_OVERRIDE { return false; }
+
+  Eks::String asUtf8(Eks::AllocatorBase *a) const;
+
+private:
+  const QUuid *_val;
+  };
+
 namespace detail
 {
 class SHIFT_EXPORT UuidPropertyInstanceInformation : public EmbeddedPropertyInstanceInformation
@@ -43,6 +64,11 @@ public:
   };
 }
 
+S_DECLARE_METATYPE(Shift::Data<QUuid>, "Uuid");
+
+
 }
 
-#endif // SBASEPROPERTIES_INL
+#endif
+
+#endif // SQTPROPERTIES_H

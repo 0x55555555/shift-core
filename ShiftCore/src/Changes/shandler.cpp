@@ -1,5 +1,6 @@
 #include "shift/Changes/shandler.h"
 #include "shift/sdatabase.h"
+#include "shift/Properties/sattribute.inl"
 
 namespace Shift
 {
@@ -20,7 +21,7 @@ Handler::~Handler()
 
 void Handler::clearChanges()
   {
-  Q_FOREACH(Change *ch, _done)
+  xForeach(Change *ch, _done)
     {
     changeAllocator()->destroy(ch);
     }
@@ -109,7 +110,7 @@ void Handler::undoTo(xsize p)
 void Handler::inform()
   {
   SProfileFunction
-  Q_FOREACH(Observer *obs, _blockObservers)
+  xForeach(Observer *obs, _blockObservers)
     {
     obs->actOnChanges();
     }

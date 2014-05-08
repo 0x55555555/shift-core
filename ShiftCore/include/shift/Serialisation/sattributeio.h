@@ -150,21 +150,6 @@ Eks::String TypedSerialisationValue<T>::asUtf8(Eks::AllocatorBase* a) const
   return ret;
   }
 
-template <> class SHIFT_EXPORT TypedSerialisationValue<QUuid> :  public SerialisationValue
-  {
-public:
-  TypedSerialisationValue(const QUuid *t);
-
-  bool hasUtf8() const X_OVERRIDE { return true; }
-  bool hasBinary() const X_OVERRIDE { return false; }
-
-  Eks::String asUtf8(Eks::AllocatorBase *a) const;
-
-private:
-  const QUuid *_val;
-  };
-
-
 }
 
 #endif // SATTRIBUTEIO_H

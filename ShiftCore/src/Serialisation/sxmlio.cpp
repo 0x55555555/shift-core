@@ -1,5 +1,6 @@
-#include "shift/Serialisation//sxmlio.h"
+#include "shift/Serialisation/sxmlio.h"
 #include "shift/sentity.h"
+#include "shift/Properties/sattribute.inl"
 #include "shift/TypeInformation/styperegistry.h"
 #include "shift/TypeInformation/spropertyinformation.h"
 

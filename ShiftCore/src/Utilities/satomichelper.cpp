@@ -1,7 +1,6 @@
 #include "shift/Utilities/satomichelper.h"
 #include "Memory/XResourceDescription.h"
 #include "Utilities/XAssert.h"
-#include "QtGlobal"
 
 #if defined(X_MSVC)
 # include "Windows.h"

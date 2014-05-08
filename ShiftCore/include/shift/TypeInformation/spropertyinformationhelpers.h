@@ -9,8 +9,6 @@
 #include "shift/Properties/scontainer.h"
 #include "shift/Properties/sattribute.inl"
 #include "shift/Utilities/sresourcedescription.h"
-#include "shift/Serialisation/sattributeio.h"
-#include "XInterface.h"
 #include "Memory/XTemporaryAllocator.h"
 
 namespace Shift
@@ -52,45 +50,6 @@ template <typename PropType> void checkType()
   typedef std::is_base_of<typename PropType::ParentType, PropType> Inherits;
   xCompileTimeAssert(Inherits::value == true);
   }
-
-template <typename PropType, bool HasMetaType=QMetaTypeId2<PropType*>::Defined != 0> struct ApiHelper
-  {
-
-  };
-
-template <typename PropType> struct ApiHelper<PropType, true>
-  {
-public:
-  static void create(PropertyInformation *info)
-    {
-    const XScript::Interface<typename PropType::ParentType> *parentTempl =
-        static_cast<XScript::Interface<typename PropType::ParentType>*>(PropType::ParentType::staticTypeInformation()->apiInterface());
-    const XScript::Interface<Attribute> *baseTempl =
-        static_cast<XScript::Interface<Attribute>*>(Attribute::staticTypeInformation()->apiInterface());
-
-    XScript::Interface<PropType> *templ = XScript::Interface<PropType>::createWithParent(info->typeName(), parentTempl, baseTempl);
-    info->setApiInterface(templ);
-    }
-  };
-
-template <typename PropType> struct ApiHelper<PropType, false>
-  {
-public:
-  static void create(PropertyInformation *info)
-    {
-    info->setApiInterface(PropType::ParentType::staticTypeInformation()->apiInterface());
-    }
-  };
-
-template <> struct ApiHelper<Attribute, true>
-  {
-public:
-  static void create(PropertyInformation *info)
-    {
-    XScript::Interface<Attribute> *templ = XScript::Interface<Attribute>::create(info->typeName().data());
-    info->setApiInterface(templ);
-    }
-  };
 
 template <typename T, void FUNC( const PropertyInstanceInformation *, T * )> struct ComputeHelper
   {
@@ -435,16 +394,6 @@ public:
     return PropertyInformationChildrenCreatorTyped<PropType>(this, d);
     }
 
-  XScript::Interface<PropType> *apiInterface()
-    {
-    return static_cast<XScript::Interface<PropType>*>(PropertyInformation::apiInterface());
-    }
-
-  const XScript::Interface<PropType> *apiInterface() const
-    {
-    return static_cast<const XScript::Interface<PropType>*>(PropertyInformation::apiInterface());
-    }
-
   static PropertyInformation *createTypeInformation(
       Module &module,
       const char *name,
@@ -544,11 +493,7 @@ private:
 
     info->setInstances(0);
 
-    detail::ApiHelper<PropType>::create(info);
-
     PropertyInformationCreateData data(module, allocator);
-    data.registerAttributes = true;
-    data.registerInterfaces = true;
     PropType::createTypeInformation(info, data);
     }
   };
@@ -612,27 +557,5 @@ inline PropertyAffectsWalker<const Property, const Container> EmbeddedPropertyIn
 }
 
 #undef S_CHILD_CHECK
-
-namespace XScript
-{
-namespace Convert
-{
-namespace internal
-{
-template <> struct SHIFT_EXPORT JSToNative<Shift::PropertyInformation>
-  {
-  typedef const Shift::PropertyInformation *ResultType;
-
-  ResultType operator()(Value const &h) const;
-  };
-
-template <> struct SHIFT_EXPORT NativeToJS<Shift::PropertyInformation>
-  {
-  Value operator()(const Shift::PropertyInformation *x) const;
-  Value operator()(const Shift::PropertyInformation &x) const;
-  };
-}
-}
-}
 
 #endif // SPROPERTYINFORMATIONAPIUTILITIES_H

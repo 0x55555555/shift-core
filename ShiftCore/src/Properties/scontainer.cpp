@@ -29,53 +29,40 @@ xuint32 getIndex(const Attribute* attr)
   }
 }
 
-class Container::EditCache
+Container::EditCache::EditCache(Container *c, Eks::AllocatorBase *a)
+    : _container(c),
+      _database(c->database()),
+      _allocator(a),
+      _childMap(a)
   {
-XProperties:
-  XROProperty(Container *, container)
-  XROProperty(Database *, database)
-  XROProperty(Eks::AllocatorBase *, allocator)
-
-public:
-  EditCache(Container *c, Eks::AllocatorBase *a)
-      : _container(c),
-        _database(c->database()),
-        _allocator(a),
-        _childMap(a)
+  _database->addEditCache(_container, this);
+  xForeach(auto p, LightWalker(c))
     {
-    _database->addEditCache(_container, this);
-    xForeach(auto p, LightWalker(c))
-      {
-      addChild(p);
-      }
+    addChild(p);
     }
+  }
 
-  ~EditCache()
-    {
-    _database->removeEditCache(_container);
-    }
+Container::EditCache::~EditCache()
+  {
+  _database->removeEditCache(_container);
+  }
 
-  void addChild(Attribute *a)
-    {
-    xAssert(!_childMap.contains(a->name()));
-    _childMap[a->name()] = a;
-    }
+void Container::EditCache::addChild(Attribute *a)
+  {
+  xAssert(!_childMap.contains(a->name()));
+  _childMap[a->name()] = a;
+  }
 
-  void removeChild(Attribute *a)
-    {
-    xAssert(_childMap.contains(a->name()));
-    _childMap.remove(a->name());
-    }
+void Container::EditCache::removeChild(Attribute *a)
+  {
+  xAssert(_childMap.contains(a->name()));
+  _childMap.erase(a->name());
+  }
 
-  Attribute *findChild(const Name &n)
-    {
-    return _childMap.value(n, nullptr);
-    }
-
-private:
-  Eks::UnorderedMap<Name, Attribute *> _childMap;
-  };
-
+Attribute *Container::EditCache::findChild(const Name &n)
+  {
+  return _childMap.value(n, nullptr);
+  }
 
 void disconnectHelper(Attribute *a)
   {
@@ -91,27 +78,9 @@ void disconnectHelper(Attribute *a)
 
 S_IMPLEMENT_PROPERTY(Container, Shift)
 
-void Container::createTypeInformation(PropertyInformationTyped<Container> *info,
-                                               const PropertyInformationCreateData &data)
+void Container::createTypeInformation(PropertyInformationTyped<Container> *,
+                                               const PropertyInformationCreateData &)
   {
-  if(data.registerInterfaces)
-    {
-    auto *api = info->apiInterface();
-
-    //typedef XScript::XMethodToIndexedGetter<PropertyContainer, Property *(xsize i), &PropertyContainer::at> Getter;
-    //api->XInterfaceBase::setIndexAccessor(Getter::Get, Getter::GetDart);
-
-    //XInterfaceBase::NamedGetter namedGetter = XScript::XMethodToNamedGetter<PropertyContainer, Property *(const QString &n), &PropertyContainer::findChild>::Get;
-    //api->XInterfaceBase::setNamedAccessor(namedGetter);
-
-    static XScript::ClassDef<0,1,0> cls = {
-      {
-      api->property<xsize, &Container::size>("length")
-      }
-    };
-
-    api->buildInterface(cls);
-    }
   }
 
 Container::Container()
@@ -273,7 +242,7 @@ bool Container::makeUniqueName(
     return false;
     }
 
-  bool nameUnique = !name.isEmpty() && internalFindChild(name) == false;
+  bool nameUnique = !name.isEmpty() && internalFindChild(name) == nullptr;
   if(nameUnique)
     {
     name.toName(newName);

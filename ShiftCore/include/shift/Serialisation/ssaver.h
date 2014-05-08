@@ -1,6 +1,7 @@
 #ifndef SSAVER_H
 #define SSAVER_H
 
+#include "Memory/XUniquePointer.h"
 #include "shift/sglobal.h"
 #include "shift/Serialisation/sattributeinterface.h"
 #include "shift/Serialisation/sioblock.h"
@@ -17,10 +18,10 @@ public:
   class WriteBlock : private IOBlock
     {
   XProperties:
-    XROProperty(QIODevice *, device);
+    XROProperty(Eks::String *, device);
 
   public:
-    WriteBlock(Saver *w, QIODevice *device);
+    WriteBlock(Saver *w, Eks::String *device);
 
   private:
     friend class Saver;
@@ -29,9 +30,9 @@ public:
   Saver();
 
   /// \brief Begin writing to [device].
-  Eks::UniquePointer<WriteBlock> beginWriting(QIODevice *device);
+  Eks::UniquePointer<WriteBlock> beginWriting(Eks::String *device);
 
-  QIODevice *activeDevice();
+  Eks::String *activeDevice();
 
   void onBegin(AttributeData *block, bool includeRoot, Eks::AllocatorBase *alloc) X_OVERRIDE;
   void onEnd(AttributeData *block) X_OVERRIDE;

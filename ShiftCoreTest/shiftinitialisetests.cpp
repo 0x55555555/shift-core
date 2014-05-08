@@ -1,8 +1,9 @@
 #include "shifttest.h"
 #include "shift/Properties/sdata.inl"
-#include "shift/Properties/sbaseproperties.inl"
 #include "shift/Properties/scontaineriterators.h"
 #include <memory>
+
+#define X_QT_INTEROP_TEST 0
 
 // THIS SHOULD FAIL TO COMPILE IF ADDED
 #define TEST_FAILING_TO_EMBED_DYNAMICx
@@ -27,7 +28,9 @@ public:
 
   enum { StaticChildMode = Entity::StaticChildMode | Shift::AllowExtraChildren };
 
+#if X_QT_INTEROP_TEST
   Shift::Data<QUuid> uuid;
+#endif
   Shift::Data<float> number;
   Shift::Data<Eks::String> pork;
   };
@@ -59,20 +62,19 @@ void TestDataEntity::createTypeInformation(
     Shift::PropertyInformationTyped<TestDataEntity> *info,
     const Shift::PropertyInformationCreateData &data)
   {
-  if(data.registerAttributes)
-    {
-    auto childBlock = info->createChildrenBlock(data);
+  auto childBlock = info->createChildrenBlock(data);
 
-    childBlock.add(&TestDataEntity::uuid, "uuid");
+#if X_QT_INTEROP_TEST
+  childBlock.add(&TestDataEntity::uuid, "uuid");
+#endif
 
-    childBlock.add<Shift::Set>("dynamicArray");
+  childBlock.add<Shift::Set>("dynamicArray");
 
-    auto num = childBlock.add(&TestDataEntity::number, "number");
-    num->setDefaultValue(300);
+  auto num = childBlock.add(&TestDataEntity::number, "number");
+  num->setDefaultValue(300);
 
-    auto pork = childBlock.add(&TestDataEntity::pork, "pork");
-    pork->setDefaultValue("testTest");
-    }
+  auto pork = childBlock.add(&TestDataEntity::pork, "pork");
+  pork->setDefaultValue("testTest");
   }
 
 S_IMPLEMENT_PROPERTY(TestEmbeddingEntity, Test)
@@ -81,18 +83,15 @@ void TestEmbeddingEntity::createTypeInformation(
     Shift::PropertyInformationTyped<TestEmbeddingEntity> *info,
     const Shift::PropertyInformationCreateData &data)
   {
-  if(data.registerAttributes)
-    {
-    auto childBlock = info->createChildrenBlock(data);
+  auto childBlock = info->createChildrenBlock(data);
 
 #ifdef TEST_FAILING_TO_EMBED_DYNAMIC
-    childBlock.add(&TestEmbeddingEntity::ent, "ent");
+  childBlock.add(&TestEmbeddingEntity::ent, "ent");
 #endif
 
-    childBlock.add<TestDataEntity>("extra");
-    childBlock.add<TestDataEntity>("extra1");
-    childBlock.add<TestDataEntity>("extra2");
-    }
+  childBlock.add<TestDataEntity>("extra");
+  childBlock.add<TestDataEntity>("extra1");
+  childBlock.add<TestDataEntity>("extra2");
   }
 
 S_IMPLEMENT_PROPERTY(TestEmbeddingEmbedderEntity, Test)
@@ -101,15 +100,12 @@ void TestEmbeddingEmbedderEntity::createTypeInformation(
     Shift::PropertyInformationTyped<TestEmbeddingEmbedderEntity> *info,
     const Shift::PropertyInformationCreateData &data)
   {
-  if(data.registerAttributes)
-    {
-    auto childBlock = info->createChildrenBlock(data);
+  auto childBlock = info->createChildrenBlock(data);
 
-    auto a = childBlock.add<TestEmbeddingEntity>("extra");
-    childBlock.add<TestEmbeddingEntity>("extra1");
-    auto b = childBlock.add<TestEmbeddingEntity>("extra2");
-    b->setDefaultInput(a);
-    }
+  auto a = childBlock.add<TestEmbeddingEntity>("extra");
+  childBlock.add<TestEmbeddingEntity>("extra1");
+  auto b = childBlock.add<TestEmbeddingEntity>("extra2");
+  b->setDefaultInput(a);
   }
 
 void ShiftCoreTest::initialiseTest()
@@ -118,13 +114,15 @@ void ShiftCoreTest::initialiseTest()
 
   auto ent = db.addChild<TestDataEntity>();
 
+#if X_QT_INTEROP_TEST
   QVERIFY(ent->uuid() != QUuid());
+#endif
   QCOMPARE(ent->number(), 300);
   QCOMPARE(ent->pork(), "testTest");
 
   auto testDataInfo = TestDataEntity::staticTypeInformation();
   auto testEmbeddedInfo = TestEmbeddingEntity::staticTypeInformation();
-  QCOMPARE(testDataInfo->propertyDataOffset(), xMax(sizeof(TestSized2), sizeof(void*)));
+  QCOMPARE(testDataInfo->propertyDataOffset(), std::max(sizeof(TestSized2), sizeof(void*)));
   QCOMPARE(testEmbeddedInfo->propertyDataOffset(), sizeof(TestSized));
 
   auto emb = db.addChild<TestEmbeddingEntity>();

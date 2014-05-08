@@ -15,7 +15,7 @@ class ValueBlock;
 //----------------------------------------------------------------------------------------------------------------------
 // Saver::WriteBlock Impl
 //----------------------------------------------------------------------------------------------------------------------
-Saver::WriteBlock::WriteBlock(Saver* w, QIODevice *device)
+Saver::WriteBlock::WriteBlock(Saver* w, Eks::String *device)
     : IOBlock(w),
       _device(device)
   {
@@ -28,12 +28,12 @@ Saver::Saver()
   {
   }
 
-Eks::UniquePointer<Saver::WriteBlock> Saver::beginWriting(QIODevice *device)
+Eks::UniquePointer<Saver::WriteBlock> Saver::beginWriting(Eks::String *device)
   {
   return Eks::Core::globalAllocator()->createUnique<WriteBlock>(this, device);
   }
 
-QIODevice *Saver::activeDevice()
+Eks::String *Saver::activeDevice()
   {
   return static_cast<Saver::WriteBlock*>(activeBlock())->device();
   }
@@ -54,7 +54,7 @@ void SaveBuilder::save(const Attribute *attr, bool includeRoot, AttributeInterfa
 
   auto block = receiver->begin(includeRoot, attr->typeInformation(), attr->isDynamic(), &alloc);
 
-  visitAttribute(!includeRoot, attr, block.value(), &alloc);
+  visitAttribute(!includeRoot, attr, block.get(), &alloc);
   }
 
 void SaveBuilder::visitAttribute(bool topLevel, const Attribute *attr, Saver::AttributeBlock *data, Eks::AllocatorBase *alloc)
@@ -87,7 +87,7 @@ void SaveBuilder::visitValues(const Attribute *attr, Saver::AttributeBlock *data
     Saver::ValueBlock *block;
     } helper;
 
-  helper.block = dataAttrs.value();
+  helper.block = dataAttrs.get();
 
   info->functions().save(attr, helper);
   }
@@ -129,7 +129,7 @@ void SaveBuilder::visitChildren(bool topLevel, const Attribute *attr, Saver::Att
 
         auto childData = children->addChild(child->name(), child->typeInformation(), topLevel || child->isDynamic(), &alloc);
 
-        visitAttribute(false, child, childData.value(), &alloc);
+        visitAttribute(false, child, childData.get(), &alloc);
         }
       }
     }

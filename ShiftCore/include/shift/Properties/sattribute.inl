@@ -1,6 +1,7 @@
 #ifndef SPROPERTY_INL
 #define SPROPERTY_INL
 
+#include "Math/XMathHelpers.h"
 #include "shift/Properties/sproperty.h"
 #include "shift/TypeInformation/spropertyinstanceinformation.h"
 #include "shift/TypeInformation/spropertyinformation.h"

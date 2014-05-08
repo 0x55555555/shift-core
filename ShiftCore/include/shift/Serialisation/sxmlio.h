@@ -1,6 +1,8 @@
 #ifndef SXMLIO_H
 #define SXMLIO_H
 
+#if 0
+
 #include "QBuffer"
 #include "sloader.h"
 #include "QXmlStreamWriter"
@@ -75,5 +77,7 @@ private:
   };
 */
 }
+
+#endif
 
 #endif // SXMLIO_H

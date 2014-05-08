@@ -78,7 +78,7 @@ public:
     }
 
   /// \brief Get the user data for the block.
-  T *user() { return _user.value(); }
+  T *user() { return _user.get(); }
   /// \brief Get the owning attribute block.
   AttributeInterface::AttributeBlock *owner() { return _owner; }
 
@@ -152,7 +152,7 @@ public:
 
   bool isRoot() const { return _parent == nullptr; }
 
-  AttributeInterface::AttributeData *user() { return _user.value(); }
+  AttributeInterface::AttributeData *user() { return _user.get(); }
 
 protected:
   void setRoot(AttributeInterface *data);

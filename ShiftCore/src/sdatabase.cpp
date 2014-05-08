@@ -6,18 +6,10 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Properties/scontaineriterators.h"
 #include "shift/Properties/scontainer.inl"
-#include "shift/Serialisation/sjsonio.h"
-#include "xqtwrappers.h"
-#include "XConvertScriptSTL.h"
-#include "QFile"
-#include "QRegExp"
-#include "QDebug"
 
 #ifdef X_DEBUG
 # include "Memory/XLoggingAllocator.h"
 #endif
-
-Q_DECLARE_METATYPE(Eks::Vector<Shift::Attribute *>)
 
 #ifdef S_DEBUGGER
 # include "shift/UI/sdebugger.h"
@@ -68,10 +60,7 @@ S_IMPLEMENT_PROPERTY(Database, Shift)
 void Database::createTypeInformation(PropertyInformationTyped<Database> *info,
                                       const PropertyInformationCreateData &data)
   {
-  if(data.registerAttributes)
-    {
-    auto childBlock = info->createChildrenBlock(data);
-    }
+  auto childBlock = info->createChildrenBlock(data);
   }
 
 Database::Database()
@@ -236,7 +225,7 @@ void Database::addEditCache(Container *c, EditCache *e)
 void Database::removeEditCache(Container *c)
   {
   xAssert(_editCaches.contains(c));
-  _editCaches.remove(c);
+  _editCaches.erase(c);
 
   if(_lastEditCache.first == c)
     {

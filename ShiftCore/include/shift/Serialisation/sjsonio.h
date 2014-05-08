@@ -1,12 +1,9 @@
 #ifndef SJSONIO_H
 #define SJSONIO_H
 
-#include "QBuffer"
 #include "sloader.h"
 #include "shift/Serialisation/ssaver.h"
 #include "shift/Serialisation/sattributeinterface.h"
-#include "QXmlStreamWriter"
-#include "QXmlStreamReader"
 #include "Memory/XUniquePointer.h"
 #include "Memory/XTemporaryAllocator.h"
 #include "Containers/XUnorderedMap.h"
@@ -21,9 +18,10 @@ XProperties:
 
 public:
   JSONSaver();
+  ~JSONSaver();
 
 private:
-  void emitJson(Eks::AllocatorBase *alloc, AttributeData *root, QIODevice *dev);
+  void emitJson(Eks::AllocatorBase *alloc, AttributeData *root, Eks::String *dev);
   void addSavedType(const PropertyInformation *info, bool dynamic) X_OVERRIDE;
   const SerialisationSymbol &modeSymbol() X_OVERRIDE;
   const SerialisationSymbol &inputSymbol() X_OVERRIDE;
@@ -55,7 +53,7 @@ public:
   JSONLoader();
   ~JSONLoader();
 
-  void load(QIODevice *device, AttributeInterface *parent);
+  void load(Eks::String *device, AttributeInterface *parent);
   };
 
 }

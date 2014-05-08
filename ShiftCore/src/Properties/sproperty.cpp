@@ -8,9 +8,8 @@
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Properties/scontainer.inl"
 #include "shift/Utilities/satomichelper.h"
-#include "XConvertScriptSTL.h"
 #include "Containers/XIntrusiveLinkedList.h"
-#include <QtConcurrent/QtConcurrentRun>
+#include <future>
 
 namespace Shift
 {
@@ -19,29 +18,9 @@ S_IMPLEMENT_PROPERTY(Property, Shift)
 
 #define OutputLL Eks::IntrusiveLinkedListMember<Property, &Property::_nextOutput>
 
-void Property::createTypeInformation(PropertyInformationTyped<Property> *info,
-                                      const PropertyInformationCreateData &data)
+void Property::createTypeInformation(PropertyInformationTyped<Property> *,
+                                      const PropertyInformationCreateData &)
   {
-  if(data.registerInterfaces)
-    {
-    auto *api = info->apiInterface();
-
-    typedef XScript::XMethodToGetter<Property, Eks::Vector<Property*> (), &Property::affects> AffectsGetter;
-
-    static XScript::ClassDef<0,3,0> cls = {
-      {
-        api->property<Property *, const Property *, &Property::input, &Property::setInput>("input"),
-
-        api->property<Property *, &Property::output>("firstOutput"),
-        api->property<Property *, &Property::nextOutput>("nextOutput"),
-
-            // fix later? Maybe?
-//        api->property<AffectsGetter>("affects")
-      }
-    };
-
-    api->buildInterface(cls);
-    }
   }
 
 void Property::setDependantsDirty()
@@ -168,7 +147,7 @@ void Property::connect(const Eks::Vector<Property*> &l) const
   if(l.size())
     {
     Block b(l.front()->handler());
-    Q_FOREACH(Property *p, l)
+    xForeach(Property *p, l)
       {
       connect(p);
       }
@@ -459,7 +438,7 @@ void Property::concurrentPreGet() const
     updateParent();
     }
 
-  QtConcurrent::run(this, &Property::concurrentUpdate);
+  std::async(std::launch::async, [this]() { concurrentUpdate(); });
   }
 
 NoUpdateBlock::NoUpdateBlock(Attribute *p) : _prop(p->castTo<Property>())

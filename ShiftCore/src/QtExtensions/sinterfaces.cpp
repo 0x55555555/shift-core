@@ -1,4 +1,7 @@
-#include "shift/TypeInformation/sinterfaces.h"
+#include "shift/QtExtensions/sinterfaces.h"
+
+#if X_QT_INTEROP
+
 #include "shift/TypeInformation/spropertyinformation.h"
 #include "shift/Properties/sbaseproperties.h"
 #include "shift/Properties/sbasepointerproperties.h"
@@ -109,3 +112,5 @@ Eks::Colour SBasicColourInterface::colour(const PropertyInformation *t) const
   }
 
 }
+
+#endif

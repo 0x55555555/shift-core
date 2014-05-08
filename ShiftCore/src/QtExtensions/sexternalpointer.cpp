@@ -1,9 +1,12 @@
-#include "shift/Properties/sexternalpointer.h"
+#include "shift/QtExtensions/sexternalpointer.h"
+
+#if X_QT_INTEROP
+
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Serialisation/sattributeio.h"
 #include "shift/Properties/sdata.inl"
-#include "shift/Properties/sbaseproperties.inl"
 #include "Utilities/XOptional.h"
+
 
 namespace Shift
 {
@@ -118,3 +121,5 @@ void UuidEntity::createTypeInformation(PropertyInformationTyped<UuidEntity> *inf
     }
   }
 }
+
+#endif

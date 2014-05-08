@@ -1,5 +1,6 @@
 #include "shift/Serialisation/sattributeinterface.h"
 #include "shift/TypeInformation/spropertyinformation.h"
+#include "shift/Properties/sattribute.inl"
 
 
 namespace Shift

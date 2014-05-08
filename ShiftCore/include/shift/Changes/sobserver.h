@@ -47,8 +47,4 @@ public:
 
 }
 
-X_SCRIPTABLE_TYPE(Shift::TreeObserver);
-X_SCRIPTABLE_TYPE(Shift::DirtyObserver);
-X_SCRIPTABLE_TYPE(Shift::ConnectionObserver);
-
 #endif // SOBSERVER_H

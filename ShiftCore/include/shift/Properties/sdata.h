@@ -1,6 +1,7 @@
 #ifndef SDATA_H
 #define SDATA_H
 
+#include "Utilities/XTemplateHelpers.h"
 #include "shift/Properties/sproperty.h"
 
 namespace Shift

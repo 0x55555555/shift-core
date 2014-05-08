@@ -5,19 +5,15 @@
 TARGET = ShiftCore
 TEMPLATE = lib
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT -= core gui
 
 include("../../Eks/EksCore/GeneralOptions.pri")
 
 INCLUDEPATH += $$ROOT/Shift/ShiftCore/include \
     $$ROOT/Shift/ShiftCore/src \
-    $$ROOT/Eks/EksCore/include \
-    $$ROOT/Eks/EksGui/include \
-    $$ROOT/Eks/EksScript
+    $$ROOT/Eks/EksCore/include
 
-LIBS += -lEksCore \
-    -lEksGui \
-    -lEksScript
+LIBS += -lEksCore
 
 SOURCES += \
     src/sentity.cpp \
@@ -26,17 +22,16 @@ SOURCES += \
     src/Properties/sbaseproperties.cpp \
     src/Properties/sbasepointerproperties.cpp \
     src/Properties/sattribute.cpp \
-    src/Properties/sexternalpointer.cpp \
+    src/QtExtensions/sexternalpointer.cpp \
     src/Changes/sobserver.cpp \
     src/Changes/shandler.cpp \
-    src/UI/sentityui.cpp \
-    src/UI/sdatabasemodel.cpp \
+    src/QtExtensions/UI/sentityui.cpp \
+    src/QtExtensions/UI/sdatabasemodel.cpp \
     src/Utilities/sprocessmanager.cpp \
     src/Utilities/sresourcedescription.cpp \
     src/TypeInformation/spropertyinformation.cpp \
     src/TypeInformation/styperegistry.cpp \
-    src/TypeInformation/sinterfaces.cpp \
-    src/TypeInformation/spropertygroup.cpp \
+    src/QtExtensions/sinterfaces.cpp \
     src/TypeInformation/spropertyinstanceinformation.cpp \
     src/TypeInformation/spropertytraits.cpp \
     src/Serialisation/JsonParser/JSON_parser.c \
@@ -46,7 +41,7 @@ SOURCES += \
     src/Serialisation/sloader.cpp \
     src/Utilities/spropertyname.cpp \
     src/TypeInformation/spropertyinformationhelpers.cpp \
-    src/UI/sdebugger.cpp \
+    src/QtExtensions/UI/sdebugger.cpp \
     src/Utilities/satomichelper.cpp \
     src/Changes/spropertychanges.cpp \
     src/Properties/scontainer.cpp \
@@ -56,7 +51,9 @@ SOURCES += \
     src/Serialisation/sattributeio.cpp \
     src/Utilities/smetatype.cpp \
     src/Serialisation/sattributeinterface.cpp \
-    src/Serialisation/sioblock.cpp
+    src/Serialisation/sioblock.cpp \
+    src/QtExtensions/sqtproperties.cpp \
+    src/TypeInformation/smodule.cpp
 
 HEADERS += \
     include/shift/sglobal.h \
@@ -64,10 +61,9 @@ HEADERS += \
     include/shift/sdatabase.h \
     include/shift/Properties/sproperty.h \
     include/shift/Properties/sbaseproperties.h \
-    include/shift/Properties/sbaseproperties.inl \
     include/shift/Properties/sbasepointerproperties.h \
     include/shift/Properties/spropertymacros.h \
-    include/shift/Properties/sexternalpointer.h \
+    include/shift/QtExtensions/sexternalpointer.h \
     include/shift/Changes/schange.h \
     include/shift/Changes/sobserver.h \
     include/shift/Changes/shandler.h \
@@ -83,18 +79,17 @@ HEADERS += \
     include/shift/TypeInformation/sinterface.h \
     include/shift/TypeInformation/spropertyinformation.h \
     include/shift/TypeInformation/spropertyinstanceinformation.h \
-    include/shift/TypeInformation/sinterfaces.h \
+    include/shift/QtExtensions/sinterfaces.h \
     include/shift/TypeInformation/spropertyinformationhelpers.h \
-    include/shift/TypeInformation/spropertygroup.h \
     include/shift/Utilities/sentityweakpointer.h \
     include/shift/Utilities/sprocessmanager.h \
     include/shift/Utilities/siterator.h \
     include/shift/Utilities/sresourcedescription.h \
     include/shift/Utilities/spropertyname.h \
     include/shift/TypeInformation/spropertytraits.h \
-    include/shift/UI/spropertydefaultui.h \
-    include/shift/UI/sdatabasemodel.h \
-    include/shift/UI/sdebugger.h \
+    include/shift/QtExtensions/UI/spropertydefaultui.h \
+    include/shift/QtExtensions/UI/sdatabasemodel.h \
+    include/shift/QtExtensions/UI/sdebugger.h \
     include/shift/Utilities/satomichelper.h \
     include/shift/Properties/sattribute.h \
     include/shift/Properties/sattribute.inl \
@@ -110,7 +105,9 @@ HEADERS += \
     include/shift/Serialisation/sattributeio.h \
     include/shift/Utilities/smetatype.h \
     include/shift/Serialisation/sattributeinterface.h \
-    include/shift/Serialisation/sioblock.h
+    include/shift/Serialisation/sioblock.h \
+    include/shift/QtExtensions/sqtproperties.h \
+    include/shift/TypeInformation/smodule.h
 
 
 

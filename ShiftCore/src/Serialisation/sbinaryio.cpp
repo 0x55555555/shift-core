@@ -1,7 +1,7 @@
 #include "shift/Serialisation/sbinaryio.h"
+#include "shift/Properties/sattribute.inl"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
-#include "QIODevice"
 
 namespace Shift
 {

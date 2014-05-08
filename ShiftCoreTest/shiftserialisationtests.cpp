@@ -242,9 +242,12 @@ void ShiftCoreTest::serialisationJsonTest()
   QBENCHMARK {
     buffer.setData(QByteArray());
     buffer.open(QIODevice::ReadWrite);
-    auto block = writer.beginWriting(&buffer);
+
+    Eks::String data;
+    auto block = writer.beginWriting(&data);
 
     builder.save(rootA, false, &writer);
+    buffer.write(data.data(), data.size());
     buffer.close();
   }
 
@@ -282,13 +285,14 @@ void ShiftCoreTest::deserialisationJsonTest()
 
     QFile toLoad(":/Serialisation/SerialisationTest.json");
     QCOMPARE(true, toLoad.open(QFile::ReadOnly));
+    Eks::String data = toLoad.readAll().data();
 
     Shift::LoadBuilder builder;
     Eks::TemporaryAllocator alloc(rootB->temporaryAllocator());
     auto loading = builder.beginLoading(rootB, &alloc);
 
     Shift::JSONLoader loader;
-    loader.load(&toLoad, &builder);
+    loader.load(&data, &builder);
   }
 
   QCOMPARE(checkHierarchies(rootA, rootB, false), 30U);

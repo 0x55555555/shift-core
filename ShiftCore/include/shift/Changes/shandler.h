@@ -3,7 +3,7 @@
 
 #include "shift/sglobal.h"
 #include "shift/TypeInformation/sinterface.h"
-#include "QtCore/QMutex"
+#include <mutex>
 
 namespace Eks
 {
@@ -66,7 +66,7 @@ private:
 
   void inform();
   Eks::Vector<Observer *> _blockObservers;
-  QMutex _doChange;
+  std::mutex _doChange;
 
   Eks::Vector <Change*> _done;
   Eks::Vector <xsize> _blockSize;

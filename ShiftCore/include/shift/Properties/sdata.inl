@@ -7,6 +7,7 @@
 #include "shift/Changes/spropertychanges.h"
 #include "shift/Changes/shandler.inl"
 #include "shift/TypeInformation/spropertytraits.h"
+#include "shift/Serialisation/sattributeio.h"
 
 #if X_ASSERTS_ENABLED
 #include "shift/sdatabase.h"

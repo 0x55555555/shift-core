@@ -19,17 +19,7 @@ template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&...
     }
   else
     {
-#if X_ASSERTS_ENABLED
-    if(_doChange.tryLock())
-      {
-      _doChange.unlock();
-      }
-    else
-      {
-      xAssertFail();
-      }
-#endif
-    QMutexLocker l(&_doChange);
+    std::lock_guard<std::mutex> l(_doChange);
     void *mem = changeAllocator()->alloc(sizeof(CLS));
     Change* change = new(mem) CLS(std::forward<CLSARGS>(params)...);
 

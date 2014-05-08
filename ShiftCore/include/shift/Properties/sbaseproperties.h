@@ -9,8 +9,6 @@
 #include "Math/XMathVector.h"
 #include "Math/XColour.h"
 #include "Math/XQuaternion.h"
-#include "QtCore/QByteArray"
-#include "QtCore/QUuid"
 
 namespace Shift
 {
@@ -30,8 +28,6 @@ DEFINE_POD_PROPERTY(Vector4DProperty, Eks::Vector4D);
 DEFINE_POD_PROPERTY(QuaternionProperty, Eks::Quaternion);
 DEFINE_POD_PROPERTY(ColourProperty, Eks::Colour);
 DEFINE_POD_PROPERTY(StringProperty, Eks::String);
-
-S_DECLARE_METATYPE(Shift::Data<QUuid>, "Uuid");
 
 template <typename T> class FlagsProperty : public IntProperty
   {
@@ -61,7 +57,6 @@ SHIFT_EXPORT void getDefault(Eks::Vector4D *t);
 SHIFT_EXPORT void getDefault(Eks::Quaternion *t);
 
 SHIFT_EXPORT void assignTo(const Attribute *f, Data<Eks::String> *to);
-SHIFT_EXPORT void assignTo(const Attribute *f, Data<QUuid> *to);
 SHIFT_EXPORT void assignTo(const Attribute *f, QuaternionProperty *to);
 SHIFT_EXPORT void assignTo(const Attribute *f, ColourProperty *to);
 SHIFT_EXPORT void assignTo(const Attribute *f, Vector4DProperty *to);
@@ -77,18 +72,5 @@ SHIFT_EXPORT void assignTo(const Attribute *f, BoolProperty *to);
 }
 
 }
-
-#if X_QT_INTEROP
-
-SHIFT_EXPORT QTextStream &operator<<(QTextStream &s, xuint8 v);
-SHIFT_EXPORT QTextStream &operator>>(QTextStream &s, xuint8 &v);
-
-SHIFT_EXPORT std::istream &operator>>(std::istream &s, QUuid &);
-SHIFT_EXPORT std::ostream &operator<<(std::ostream &s, const QUuid &v);
-
-Q_DECLARE_METATYPE(QUuid)
-Q_DECLARE_METATYPE(xuint8);
-
-#endif
 
 #endif // SBASEPROPERTIES_H

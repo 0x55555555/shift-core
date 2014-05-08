@@ -3,7 +3,6 @@
 #include "shift/TypeInformation/spropertyinformationhelpers.h"
 #include "shift/Changes/spropertychanges.h"
 #include "shift/TypeInformation/sinterface.h"
-#include "shift/TypeInformation/sinterfaces.h"
 #include "shift/sentity.h"
 #include "shift/sdatabase.h"
 #include "shift/Changes/shandler.h"
@@ -36,40 +35,9 @@ const PropertyInformation *Attribute::bootstrapStaticTypeInformation(Eks::Alloca
   }
 
 void Attribute::createTypeInformation(
-    PropertyInformationTyped<Attribute> *info,
-    const PropertyInformationCreateData &data)
+    PropertyInformationTyped<Attribute> *,
+    const PropertyInformationCreateData &)
   {
-  if(data.registerInterfaces)
-    {
-    auto *api = info->apiInterface();
-
-    typedef XScript::XMethodToGetter<Attribute, Container * (), &Property::parent> ParentGetter;
-    typedef XScript::XMethodToSetter<Attribute, Container *, &Property::setParent> ParentSetter;
-
-    static XScript::ClassDef<0,6,3> cls = {
-      {
-        api->property<const PropertyInformation *, &Property::typeInformation>("typeInformation"),
-
-        //api->property<ParentGetter, ParentSetter>("parent"),
-
-        api->property<const Eks::String &, &Property::mode>("mode"),
-        api->property<bool, &Property::isDynamic>("dynamic"),
-        api->property<const Name &, const NameArg &, &Property::name, &Property::setName>("name"),
-
-        api->property<QVariant, const QVariant &, &Property::value, &Property::setValue>("value"),
-        api->property<Eks::String, &Property::valueAsString>("valueString"),
-
-      },
-      {
-        api->method<void(), &Attribute::beginBlock>("beginBlock"),
-        api->method<void(bool), &Attribute::endBlock>("endBlock"),
-
-        api->constMethod<bool(const Attribute *), &Attribute::equals>("equals"),
-      }
-    };
-
-    api->buildInterface(cls);
-    }
   }
 
 Attribute::Attribute() : _instanceInfo(0)
@@ -175,16 +143,6 @@ void Attribute::endBlock(bool cancel)
 bool Attribute::equals(const Attribute *in) const
   {
   return this == in;
-  }
-
-const XScript::InterfaceBase *Attribute::apiInterface() const
-  {
-  return typeInformation()->apiInterface();
-  }
-
-const XScript::InterfaceBase *Attribute::staticApiInterface()
-  {
-  return staticTypeInformation()->apiInterface();
   }
 
 Eks::TemporaryAllocatorCore *Attribute::temporaryAllocator() const
@@ -465,38 +423,6 @@ Attribute *Attribute::resolvePath(const Eks::String &path)
 const Attribute *Attribute::resolvePath(const Eks::String &path) const
   {
   return const_cast<Attribute*>(this)->resolvePath(path);
-  }
-
-QVariant Attribute::value() const
-  {
-  const PropertyVariantInterface *varInt = findInterface<PropertyVariantInterface>();
-
-  if(varInt)
-    {
-    return varInt->asVariant(this);
-    }
-  return QVariant();
-  }
-
-void Attribute::setValue(const QVariant &val)
-  {
-  const PropertyVariantInterface *varInt = findInterface<PropertyVariantInterface>();
-
-  if(varInt)
-    {
-    varInt->setVariant(this, val);
-    }
-  }
-
-Eks::String Attribute::valueAsString() const
-  {
-  const PropertyVariantInterface *varInt = findInterface<PropertyVariantInterface>();
-
-  if(varInt)
-    {
-    return varInt->asString(this);
-    }
-  return Eks::String();
   }
 
 void Attribute::internalSetName(const NameArg &name)

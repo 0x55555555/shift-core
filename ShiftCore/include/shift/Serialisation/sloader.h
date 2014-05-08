@@ -8,8 +8,6 @@
 #include "Utilities/XProperty.h"
 #include "Containers/XStringSimple.h"
 #include "Memory/XTemporaryAllocator.h"
-#include "QtCore/QTextStream"
-#include "QtCore/QDataStream"
 
 class QString;
 
@@ -37,6 +35,7 @@ public:
     };
 
   LoadBuilder();
+  ~LoadBuilder();
 
   /// \brief Begin loading under to [device].
   Eks::UniquePointer<LoadBlock> beginLoading(Attribute *root, Eks::AllocatorBase *);

@@ -2,6 +2,9 @@
 #define SDATABASEMODEL_H
 
 #include "shift/sglobal.h"
+
+#if X_QT_INTEROP
+
 #include "shift/Utilities/sentityweakpointer.h"
 #include "shift/UI/sentityui.h"
 #include "shift/Changes/sobserver.h"
@@ -150,5 +153,7 @@ private:
   };
 
 }
+
+#endif
 
 #endif // SDATABASEMODEL_H
