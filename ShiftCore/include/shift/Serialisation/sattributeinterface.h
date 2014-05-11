@@ -26,6 +26,7 @@ public:
   class BaseData
     {
   public:
+    virtual ~BaseData() { }
     template <typename T>T *as()
       {
       return static_cast<T *>(this);
@@ -139,7 +140,7 @@ class AttributeInterface::AttributeBlock
   {
 public:
   AttributeBlock(ChildBlock *parent, const Name &, const PropertyInformation *info, bool dynamic, Eks::AllocatorBase *alloc);
-  ~AttributeBlock();
+  virtual ~AttributeBlock();
 
   /// \brief get the owning save.
   AttributeInterface* saveData() { return _data; }
