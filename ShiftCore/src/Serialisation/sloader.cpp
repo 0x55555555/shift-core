@@ -353,6 +353,7 @@ void LoadBuilder::onValuesComplete(AttributeData *attr, ValueData *)
   xAssert(helper.typeInfo || attrData->attribute);
 
   attrData->attribute = info->functions().load(attrData->parent, helper);
+  xAssert(attrData->attribute);
 
   auto block = static_cast<LoadBlock*>(activeBlock());
   if (attrData->parent == block->_root)
