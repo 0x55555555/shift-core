@@ -6,7 +6,7 @@
 #if X_QT_INTEROP
 
 #include "shift/Utilities/sentityweakpointer.h"
-#include "shift/UI/sentityui.h"
+#include "shift/QtExtensions/UI/sentityui.h"
 #include "shift/Changes/sobserver.h"
 #include "QtCore/QAbstractItemModel"
 #include "QtWidgets/QStyledItemDelegate"

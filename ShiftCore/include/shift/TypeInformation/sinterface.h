@@ -1,7 +1,6 @@
 #ifndef SINTERFACE_H
 #define SINTERFACE_H
 
-#include "shift/Properties/sproperty.h"
 #include "shift/TypeInformation/styperegistry.h"
 
 #define S_INTERFACE_FACTORY_TYPE(interfaceType) public: \

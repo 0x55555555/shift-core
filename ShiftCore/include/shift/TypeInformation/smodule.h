@@ -3,6 +3,7 @@
 
 #include "Containers/XVector.h"
 #include "Memory/XUniquePointer.h"
+#include "shift/Properties/sproperty.h"
 #include "shift/TypeInformation/sinterface.h"
 
 namespace Shift

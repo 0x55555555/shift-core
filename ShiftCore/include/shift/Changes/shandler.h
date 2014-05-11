@@ -13,6 +13,7 @@ class TemporaryAllocatorCore;
 namespace Shift
 {
 
+class Container;
 class Database;
 class Change;
 
@@ -77,7 +78,14 @@ private:
 class SHIFT_EXPORT Block
   {
 public:
-  Block(Handler *db) : _db(db)
+  Block(Handler *
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    db
+#endif
+    )
+#ifdef S_CENTRAL_CHANGE_HANDLER
+    : _db(db)
+#endif
     {
 #ifdef S_CENTRAL_CHANGE_HANDLER
     xAssert(_db);
@@ -93,7 +101,9 @@ public:
     }
 
 private:
+#ifdef S_CENTRAL_CHANGE_HANDLER
   Handler *_db;
+#endif
   };
 
 class SHIFT_EXPORT StateStorageBlock

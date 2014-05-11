@@ -3,16 +3,20 @@
 
 #include "shift/sglobal.h"
 #include "shift/TypeInformation/sinterface.h"
+#include "shift/Utilities/spropertyname.h"
 #include "Utilities/XProperty.h"
 #include "Containers/XUnorderedMap.h"
 
 namespace Shift
 {
 
+class Container;
 class Property;
 class AttributeLoader;
 class AttributeSaver;
 class ContainerPropertyInformation;
+class PropertyInstanceInformation;
+class EmbeddedPropertyInstanceInformation;
 class InterfaceBaseFactory;
 
 class PropertyInformationCreateData
