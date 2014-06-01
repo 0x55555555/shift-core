@@ -40,7 +40,7 @@ public:
   Database *database() { xAssert(_database); return _database; }
   const Database *database() const { xAssert(_database); return _database; }
 
-#ifdef X_CPPOX_VARIADIC_TEMPLATES_SUPPORT
+#ifdef X_CPPOX_SUPPORT
   template <typename CLS, typename... CLSARGS> void doChange(CLSARGS&&... params);
 #else
   template <typename CLS, typename T0> void doChange(const T0 &t0);

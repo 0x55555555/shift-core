@@ -4,8 +4,8 @@
 #include "shift/sglobal.h"
 #include "shift/Utilities/sentityweakpointer.h"
 #include "shift/Properties/sproperty.h"
+#include "shift/Properties/sattribute.inl"
 #include "shift/Properties/sbaseproperties.h"
-#include "shift/Properties/sbaseproperties.inl"
 #include "QtWidgets/QCheckBox"
 #include "QtWidgets/QToolButton"
 #include "QtWidgets/QSpinBox"
@@ -24,7 +24,7 @@ namespace Shift
 
 namespace PropertyDefaultUI
 {
-template <typename WIDG, typename T> class SUIBase : public WIDG, private DirtyObserver
+template <typename WIDG, typename T> class SUIBase : public WIDG, public DirtyObserver
   {
 XProperties:
   XProperty(bool, isAlreadySetting, setAlreadySetting);
@@ -211,8 +211,8 @@ public:
     setReadOnly(readOnly);
     }
 
-  Q_SLOT virtual void guiChanged( ) { propertyValue()->assign(text()); }
-  void syncGUI() { setText(propertyValue()->value().toQString()); }
+  Q_SLOT virtual void guiChanged( ) { propertyValue()->assign(text().toUtf8().data()); }
+  void syncGUI() { setText(QString::fromUtf8(propertyValue()->value().data())); }
   };
 
 class SHIFT_EXPORT LongString : public SUIBase<QTextEdit, StringProperty>
@@ -227,10 +227,10 @@ public:
     setReadOnly(readOnly);
     }
 
-  Q_SLOT virtual void guiChanged( ) { propertyValue()->assign(toPlainText());}
+  Q_SLOT virtual void guiChanged( ) { propertyValue()->assign(toPlainText().toUtf8().data());}
   void syncGUI()
     {
-    QString newValue = propertyValue()->value().toQString();
+    QString newValue = QString::fromUtf8(propertyValue()->value().data());
     if(toPlainText() != newValue)
       {
       setText(newValue);

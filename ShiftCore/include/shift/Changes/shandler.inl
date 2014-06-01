@@ -6,7 +6,7 @@
 namespace Shift
 {
 
-#ifdef X_CPPOX_VARIADIC_TEMPLATES_SUPPORT
+#ifdef X_CPPOX_SUPPORT
 template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&... params)
   {
   SProfileFunction
@@ -49,7 +49,7 @@ template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&...
     ((Change&)change).apply(); \
     ((Change&)change).inform(false); \
   } else { \
-    QMutexLocker l(&_doChange); \
+    std::lock_guard<std::mutex> l(_doChange); \
     void *mem = changeAllocator()->alloc(sizeof(CLS)); \
     Change* change = new(mem) CLS(__VA_ARGS__); \
     bool result = change->apply() && change->inform(false); \

@@ -7,26 +7,21 @@ Eks.Library {
 
   property bool uiSupport: true
 
-  Depends { name: "Qt.gui" }
   Depends { name: "EksCore" }
-  Depends { name: "EksScript" }
 
   Depends {
     condition: uiSupport
     name: "EksGui"
   }
-
-  Properties {
+  Depends {
     condition: uiSupport
+    name: "Qt.gui"
   }
 
   Export {
     Depends { name: "cpp" }
     Depends { name: "EksCore" }
-    Depends { name: "EksScript" }
 
     cpp.includePaths: [ "./include" ]
   }
-
-  Eks.TestDependency { }
 }

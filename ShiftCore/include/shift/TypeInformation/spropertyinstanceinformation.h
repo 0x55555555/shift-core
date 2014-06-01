@@ -191,4 +191,6 @@ inline const DynamicPropertyInstanceInformation* PropertyInstanceInformation::dy
 
 }
 
+#include "shift/Properties/sattribute.inl"
+
 #endif // SPROPERTYINSTANCEINFORMATION_H
