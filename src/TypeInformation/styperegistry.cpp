@@ -8,7 +8,6 @@
 #include "shift/Properties/sdata.inl"
 #include "shift/Properties/sbasepointerproperties.h"
 #include "shift/Changes/sobserver.h"
-#include "shift/QtExtensions/sinterfaces.h"
 #include "Memory/XTemporaryAllocator.h"
 #include "Containers/XUnorderedMap.h"
 #include "Utilities/XTemplateHelpers.h"
