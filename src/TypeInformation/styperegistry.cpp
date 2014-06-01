@@ -189,7 +189,6 @@ void TypeRegistry::removeTypeObserver(Observer *o)
 
 const PropertyInformation *TypeRegistry::findType(const NameArg &in)
   {
-  SProfileFunction
   xForeach(const PropertyInformation *info, _internalTypes->types)
     {
     if(in == info->typeName())

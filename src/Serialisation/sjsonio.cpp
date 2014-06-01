@@ -881,8 +881,6 @@ JSONLoader::~JSONLoader()
 
 void JSONLoader::load(Eks::String *device, AttributeInterface *ifc)
   {
-  SProfileFunction
-
   Eks::TemporaryAllocator alloc(Eks::Core::temporaryAllocator());
 
   Eks::UniquePointer<JSONLoaderImpl> impl = alloc.createUnique<JSONLoaderImpl>(&alloc, ifc);

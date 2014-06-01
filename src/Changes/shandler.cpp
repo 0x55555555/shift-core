@@ -109,7 +109,6 @@ void Handler::undoTo(xsize p)
 
 void Handler::inform()
   {
-  SProfileFunction
   xForeach(Observer *obs, _blockObservers)
     {
     obs->actOnChanges();

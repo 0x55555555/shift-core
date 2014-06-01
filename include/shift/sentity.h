@@ -39,30 +39,16 @@ namespace Shift
   void NewEntity::createTypeInformation(PropertyInformationTyped<NewEntity> *info,
                                      const PropertyInformationCreateData &data)
    {
-   // if the create data asks for attribute registrations, then build up the attribute list.
-   // Note parent type information is copied by default, but can be overridden.
-   if(data.registerAttributes)
-     {
-     // Creating this childBlock on the stack managed the new children, and pushes them into info when destroyed.
-     auto childBlock = info->createChildrenBlock(data);
+   // Creating this childBlock on the stack managed the new children, and pushes them into info when destroyed.
+   auto childBlock = info->createChildrenBlock(data);
 
-     // This informs the type that it has a child at the location &NewEntity::member, called "member".
-     // the return value is a helper class derived from EmbeddedInstanceInformation, which allows setting up type specific
-     // computation, and affectors.
-     auto *childInst = childBlock.add(&NewEntity::children, "member");
-     }
-
-   // If the create data asks for interface registrations, then build up the interface list.
-   // Note, the parent class interface is automatically used by default, so a new interface is rarely required.
-   if(data.registerInterfaces)
-     {
-     // See Script Interfaces section
-     }
+   // This informs the type that it has a child at the location &NewEntity::member, called "member".
+   // the return value is a helper class derived from EmbeddedInstanceInformation, which allows setting up type specific
+   // computation, and affectors.
+   auto *childInst = childBlock.add(&NewEntity::children, "member");
    }
   \endcode
 
-  \todo Ensure the S_PROPERTY_INTERFACE is optional, when scripting isn't required.
-  \todo registerAttributes should really be registerProperties, but are either required anymore?
   \sa EmbeddedPropertyInstanceInformation
   \sa PropertyGroup
   \sa S_ENTITY S_ABSTRACT_ENTITY
@@ -196,12 +182,15 @@ private:
     {
     enum
       {
-      Dirty,
       Tree,
       Connection
       };
     xuint8 mode;
-    void *observer;
+    union
+      {
+      TreeObserver *tree;
+      ConnectionObserver *connection;
+      } observer;
 
     Observer *getObserver();
     };

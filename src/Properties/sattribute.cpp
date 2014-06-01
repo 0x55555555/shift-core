@@ -76,7 +76,6 @@ Attribute::~Attribute()
 
 void Attribute::setName(const NameArg &in)
   {
-  SProfileFunction
   xAssert(isDynamic());
   xAssert(parent());
   xAssert(parent()->hasNamedChildren());
@@ -175,19 +174,16 @@ Eks::AllocatorBase *Attribute::generalPurposeAllocator() const
 
 bool Attribute::inheritsFromType(const PropertyInformation *type) const
   {
-  SProfileFunction
   return typeInformation()->inheritsFromType(type);
   }
 
 const Name &Attribute::name() const
   {
-  SProfileFunction
   return baseInstanceInformation()->name();
   }
 
 Name Attribute::identifier() const
   {
-  SProfileFunction
   if (parent()->hasNamedChildren())
     {
     return baseInstanceInformation()->name();
@@ -206,7 +202,6 @@ Name Attribute::identifier() const
 
 Name Attribute::escapedIdentifier() const
   {
-  SProfileFunction
   Name baseName = identifier();
 
   Eks::String::Replacement reps[] =
@@ -237,8 +232,6 @@ const Entity *Attribute::entity() const
 
 Entity *Attribute::entity()
   {
-  SProfileFunction
-
   Attribute *prop = this;
 
   Entity *e = prop->castTo<Entity>();
@@ -296,7 +289,6 @@ Eks::String Attribute::pathTo(const Attribute *that, Eks::AllocatorBase* allocat
 
 Eks::String Attribute::path(Eks::AllocatorBase* allocator) const
   {
-  SProfileFunction
   const Property *par = parent();
   if(par == 0)
     {
@@ -307,8 +299,6 @@ Eks::String Attribute::path(Eks::AllocatorBase* allocator) const
 
 Eks::String Attribute::path(const Attribute *from, Eks::AllocatorBase* allocator) const
   {
-  SProfileFunction
-
   if(from == this)
     {
     return Eks::String("", allocator);
@@ -353,7 +343,6 @@ const Eks::String &Attribute::mode() const
 
 bool Attribute::isDescendedFrom(const Attribute *in) const
   {
-  SProfileFunction
   if(this == in)
     {
     return true;
@@ -369,8 +358,6 @@ bool Attribute::isDescendedFrom(const Attribute *in) const
 
 Attribute *Attribute::resolvePath(const Eks::String &path)
   {
-  SProfileFunction
-
   Attribute *cur = this;
 
   Eks::String name;

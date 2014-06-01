@@ -12,7 +12,6 @@ namespace Shift
 
 inline bool Attribute::isDynamic() const
   {
-  SProfileFunction
   return baseInstanceInformation()->isDynamic();
   }
 

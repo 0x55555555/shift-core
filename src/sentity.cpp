@@ -76,7 +76,7 @@ const Entity *Entity::parentEntity() const
     {
     return par->entity();
     }
-  return 0;
+  return nullptr;
   }
 
 Entity *Entity::parentEntity()
@@ -94,7 +94,7 @@ Entity *Entity::findChildEntity(const NameArg &n)
   Attribute *prop = children.findChild(n);
   if(!prop)
     {
-    return 0;
+    return nullptr;
     }
   return prop->castTo<Entity>();
   }
@@ -104,7 +104,7 @@ const Entity *Entity::findChildEntity(const NameArg &n) const
   const Attribute *prop = children.findChild(n);
   if(!prop)
     {
-    return 0;
+    return nullptr;
     }
   return prop->castTo<Entity>();
   }
@@ -113,17 +113,13 @@ Observer *Entity::ObserverStruct::getObserver()
   {
   if(mode == ObserverStruct::Tree)
     {
-    return (TreeObserver*)observer;
-    }
-  else if(mode == ObserverStruct::Dirty)
-    {
-    return (DirtyObserver*)observer;
+    return observer.tree;
     }
   else if(mode == ObserverStruct::Connection)
     {
-    return (ConnectionObserver*)observer;
+    return observer.connection;
     }
-  return 0;
+  return nullptr;
   }
 
 void Entity::setupObservers()
@@ -141,7 +137,7 @@ void Entity::addTreeObserver(TreeObserver *in)
   xAssert(in);
   ObserverStruct s;
   s.mode = ObserverStruct::Tree;
-  s.observer = in;
+  s.observer.tree = in;
   in->_entities << this;
   _observers << s;
   }
@@ -152,7 +148,7 @@ void Entity::addConnectionObserver(ConnectionObserver *in)
 
   ObserverStruct s;
   s.mode = ObserverStruct::Connection;
-  s.observer = in;
+  s.observer.connection = in;
   in->_entities << this;
   _observers << s;
   }
@@ -183,12 +179,11 @@ void Entity::removeObserver(Observer *in)
 
 void Entity::informTreeObservers(const Change *event, bool backwards)
   {
-  SProfileFunction
   xForeach(const ObserverStruct &obs, _observers)
     {
     if(obs.mode == ObserverStruct::Tree)
       {
-      TreeObserver *observer = ((TreeObserver*)obs.observer);
+      TreeObserver *observer = obs.observer.tree;
       observer->onTreeChange(event, backwards);
       handler()->currentBlockObserverList() << observer;
       }
@@ -203,12 +198,11 @@ void Entity::informTreeObservers(const Change *event, bool backwards)
 
 void Entity::informConnectionObservers(const Change *event, bool backwards)
   {
-  SProfileFunction
   xForeach(const ObserverStruct &obs, _observers)
     {
     if(obs.mode == ObserverStruct::Connection)
       {
-      ConnectionObserver *observer = ((ConnectionObserver*)obs.observer);
+      ConnectionObserver *observer = obs.observer.connection;
       observer->onConnectionChange(event, backwards);
       handler()->currentBlockObserverList() << observer;
       }

@@ -12,8 +12,6 @@ Module::Module()
 
 void Module::install(Shift::ModuleBuilder *builder, Eks::AllocatorBase *alloc)
   {
-  SProfileFunction
-
   _interfaces.allocator() = alloc;
   initialiseInterfaces(*this);
 

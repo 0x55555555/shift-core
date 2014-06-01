@@ -70,36 +70,44 @@ protected:
   void initiateInheritedDatabaseType(const PropertyInformation *info);
 
 private:
+  /// \brief Create a dynamic attribute
   Attribute *addDynamicAttribute(
       const PropertyInformation *info,
       const NameArg &name,
       xsize index,
       Container *parent,
       PropertyInstanceInformationInitialiser *inst);
+  /// \brief Delete (for real) a dynamic attribute
   void deleteDynamicAttribute(Attribute *);
 
-  DynamicInstanceInformation _instanceInfoData;
-
+  /// \brief Initiate a constructed attribute, including any children.
   void initiateAttribute(
       Attribute *,
       AttributeInitialiserHelper* initialiser);
-  void initiateAttributeFromMetaData(
+  /// \brief Initiate an attributes children.
+  void initiateAttributeChildrenFromMetaData(
       Container *prop,
       const PropertyInformation *mD,
       AttributeInitialiserHelper *helper);
+  /// \brief uninititate (and destroy) and attribute and its children
   void uninitiateAttribute(Attribute *thisProp);
-  void uninitiateAttributeFromMetaData(Container *container, const PropertyInformation *mD);
+  /// \brief uninitiate an attributes children
+  void uninitiateAttributeChildrenFromMetaData(Container *container, const PropertyInformation *mD);
 
+  /// \brief The databases instance information.
+  DynamicInstanceInformation _instanceInfoData;
+
+  /// \brief The allocator for all attributes.
   Eks::AllocatorBase *_memory;
 
 #ifdef S_DEBUGGER
   Eks::UniquePointer<Shift::Debugger> _debugger;
 #endif
 
+  /// \brief The open edit caches for the database (see Container::createEditCache)
   std::pair<Container*, EditCache*> _lastEditCache;
   Eks::UnorderedMap<Container*, EditCache*> _editCaches;
 
-  friend class Property;
   friend class Container;
   friend class ContainerTreeChange;
   };

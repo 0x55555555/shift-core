@@ -5,11 +5,11 @@
 
 /** \mainpage Shift
 
-    \version 0.5
+    \version 1.0
 
     \section intro_sec Introduction
 
-    Shift is a database/graph library for saving and loading and computing data.
+    Shift is a database/graph library for saving, loading and computing data.
 
     \section gettingstarted_sec Getting Started
 
@@ -23,18 +23,6 @@
 #  define SHIFT_EXPORT X_DECL_EXPORT
 #else
 #  define SHIFT_EXPORT X_DECL_IMPORT
-#endif
-
-# define ShiftCoreProfileScope 1043
-# define ShiftDataModelProfileScope 1044
-
-#if X_EVENT_LOGGING_ENABLED
-# include "XProfiler"
-# define SProfileFunction X_EVENT_FUNCTION;
-# define SProfileScopedBlock(mess) X_EVENT_FUNCTION;
-#else
-# define SProfileFunction
-# define SProfileScopedBlock(mess)
 #endif
 
 #define S_DEFINE_USER_DATA_TYPE(name, typeId) namespace SUserDataTypes { static const xuint32 name = typeId; }

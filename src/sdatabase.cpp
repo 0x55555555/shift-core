@@ -94,7 +94,7 @@ Database::Database()
 
 Database::~Database()
   {
-  uninitiateAttributeFromMetaData(this, typeInformation());
+  uninitiateAttributeChildrenFromMetaData(this, typeInformation());
   _dynamicChild = 0;
 
   clearChanges();
@@ -115,7 +115,6 @@ Attribute *Database::addDynamicAttribute(
     Container *parent,
     PropertyInstanceInformationInitialiser *init)
   {
-  SProfileFunction
   xAssert(type);
 
   auto fmt = type->format() + type->dynamicInstanceInformationFormat();
@@ -238,12 +237,12 @@ void Database::initiateInheritedDatabaseType(const PropertyInformation *info)
   AttributeInitialiserHelperImpl helper(this);
 
   _instanceInfoData.setChildInformation(info);
-  initiateAttributeFromMetaData(this, info, &helper);
+  initiateAttributeChildrenFromMetaData(this, info, &helper);
 
   helper.treeComplete();
   }
 
-void Database::initiateAttributeFromMetaData(
+void Database::initiateAttributeChildrenFromMetaData(
     Container *container,
     const PropertyInformation *mD,
     AttributeInitialiserHelper *helper)
@@ -276,7 +275,7 @@ void Database::initiateAttributeFromMetaData(
     }
   }
 
-void Database::uninitiateAttributeFromMetaData(Container *container, const PropertyInformation *mD)
+void Database::uninitiateAttributeChildrenFromMetaData(Container *container, const PropertyInformation *mD)
   {
   xAssert(mD);
 
@@ -315,7 +314,7 @@ void Database::initiateAttribute(Attribute *prop, AttributeInitialiserHelper* in
       }
 #endif
 
-    initiateAttributeFromMetaData(container, metaData, initialiser);
+    initiateAttributeChildrenFromMetaData(container, metaData, initialiser);
     }
 
   if(!prop->isDynamic())
@@ -351,7 +350,7 @@ void Database::uninitiateAttribute(Attribute *prop)
     const PropertyInformation *metaData = container->typeInformation();
     xAssert(metaData);
 
-    uninitiateAttributeFromMetaData(container, metaData);
+    uninitiateAttributeChildrenFromMetaData(container, metaData);
     }
 
   const PropertyInstanceInformation* inst = prop->baseInstanceInformation();

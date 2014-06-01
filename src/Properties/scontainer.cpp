@@ -404,7 +404,6 @@ bool Container::hasNamedChildren() const
 
 xsize Container::index(const Attribute* prop) const
   {
-  SProfileFunction
   preGet();
 
   const PropertyInstanceInformation* bInfo = prop->baseInstanceInformation();

@@ -125,8 +125,6 @@ PropertyInformation *PropertyInformation::createTypeInformationInternal(
     void (init)(Module &, Eks::AllocatorBase *, PropertyInformation *, const char *),
     Eks::AllocatorBase *allocator)
   {
-  SProfileScopedBlock("Initiate information")
-
   PropertyInformation *createdInfo = PropertyInformation::allocate(allocator);
   xAssert(createdInfo);
 

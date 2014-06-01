@@ -26,8 +26,6 @@ void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l)
 
 void PropertyBaseTraits::save(const Attribute *p, AttributeSaver &l, bool writeInput)
   {
-  SProfileFunction
-
   Eks::TemporaryAllocator alloc(p->temporaryAllocator());
 
   bool dyn(p->isDynamic());
@@ -66,8 +64,6 @@ Attribute *PropertyBaseTraits::load(Container *parent, AttributeLoader &l)
 
     Eks::String mode;
     };
-
-  SProfileFunction
 
   Initialiser initialiser;
 
@@ -164,7 +160,6 @@ bool PropertyBaseTraits::shouldSave(const Attribute *p)
 
 void PropertyContainerTraits::assign(const Attribute *f, Attribute *t)
   {
-  SProfileFunction
   const Container *from = f->uncheckedCastTo<Container>();
   Container *to = t->uncheckedCastTo<Container>();
 

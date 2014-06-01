@@ -12,21 +12,18 @@ namespace Shift
 
 bool Attribute::NameChange::apply()
   {
-  SProfileFunction
   attribute()->internalSetName(after(false));
   return true;
   }
 
 bool Attribute::NameChange::unApply()
   {
-  SProfileFunction
   attribute()->internalSetName(before(false));
   return true;
   }
 
 bool Attribute::NameChange::inform(bool backwards)
   {
-  SProfileFunction
   xAssert(attribute()->entity());
   attribute()->entity()->informTreeObservers(this, backwards );
   return true;
@@ -35,7 +32,6 @@ bool Attribute::NameChange::inform(bool backwards)
 
 bool Property::ConnectionChange::apply()
   {
-  SProfileFunction
   if(_mode == Connect)
     {
     _driver->connectInternal(_driven);
@@ -58,7 +54,6 @@ bool Property::ConnectionChange::apply()
 
 bool Property::ConnectionChange::unApply()
   {
-  SProfileFunction
   if(_mode == Connect)
     {
     _driver->disconnectInternal(_driven);
@@ -81,7 +76,6 @@ bool Property::ConnectionChange::unApply()
 
 bool Property::ConnectionChange::inform(bool back)
   {
-  SProfileFunction
   if(_driver->entity())
     {
     _driver->entity()->informConnectionObservers(this, back);
@@ -204,8 +198,6 @@ ContainerTreeChange::~ContainerTreeChange()
 
 bool ContainerTreeChange::apply()
   {
-  SProfileFunction
-
   // its possible the tree is computed, but we are trying to insert into it.
   // its also possible this node is part of a ParentHasInput chain.
   // either way, rather than post setting this node, leaving a gaping hole in
@@ -231,7 +223,6 @@ bool ContainerTreeChange::apply()
 
 bool ContainerTreeChange::unApply()
   {
-  SProfileFunction
   if(after())
     {
     _owner = true;
@@ -250,7 +241,6 @@ bool ContainerTreeChange::unApply()
 
 bool ContainerTreeChange::inform(bool back)
   {
-  SProfileFunction
   if(after() && (!before() || !before()->isDescendedFrom(after())))
     {
     xAssert(property()->entity());

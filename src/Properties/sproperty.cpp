@@ -115,7 +115,6 @@ Property::Property()
 
 void Property::setInput(const Property *inp)
   {
-  SProfileFunction
   Block b(handler());
 
   if(input())
@@ -131,7 +130,6 @@ void Property::setInput(const Property *inp)
 
 void Property::connect(Property *prop) const
   {
-  SProfileFunction
   if(prop && prop != this)
     {
     prop->setInput(this);
@@ -177,7 +175,6 @@ bool Property::outputsTo(const Property *p) const
 
 void Property::disconnect() const
   {
-  SProfileFunction
   if(_input)
     {
 #if X_ASSERTS_ENABLED
@@ -305,7 +302,6 @@ void Property::postCompute()
 
 void Property::postSet()
   {
-  SProfileFunction
   if(!_updating)
     {
     setDependantsDirty();
@@ -316,8 +312,6 @@ void Property::postSet()
 
 void Property::setDirty()
   {
-  SProfileFunction
-
   if(!_dirty)
     {
     _dirty = true;
@@ -361,7 +355,6 @@ void Property::endUpdate() const
 
 void Property::update() const
   {
-  SProfileFunction
   StateStorageBlock ss(false, const_cast<Handler*>(handler()));
 
   if(!beginUpdate())

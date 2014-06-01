@@ -9,7 +9,6 @@ namespace Shift
 #ifdef X_CPPOX_SUPPORT
 template <typename CLS, typename... CLSARGS> void Handler::doChange(CLSARGS&&... params)
   {
-  SProfileFunction
   StateStorageBlock ss(false, this);
 
   if(!ss.wasEnabled())

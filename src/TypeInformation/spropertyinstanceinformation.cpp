@@ -221,8 +221,6 @@ void EmbeddedPropertyInstanceInformation::setAffects(xsize *affects, bool affect
 
 const EmbeddedPropertyInstanceInformation *EmbeddedPropertyInstanceInformation::resolvePath(const Eks::String &path) const
   {
-  SProfileFunction
-
   const EmbeddedPropertyInstanceInformation *cur = this;
   const PropertyInformation *curInfo = cur->childInformation();
 
