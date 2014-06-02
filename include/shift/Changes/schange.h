@@ -6,74 +6,70 @@
 #include "Containers/XStringSimple.h"
 #include "shift/Utilities/smetatype.h"
 
+/// \def S_CHANGE_ID(CHANGE_TYPE) Find the change type id for the class [CHANGE_TYPE].
+/// \internal
 #define S_CHANGE_ID(CHANGE_TYPE) (Change::getChangeTypeId<typename CHANGE_TYPE::SubType>(CHANGE_TYPE::Type))
 
-// Casting macros
-#define S_CASTABLE( myName, superName, rootName ) \
+/// \def S_CASTABLE(myName, superName, rootName) Declare a castable change,
+///      passing [myName] the name of the Change, [superName] the parent Change.
+/// \internal
+#define S_CASTABLE(myName, superName) \
     public: \
-      virtual const rootName *castToType( xuint32 id ) const { if( id == S_CHANGE_ID(myName) ){return this;}else{return superName::castToType( id );} } \
+      virtual const Shift::Change *castToType( xuint32 id ) const { if( id == S_CHANGE_ID(myName) ){return this;}else{return superName::castToType( id );} } \
     private:
 
-// Casting macro for XObject to use (neater to have it here)
-#define S_CASTABLE_ROOT( myName, myID ) \
-    public: \
-    myName *castToType( xuint32 id ) { return (myName*)((const myName*)this)->castToType(id); } \
-    virtual const myName *castToType( xuint32 id ) const { if( id == myID ){return this;}else{return 0;} } \
-    template <typename T>inline T *uncheckedCastTo() \
-      { \
-      xAssert( castTo<T>() ); \
-      return static_cast<T*>( this ); \
-      } \
-    template <typename T>inline const T *uncheckedCastTo() const \
-      { \
-      xAssert( castTo<T>() ); \
-      return static_cast<const T*>( this ); \
-      } \
-    template <typename T>inline T *castTo() \
-      { \
-      return static_cast<T*>( castToType( S_CHANGE_ID(T) ) ); \
-      } \
-    template <typename T>inline const T *castTo() const \
-      { \
-      return static_cast<const T *>( castToType( S_CHANGE_ID(T) ) ); \
-      } \
-    private:
-
-
-#define S_CHANGE_ROOT \
-  public: enum { Type = Change::BaseChange }; \
-  typedef void SubType; \
-  S_CASTABLE_ROOT( Change, Type )
-
+/// \def S_CHANGE(cl, supCl, baseType) Add this to the top of a class definition to make it a castable change.
+///      [cl] is the name of the castable class.
+///      [supCl] is the name of the parent class.
+///      [baseType] is the changes id.
 #define S_CHANGE(cl, supCl, baseType) \
   public: enum {Type = baseType}; \
-  S_CASTABLE( cl, supCl, Shift::Change )
+  S_CASTABLE(cl, supCl)
 
+/// \def S_CHANGE_TYPED(cl, supCl, baseType, type) Add this to the top of a class definition to make it a typed castable change. Use this for templated change classes.
+///      [cl] is the name of the castable class.
+///      [supCl] is the name of the parent class.
+///      [baseType] is the changes id.
+///      [type] is the type of this change.
 #define S_CHANGE_TYPED(cl, supCl, baseType, type) \
   public: enum {Type = baseType}; \
   typedef type SubType; \
-  S_CASTABLE( cl, supCl, Shift::Change )
+  S_CASTABLE(cl, supCl)
 
 namespace Shift
 {
 
-class Change
+/// \brief Changes are stored by the database and represent an atomic operation on the db.
+///
+///        Examples of a change are: changing the name of an object, creating and destroying a connection or setting an attribute
+class SHIFT_EXPORT Change
   {
 public:
+  /// \brief The base change types
   enum BaseChangeTypes
-  {
-    BaseChange,
-    NameChange,
-    ConnectionChange,
-    TreeChange,
-    BaseDataChange,
-    ComputeChange,
-    DataChange
-  };
+    {
+    BaseChange, ///< This
+    NameChange, ///< Changing a name
+    ConnectionChange, ///< Creating or destroying a connection
+    TreeChange, ///< Inserting or removing a dynamic attribute
+    BaseDataChange, ///< The base type for changing data
+    ComputeChange, ///< A change created during a computation
+    DataChange, ///< A data change to an attribute
 
-  S_CHANGE_ROOT
+    /// \brief The first index for adding custom types
+    BaseChangeCount
+    };
 
-public:
+  /// \brief This Change's type.
+  enum
+    {
+    Type = Change::BaseChange
+    };
+
+  /// \brief This Change's sub type.
+  typedef void SubType;
+
+  /// \brief Given a type[T] and a change type id [t] find a unique number that represents them.
   template <typename T> static xuint32 getChangeTypeId(xuint32 t)
     {
     int id = detail::MetaType::id<T>();
@@ -82,10 +78,47 @@ public:
     return (t<<16) + id;
     }
 
-  virtual ~Change() { }
+  virtual ~Change();
+
+  /// \brief Called to apply this change to the data it references
   virtual bool apply() = 0;
+  /// \brief Called to unapply (undo) this change from the data it references
+  ///
+  ///        The change should assume the database is in the state it left it after its apply() call.
   virtual bool unApply() = 0;
+  /// \brief Called to inform watchers that the data has been changed.
   virtual bool inform(bool backwards) = 0;
+
+  /// \brief Cast a change, equivalent to a static_cast<>
+  template <typename T> inline T *uncheckedCastTo()
+    {
+    xAssert(castTo<T>());
+    return static_cast<T*>(this);
+    }
+
+  /// \brief Cast a change, equivalent to a static_cast<>
+  template <typename T> inline const T *uncheckedCastTo() const
+    {
+    xAssert(castTo<T>());
+    return static_cast<const T*>(this);
+    }
+
+  /// \brief Cast a change, equivalent to a dynamic_cast<>
+  template <typename T>inline T *castTo()
+    {
+    return static_cast<T*>(castToType(S_CHANGE_ID(T)));
+    }
+
+  /// \brief Cast a change, equivalent to a dynamic_cast<>
+  template <typename T>inline const T *castTo() const
+    {
+    return static_cast<const T *>(castToType(S_CHANGE_ID(T)));
+    }
+
+  /// \brief Try to cast this change to the type [id]
+  Change *castToType(xuint32 id);
+  /// \brief Try to cast this change to the type [id]
+  virtual const Change *castToType(xuint32 id) const;
   };
 
 
