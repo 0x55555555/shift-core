@@ -30,14 +30,6 @@ public:
   virtual void onTreeChange(const Change *, bool backwards) = 0;
   };
 
-
-class SHIFT_EXPORT DirtyObserver : public virtual Observer
-  {
-public:
-  virtual ~DirtyObserver() { }
-  virtual void onPropertyDirtied(const Property*) = 0;
-  };
-
 class SHIFT_EXPORT ConnectionObserver : public virtual Observer
   {
 public:
