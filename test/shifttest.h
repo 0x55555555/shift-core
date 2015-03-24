@@ -45,6 +45,7 @@ private Q_SLOTS:
   void initialiseTest();
   void initialiseProfileTest();
   void initialiseProfileTest_data();
+  void changeTest();
 
 private:
   Eks::Core core;

@@ -22,7 +22,7 @@ public:
   NameArg& operator=(NameArg&& other);
 
 #if X_QT_INTEROP
-  NameArg(const QString &);
+  //NameArg(const QString &);
 #endif
 
   template <typename C, xsize S, typename A>

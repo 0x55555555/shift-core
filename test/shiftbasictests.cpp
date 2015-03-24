@@ -460,3 +460,16 @@ void ShiftCoreTest::indexedChildTest()
   QCOMPARE(namedFirst->dynamicInstanceInformation()->name(), "");
   QCOMPARE(namedFirst->identifier(), "1");
   }
+
+void ShiftCoreTest::changeTest()
+  {
+  TestDatabase db;
+
+  auto ent = db.addChild<TestEntity>();
+  QVERIFY(ent);
+
+  struct TestObserver : public Shift::TreeObserver, Shift::ConnectionObserver
+    {
+    };
+
+  }
